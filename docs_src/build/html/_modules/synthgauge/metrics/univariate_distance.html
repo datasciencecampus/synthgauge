@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>synthgauge.metrics.univariate_distance &mdash; SynthGauge 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> SynthGauge
+            <img src="../../../_static/favicon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SynthGauge</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>synthgauge.metrics.univariate_distance</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for synthgauge.metrics.univariate_distance</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">entropy</span><span class="p">,</span> <span class="n">kruskal</span><span class="p">,</span> <span class="n">ks_2samp</span><span class="p">,</span> <span class="n">mannwhitneyu</span><span class="p">,</span> <span class="n">wasserstein_distance</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">wilcoxon</span> <span class="k">as</span> <span class="n">scipy_wc</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="k">import</span> <span class="n">jensenshannon</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">feature_density_diff</span>
+
+
+<div class="viewcode-block" id="kolmogorov_smirnov"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.kolmogorov_smirnov">[docs]</a><span class="k">def</span> <span class="nf">kolmogorov_smirnov</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Distance: Kolmogorov-Smirnov</span>
+
+<span class="sd">    The Kolmogorov-Smirnov metric calculates the maximum difference between the</span>
+<span class="sd">    cumulative distribution functions of the `feature` in the `real` and</span>
+<span class="sd">    `synth` datasets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        Kolmogorov-Smirnov statistic</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        Two-tailed p-value</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.ks_2samp</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.ks_2samp`, which tests whether</span>
+<span class="sd">    two samples are drawn from the same distribution by calculating the maximum</span>
+<span class="sd">    difference between their cumulative distribution functions.</span>
+
+<span class="sd">    If the returned statistic is small or the p-value is high, then we cannot</span>
+<span class="sd">    reject the hypothesis that the distributions are the same.</span>
+
+<span class="sd">    This approach is only defined if the feature is continuous. The SciPy</span>
+<span class="sd">    documentation further suggests this method works best when one of the</span>
+<span class="sd">    samples has a size of only a few thousand.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                           columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    The first feature appears to come from the same distribution in both</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real_data, synth_data, &#39;feat1&#39;)</span>
+<span class="sd">    KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random</span>
+
+<span class="sd">    The second feature appears to come from different distributions in the</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real_data, synth_data, &#39;feat2&#39;)</span>
+<span class="sd">    KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ks_2samp</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="wasserstein"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.wasserstein">[docs]</a><span class="k">def</span> <span class="nf">wasserstein</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Distance: Wasserstein</span>
+
+<span class="sd">    The Wasserstein distance, or Earth Mover&#39;s distance, can be thought of as</span>
+<span class="sd">    calculating the amount of &quot;work&quot; required to move from the distribution of</span>
+<span class="sd">    the synthetic data to the distribution of the real data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance : float</span>
+<span class="sd">        The computed distance between the distributions.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.wasserstein_distance</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.wasserstein_distance`.</span>
+
+<span class="sd">    Computationally, we can find the Wasserstein distance by calculating the</span>
+<span class="sd">    area between the cumulative distribution functions for the two</span>
+<span class="sd">    distributions.</span>
+
+<span class="sd">    If :math:`s` is the `synth` distribution of the `feature`, :math:`r` is the</span>
+<span class="sd">    `real` distribution of the `feature` and :math:`R` and :math:`S` are their</span>
+<span class="sd">    respective cumulative distribution functions, then</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        wasserstein(s, r) = \\int_{-\\infty}^{+\\infty} |S-R|</span>
+
+<span class="sd">    The distance is zero if the distributions are identical, and increases as</span>
+<span class="sd">    they become less alike. This method is therefore good for comparing</span>
+<span class="sd">    multiple synthetic datasets, or features within a dataset, to see which is</span>
+<span class="sd">    closest to the real. However, as this is not a test, there is no threshold</span>
+<span class="sd">    distance below which we can claim the distributions are statistically the</span>
+<span class="sd">    same.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                           columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    The first feature appears to be more similar than the second across</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; wasserstein(real_data, synth_data, &#39;feat1&#39;)</span>
+<span class="sd">    0.0688192355094602 # random</span>
+<span class="sd">    &gt;&gt;&gt; wasserstein(real_data, synth_data, &#39;feat2&#39;)</span>
+<span class="sd">    0.8172329918412307 # random</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">wasserstein_distance</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="jensen_shannon_distance"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.jensen_shannon_distance">[docs]</a><span class="k">def</span> <span class="nf">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Distance: Jensen-Shannon</span>
+
+<span class="sd">    The Jensen-Shannon distance describes the difference between the `real` and</span>
+<span class="sd">    `synth` distributions of the `feature` in terms of entropy. It is the</span>
+<span class="sd">    square root of Jensen-Shannon divergence. It measures the distance between</span>
+<span class="sd">    probabilities so the data are first discretised into bins.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    bins : int or str</span>
+<span class="sd">        Number of bins to use when discretising data, if `None` data will be</span>
+<span class="sd">        treated as categorical. If string chosen method will be used to</span>
+<span class="sd">        calculate optimal bin width, &#39;auto&#39; is the default. See</span>
+<span class="sd">        numpy.histogram_bin_edges for further options.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance : double</span>
+<span class="sd">        The computed distance between the distributions.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    divergence.jensen_shannon_divergence</span>
+<span class="sd">    scipy.spatial.distance.jensenshannon</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.spatial.distance.jensenshannon`.</span>
+<span class="sd">    Since this function expects probability vectors the data is first</span>
+<span class="sd">    discretised into evenly-spaced bins.</span>
+
+<span class="sd">    We can think of the Jensen-Shannon distance as the amount of information,</span>
+<span class="sd">    or entropy, encoded in the difference between the `real` and `synth`</span>
+<span class="sd">    distributions of the `feature`.</span>
+
+<span class="sd">    The distance is zero if the distributions are identical, and is bounded</span>
+<span class="sd">    above by one if they are nothing alike. This method is therefore good</span>
+<span class="sd">    for comparing multiple synthetic datasets, or features within a dataset,</span>
+<span class="sd">    to see which is closest to the real. However, as this is not a test,</span>
+<span class="sd">    there is no threshold distance below which we can claim the distributions</span>
+<span class="sd">    are statistically the same.</span>
+
+<span class="sd">    An optimal &#39;bins&#39; value has not been suggested.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                           columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    The first feature appears to be more similar than the second across</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    0.11006632967333475 # random</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    0.43556476029981644 # random</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">])]))</span>
+        <span class="n">real_bincounts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                          <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="n">synth_bincounts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                           <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># assign bin edges based on joined data</span>
+        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span>
+                                                           <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">])),</span>
+                                           <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+        <span class="c1"># count the number of points in each bin seperately</span>
+        <span class="n">real_bincounts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">synth_bincounts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">jensenshannon</span><span class="p">(</span><span class="n">real_bincounts</span><span class="p">,</span> <span class="n">synth_bincounts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="feature_density_diff_mae"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.feature_density_diff_mae">[docs]</a><span class="k">def</span> <span class="nf">feature_density_diff_mae</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Calculate Mean Absolute Error of feature densities.</span>
+
+<span class="sd">    For each feature the difference between the density across the bins</span>
+<span class="sd">    within `real` and `synth` is calculated. Finally the MAE across all</span>
+<span class="sd">    features and bins is calculated. A value close to 0 indicates that</span>
+<span class="sd">    a similar distribution for `feats` is observed between the real and</span>
+<span class="sd">    synthetic datasets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real: pandas.DataFrame</span>
+<span class="sd">        DataFrame containing the real data.</span>
+<span class="sd">    synth: pandas.DataFrame</span>
+<span class="sd">        DataFrame containing the sythetic data.</span>
+<span class="sd">    feats: str or list of str, optional.</span>
+<span class="sd">        The features that will be used to compute the densities. By</span>
+<span class="sd">        default all features in `real` will be used.</span>
+<span class="sd">    bins: str or int, optional</span>
+<span class="sd">        Bins to use for computing the density. This value is passed</span>
+<span class="sd">        to `numpy.histogram_bin_edges` so can be any value accepted by</span>
+<span class="sd">        that function. The default setting of 10 uses 10 bins.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float:</span>
+<span class="sd">        Mean Absolute Error of feature densities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">diffs</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="kullback_leibler"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.kullback_leibler">[docs]</a><span class="k">def</span> <span class="nf">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Divergence: Kullback-Leibler</span>
+
+<span class="sd">    The Kullback-Leibler divergence describes how much the `real` distribution</span>
+<span class="sd">    of the `feature` varies from the `synth` in terms of entropy. This is an</span>
+<span class="sd">    assymmetric measure so does not describe the opposing variation. Since it</span>
+<span class="sd">    measures the variation between probabilities, the data are first</span>
+<span class="sd">    discretised into bins.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    bins : int or str</span>
+<span class="sd">        Number of bins to use when discretising data, if `None` data will be</span>
+<span class="sd">        treated as categorical. If string chosen method will be used to</span>
+<span class="sd">        calculate optimal bin width, &#39;auto&#39; is the default. See</span>
+<span class="sd">        numpy.histogram_bin_edges for further options.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    D : float</span>
+<span class="sd">        The calculated divergence.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.entropy</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.entropy`. Since this function</span>
+<span class="sd">    expects a probability vector, the data is first discretised into evenly-</span>
+<span class="sd">    spaced bins.</span>
+
+<span class="sd">    We can think of the Kullback-Leibler divergence as a measure of surprise</span>
+<span class="sd">    we might expect seeing an example from the real data, relative to the</span>
+<span class="sd">    distribution of the synthetic.</span>
+
+<span class="sd">    The divergence is zero if the distributions are identical, and is bounded</span>
+<span class="sd">    above by one if they are nothing alike. This method is therefore good</span>
+<span class="sd">    for comparing multiple synthetic datasets, or features within a dataset,</span>
+<span class="sd">    to see which is closest to the real. However, as this is not a test,</span>
+<span class="sd">    there is no threshold distance below which we can claim the distributions</span>
+<span class="sd">    are statistically the same.</span>
+
+<span class="sd">    An optimal &#39;bins&#39; value has not been suggested.</span>
+
+<span class="sd">    BUG: returns `inf` if no real data falls in any one of the bins - dividing</span>
+<span class="sd">    by zero error.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">                                 columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">                                  columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    The first feature appears to be more similar than the second across</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; kullback_leibler(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    0.03389133708660097 # random</span>
+<span class="sd">    &gt;&gt;&gt; kullback_leibler(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    0.58739109417064730 # random</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">])]))</span>
+        <span class="n">real_bincounts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                          <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="n">synth_bincounts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                           <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># assign bin edges based on joined data</span>
+        <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span>
+                                                           <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">])),</span>
+                                           <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+        <span class="c1"># count the number of points in each bin seperately</span>
+        <span class="n">real_bincounts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">synth_bincounts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">entropy</span><span class="p">(</span><span class="n">real_bincounts</span><span class="p">,</span> <span class="n">synth_bincounts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="jensen_shannon_divergence"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.jensen_shannon_divergence">[docs]</a><span class="k">def</span> <span class="nf">jensen_shannon_divergence</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Divergence: Jensen-Shannon</span>
+
+<span class="sd">    The Jensen-Shannon divergence describes the difference between the `real`</span>
+<span class="sd">    and `synth` distributions of the `feature` in terms of entropy. It is the</span>
+<span class="sd">    square of Jensen-Shannon distance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    bins : int or str</span>
+<span class="sd">        Number of bins to use when discretising data, if `None` data will be</span>
+<span class="sd">        treated as categorical. If string chosen method will be used to</span>
+<span class="sd">        calculate optimal bin width, &#39;auto&#39; is the default. See</span>
+<span class="sd">        numpy.histogram_bin_edges for further options.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    divergence : double</span>
+<span class="sd">        The computed divergence between the distributions.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    distance.jensen_shannon_distance</span>
+<span class="sd">    scipy.spatial.distance.jensenshannon</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function that just squares the result of</span>
+<span class="sd">    `distance.jensen_shannon_distance`, which in turn wraps</span>
+<span class="sd">    `scipy.spatial.distance.jensenshannon`. Since this function expects</span>
+<span class="sd">    probability vectors the data is first discretised into evenly-spaced bins.</span>
+
+<span class="sd">    We can think of the Jensen-Shannon divergence as the amount of information,</span>
+<span class="sd">    or entropy, encoded in the difference between the `real` and `synth`</span>
+<span class="sd">    distributions of the `feature`.</span>
+
+<span class="sd">    The distance is zero if the distributions are identical, and is bounded</span>
+<span class="sd">    above by one if they are nothing alike. This method is therefore good</span>
+<span class="sd">    for comparing multiple synthetic datasets, or features within a dataset,</span>
+<span class="sd">    to see which is closest to the real. However, as this is not a test,</span>
+<span class="sd">    there is no threshold distance below which we can claim the distributions</span>
+<span class="sd">    are statistically the same.</span>
+
+<span class="sd">    An optimal &#39;bins&#39; value has not been suggested.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">                                 columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">                                  columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    The first feature appears to be more similar than the second across</span>
+<span class="sd">    datasets.</span>
+
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    0.11006632967333475 # random</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    0.43556476029981644 # random</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="mann_whitney"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.mann_whitney">[docs]</a><span class="k">def</span> <span class="nf">mann_whitney</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Hypothesis Test: Mann-Whitney</span>
+
+<span class="sd">    The Mann-Whitney test compares the distributions of data by examining how</span>
+<span class="sd">    well-mixed they are when pooled. This is acheived by ranking the pooled</span>
+<span class="sd">    data. A low p-value suggests the data are not similar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        The Mann-Whitney U statistic, in particular U for `synth`.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        Two-sided p-value assuming an asymptotic normal distribution.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.mannwhitneyu</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.mannwhitneyu`.</span>
+
+<span class="sd">    The null hypothesis for this test is that for randomly selected real and</span>
+<span class="sd">    synthetic values, the probability that the real value is greater than the</span>
+<span class="sd">    synthetic is the same as the probability that the synthetic value is</span>
+<span class="sd">    greater than the real.</span>
+
+<span class="sd">    We reject this hypothesis if the p-value is suitably small. This would in</span>
+<span class="sd">    turn suggest that the synthetic and real data are not similarly</span>
+<span class="sd">    distributed.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                            columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach the</span>
+<span class="sd">    conclusion that the distributions of the first feature are similar but</span>
+<span class="sd">    the distributions of the second feature are not.</span>
+
+<span class="sd">    &gt;&gt;&gt; mann_whitney(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    MannwhitneyuResult(statistic=126910.0, pvalue=0.6758436855431454) # random</span>
+<span class="sd">    &gt;&gt;&gt; mann_whitney(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    MannwhitneyuResult(statistic=134107.0, pvalue=0.04613704446362845) # random</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span>
+                        <span class="n">alternative</span><span class="o">=</span><span class="s1">&#39;two-sided&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="wilcoxon"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.wilcoxon">[docs]</a><span class="k">def</span> <span class="nf">wilcoxon</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Hypothesis Test: Wilcoxon</span>
+
+<span class="sd">    The Wilcoxon test compares the distributions of paired data. It does this</span>
+<span class="sd">    by ranking the differences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        The sum of the ranks of the differences above or below zero, whichever</span>
+<span class="sd">        is greater.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        Two-sided p-value.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.wilcoxon</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.wilcoxon`.</span>
+
+<span class="sd">    The null hypothesis for this test is that the median of the paired</span>
+<span class="sd">    differences is zero. The alternative hypothesis is that it is different</span>
+<span class="sd">    from zero. This would suggest that the synthetic and real data are not</span>
+<span class="sd">    similarly distributed.</span>
+
+<span class="sd">    This test only makes sense when the synthetic and real data are paired.</span>
+<span class="sd">    That is, each synthetic datapoint is matched to a real one. In which case,</span>
+<span class="sd">    it is required that data are ordered to reflect this.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                            columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach the</span>
+<span class="sd">    conclusion that the distributions of the first feature are similar but of</span>
+<span class="sd">    the second feature are not.</span>
+
+<span class="sd">    &gt;&gt;&gt; wilcoxon(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    WilcoxonResult(statistic=58917.0, pvalue=0.25131501183065175) # random</span>
+<span class="sd">    &gt;&gt;&gt; wilcoxon(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    WilcoxonResult(statistic=54474.0, pvalue=0.011678503879013464) # random</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">scipy_wc</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="kruskal_wallis"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate_distance/index.html#synthgauge.metrics.kruskal_wallis">[docs]</a><span class="k">def</span> <span class="nf">kruskal_wallis</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Hypothesis Test: Kruskal-Wallis</span>
+
+<span class="sd">    The Kruskal-Wallis test compares the distributions of data by examining how</span>
+<span class="sd">    well-mixed they are when pooled. This is acheived by ranking the pooled</span>
+<span class="sd">    data. A low p-value suggests the data are not similar.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        String indicating the feature of the datasets to compare. This must be</span>
+<span class="sd">        a continuous variable.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        The Kruskal-Wallis H statistic.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        The p-value for the test.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    scipy.stats.kruskal</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This is a wrapper function for `scipy.stats.kruskal`.</span>
+
+<span class="sd">    The null hypothesis for this test is that the medians of the distributions</span>
+<span class="sd">    are equal. The alternative hypothesis is then that they are different. This</span>
+<span class="sd">    would suggest that the synthetic and real data are not similarly</span>
+<span class="sd">    distributed.</span>
+
+<span class="sd">    We notice however that failure to reject the null hypothesis only suggests</span>
+<span class="sd">    that the medians could be equal and says nothing else about how the data</span>
+<span class="sd">    are distributed.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; real_data = pd.DataFrame(get_real(500),</span>
+<span class="sd">    ...                          columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; synth_data = pd.DataFrame(get_synth(500),</span>
+<span class="sd">    ...                            columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+
+<span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach the</span>
+<span class="sd">    conclusion that the distributions of the first feature are similar but the</span>
+<span class="sd">    distributions of the second feature are not.</span>
+
+<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real_data, synth_data, &#39;feat1&#39;, bins = 20)</span>
+<span class="sd">    KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)</span>
+<span class="sd">    # random</span>
+<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real_data, synth_data, &#39;feat2&#39;, bins = 20)</span>
+<span class="sd">    KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)</span>
+<span class="sd">    # random</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">kruskal</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

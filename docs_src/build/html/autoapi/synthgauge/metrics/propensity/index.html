@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>synthgauge.metrics.propensity &mdash; SynthGauge 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="synthgauge.metrics.univariate_distance" href="../univariate_distance/index.html" />
+    <link rel="prev" title="synthgauge.metrics.privacy" href="../privacy/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> SynthGauge
+            <img src="../../../../_static/favicon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">SynthGauge</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">API Reference</a> &raquo;</li>
+          <li><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a> &raquo;</li>
+          <li><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics</span></code></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/synthgauge/metrics/propensity/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-synthgauge.metrics.propensity">
+<span id="synthgauge-metrics-propensity"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.propensity" title="synthgauge.metrics.propensity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.propensity" title="Permalink to this headline"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_MSE" title="synthgauge.metrics.propensity.propensity_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_MSE</span></code></a>(real, synth, method, **kwargs)</p></td>
+<td><p>Propensity mean-squared error</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.expected_p_MSE" title="synthgauge.metrics.propensity.expected_p_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expected_p_MSE</span></code></a>(real, synth)</p></td>
+<td><p>Expected propensity mean-squared error</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.stdev_p_MSE" title="synthgauge.metrics.propensity.stdev_p_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stdev_p_MSE</span></code></a>(real, synth)</p></td>
+<td><p>Standard deviation propensity mean-squared error</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.perm_expected_sd_p_MSE" title="synthgauge.metrics.propensity.perm_expected_sd_p_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perm_expected_sd_p_MSE</span></code></a>(real, synth, num_perms=20, **kwargs)</p></td>
+<td><p>Permutation Expected and Standard Deviation Propensity Mean Squared Error</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.p_MSE_ratio" title="synthgauge.metrics.propensity.p_MSE_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">p_MSE_ratio</span></code></a>(real, synth, method='CART', feats=None, **kwargs)</p></td>
+<td><p>Propensity mean-squared error ratio</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.standardised_p_MSE" title="synthgauge.metrics.propensity.standardised_p_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">standardised_p_MSE</span></code></a>(real, synth, method='CART', feats=None, **kwargs)</p></td>
+<td><p>Standardised propensity mean-squared error</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_metrics" title="synthgauge.metrics.propensity.propensity_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_metrics</span></code></a>(real, synth, method='CART', feats=None, num_perms=20, **kwargs)</p></td>
+<td><p>Propensity metrics</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.propensity_MSE">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">propensity_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#propensity_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.propensity_MSE" title="Permalink to this definition"></a></dt>
+<dd><p>Propensity mean-squared error</p>
+<p>We think of the propensity of an example as the estimated probability it is
+classified as being synthetic. For a good synthetic dataset we would expect
+this to be the same as the proportion of synthetic examples used in
+training. The mean squared error from this proportion is hence a suitable
+utility metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>[</em><em>'CART'</em><em>, </em><em>'LogisticRegression'</em><em>]</em>) – Classification method to use.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments passed to classification function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>MSE_p</strong> – Propensity score mean squared error.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn.linear_model.LogisticRegression</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn.tree.DecisionTreeClassifier</span></code></p>
+</div>
+<p class="rubric">Notes</p>
+<p>Propensity scores represent probabilities of group membership. By modelling
+whether an example is synthetic or not, we can use propensity scores as a
+measure of utility.</p>
+<p>This returns zero if the distributions are identical, and is bounded
+above by 1-c if they are nothing alike, where c is the proportion of
+synthetic data. This method is therefore good for comparing multiple
+synthetic datasets. However, as this is not a test, there is no threshold
+distance below which we can claim the distributions are statistically the
+same.</p>
+<p>This function assumes that some preprocessing has been carried out so that
+the data is ready to be passed to the classification function. Encoding
+of categorical data is performed, but, for example, scaling is not. Without
+this erroneous results may be returned. The logistic regression can fail to
+converge if many variables are considered. Anecdotally, this doesn’t seem
+to drastically impact the propensity scores, although this should be
+investigated formally. <cite>**kwargs</cite> are passed to the classification model so
+it can be tuned.</p>
+<p>Using a CART model as a classifier is recommended in the literature however
+we also support the use of logistic regression.</p>
+<p><a class="reference external" href="https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358">https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.expected_p_MSE">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">expected_p_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#expected_p_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.expected_p_MSE" title="Permalink to this definition"></a></dt>
+<dd><p>Expected propensity mean-squared error</p>
+<p>This is the expected propensity mean-squared error under the null case
+that the <cite>real</cite> and <cite>synth</cite> datasets are distributionally similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>MSE_p</strong> – Expected propensity score mean square-squared error.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This expectation is used to standardise <cite>propensity_MSE</cite> to an
+interpretable scale.</p>
+<p>It has been shown that the null case is distributed as a multiple of a
+<span class="math notranslate nohighlight">\(\chi^2\)</span> distribution with <span class="math notranslate nohighlight">\(k-1\)</span> degrees of freedom, which has
+expectation:</p>
+<div class="math notranslate nohighlight">
+\[(k-1)(1-c)^2c/N\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is the number of predictors in the model, <span class="math notranslate nohighlight">\(c\)</span> is the
+proportion of synthetic data, and <span class="math notranslate nohighlight">\(N\)</span> is the total number of examples
+Further explanation and derivation of this formulation can be found here:
+<a class="reference external" href="https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358">https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358</a> Appendix A1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.stdev_p_MSE">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">stdev_p_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#stdev_p_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.stdev_p_MSE" title="Permalink to this definition"></a></dt>
+<dd><p>Standard deviation propensity mean-squared error</p>
+<p>This is the standard deviation of the propensity mean-squared error under
+the null case that the <cite>real</cite> and <cite>synth</cite> datasets are distributionally
+similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>st_dev</strong> – Expected propensity score mean square-squared error standard deviation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This standard deviation is used to standardise <cite>propensity_MSE</cite> to an
+interpretable scale.</p>
+<p>It has been shown that the null case is distributed as a multiple of a
+<span class="math notranslate nohighlight">\(\chi^2\)</span> distribution with <span class="math notranslate nohighlight">\(k-1\)</span> degrees of freedom, which has
+standard deviation:</p>
+<div class="math notranslate nohighlight">
+\[\sqrt{2(k-1)}(1-c)^2c/N\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is the number of predictors in the model, <span class="math notranslate nohighlight">\(c\)</span> is the
+proportion of synthetic data, and <span class="math notranslate nohighlight">\(N\)</span> is the total number of examples
+Further explanation and derivation of this formulation can be found here:
+<a class="reference external" href="https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358">https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358</a> Appendix A1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.perm_expected_sd_p_MSE">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">perm_expected_sd_p_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#perm_expected_sd_p_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.perm_expected_sd_p_MSE" title="Permalink to this definition"></a></dt>
+<dd><p>Permutation Expected and Standard Deviation Propensity Mean Squared Error</p>
+<p>Repeat pMSE calculation several times but while randomly permutating the
+boolean indicator column. This should approximate propensity mean squared
+error results for ‘properly’ synthesised datasets when it is not possible
+to calculate these directly, in particular when CART is used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>num_perms</strong> (<em>int</em>) – The number of times to repeat the process.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments passed to DecisionTreeClassifier function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mean</strong> (<em>float</em>) – Mean of the propensity_MSE scores over all the repititions.</p></li>
+<li><p><strong>sd</strong> (<em>float</em>) – Standard deviation of the propensity_MSE scores over all the
+repititions.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function is only intended to be used within <cite>propensity_metrics()</cite>.</p>
+<p>This function is stochastic so will return a differnet result every time.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.p_MSE_ratio">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">p_MSE_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CART'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#p_MSE_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.p_MSE_ratio" title="Permalink to this definition"></a></dt>
+<dd><p>Propensity mean-squared error ratio</p>
+<p>This is the ratio of observed propensity mean-squared error, to that
+expected under the null case that the synthetic and real datasets are
+similarly distributed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>[</em><em>'CART'</em><em>, </em><em>'LogisticRegression'</em><em>]</em>) – Classification method to use.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em>, </em><em>optional.</em>) – List of features in the dataset that will be used in propensity
+calculations. By default all features will be used.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments passed to classifier function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ratio</strong> – Ratio of the propensity score mean square-squared error.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This standardisation transforms the scale for the MSE into one that makes
+more sense for synthetic data. Before, the MSE score gave better utility
+as the value got closer to zero, which is only attainable when the datasets
+are identical. However, when generating synthetic data we do not want to
+produce identical entries, but to acheive distributional similarity between
+the distribution of the observed data and the model used to generate the
+synthetic.</p>
+<p>This ratio tends towards one when the datasets are similar and increases
+otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.standardised_p_MSE">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">standardised_p_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CART'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#standardised_p_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.standardised_p_MSE" title="Permalink to this definition"></a></dt>
+<dd><p>Standardised propensity mean-squared error</p>
+<p>This is the difference between the observed propensity mean-squared error
+and that expected under the null case that the synthetic and real datasets
+are similarly distributed, scaled by the standard deviation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>[</em><em>'CART'</em><em>, </em><em>'LogisticRegression'</em><em>]</em>) – Classification method to use.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em>, </em><em>optional.</em>) – List of features in the dataset that will be used in propensity
+calculations. By default all features will be used.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments passed to LogisticRegression function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ratio</strong> – Standardised propensity score mean square-squared error.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This standardisation transforms the scale for the MSE into one that makes
+more sense for synthetic data. Before, the MSE score gave better utility
+as the value got closer to zero, which is only attainable when the datasets
+are identical. However, when generating synthetic data we do not want to
+produce identical entries, but to acheive distributional similarity between
+the distribution of the observed data and the model used to generate the
+synthetic.</p>
+<p>This metric tends towards zero when the datasets are similar and increases
+otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.propensity_metrics">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">propensity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CART'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#propensity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.propensity_metrics" title="Permalink to this definition"></a></dt>
+<dd><p>Propensity metrics</p>
+<p>This function calculates three flavours of propensity mean-squared error,
+all of which quantify utility by measuring how well a classifier can be
+trained to distinguish <cite>real</cite> and <cite>synth</cite>. It returns the raw, observed
+value together with this value standardised by the expected value if the
+dataset was well synthesised, and also as a ratio of the expected value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>[</em><em>'CART'</em><em>, </em><em>'LogisticRegression'</em><em>]</em>) – Classification method to use.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em>, </em><em>optional.</em>) – List of features in the dataset that will be used in propensity
+calculations. By default all features will be used.</p></li>
+<li><p><strong>num_perms</strong> (<em>int</em>) – If CART method is used, this is the number of times to repeat process
+when calculating the expected mean-squared error.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Keyword arguments passed to LogisticRegression function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>observed_p_MSE</strong> (<em>float</em>) – Observed propensity score mean squared error.</p></li>
+<li><p><strong>standardised_p_MSE</strong> (<em>float</em>) – Standardised propensity score mean square-squared error.</p></li>
+<li><p><strong>ratio_p_MSE</strong> (<em>float</em>) – Ratio of the propensity score mean square-squared error to the
+expected value.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The standardisation and ratio operations transform the scales for the MSE
+into ones that make more sense for synthetic data. For the observed
+propensity the MSE score gives better utility as the value gets closer to
+zero, which is only attainable when the datasets are identical. However,
+when generating synthetic data we do not want to produce identical entries,
+but to acheive distributional similarity between the distribution of the
+observed data and the model used to generate the synthetic.</p>
+<p>The standardised score tends towards zero when the datasets are similar
+and increases otherwise.</p>
+<p>The ratio tends towards one when the datasets are similar and increases
+otherwise.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../privacy/index.html" class="btn btn-neutral float-left" title="synthgauge.metrics.privacy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../univariate_distance/index.html" class="btn btn-neutral float-right" title="synthgauge.metrics.univariate_distance" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

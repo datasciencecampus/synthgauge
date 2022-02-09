@@ -1,0 +1,8 @@
+# named files
+.DS_Store
+
+# named directories
+__pycache__
+.ipynb_checkpoints
+.cache
+*.egg-info

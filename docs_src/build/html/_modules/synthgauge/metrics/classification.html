@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>synthgauge.metrics.classification &mdash; SynthGauge 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> SynthGauge
+            <img src="../../../_static/favicon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SynthGauge</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>synthgauge.metrics.classification</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for synthgauge.metrics.classification</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="k">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="k">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">,</span> <span class="n">f1_score</span>
+
+
+<div class="viewcode-block" id="classification_comparison"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.classification.classification_comparison">[docs]</a><span class="k">def</span> <span class="nf">classification_comparison</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">sklearn_classifier</span><span class="p">,</span>
+                              <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">test_prop</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Classification utility metric</span>
+
+<span class="sd">    This metric fits two classification models to `real` and `synth`</span>
+<span class="sd">    respectively, and then tests them both against withheld `real` data. We</span>
+<span class="sd">    obtain utility scores by subtracting the precision, recall and f1 scores</span>
+<span class="sd">    of the predictions obtained by the synth model from those obtained by the</span>
+<span class="sd">    real model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas dataframe</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    key : list of strings</span>
+<span class="sd">        list of column names to use as the input in the classification.</span>
+<span class="sd">    target : str</span>
+<span class="sd">        column to use as target in the classification.</span>
+<span class="sd">    sklearn_classifier : scikit-learn estimator</span>
+<span class="sd">        classifier with fit and predict methods.</span>
+<span class="sd">    random_state : int, RandomState instance or None, default=42</span>
+<span class="sd">        Controls the shuffling steps during the train-test split and the</span>
+<span class="sd">        classification algorithm itself. Pass an int for reproducible output</span>
+<span class="sd">        across multiple function calls.</span>
+<span class="sd">    test_prop : float or int, default=0.2</span>
+<span class="sd">        If float, should be between 0.0 and 1.0 and represent the proportion</span>
+<span class="sd">        of the dataset to include in the test split. If int, represents the</span>
+<span class="sd">        absolute number of test samples.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ClassificationResult : namedtuple</span>
+<span class="sd">        precision_difference : float</span>
+<span class="sd">            precision of model trained on real data subtracted by precision of</span>
+<span class="sd">            model trained on synthetic data.</span>
+<span class="sd">        recall_difference : float</span>
+<span class="sd">            recall of model trained on real data subtracted by recall of</span>
+<span class="sd">            model trained on synthetic data.</span>
+<span class="sd">        f1_difference : float</span>
+<span class="sd">            f1 score of model trained on real data subtracted by f1 score of</span>
+<span class="sd">            model trained on synthetic data.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Some preprocessing is carried out before the models are trained. Numeric</span>
+<span class="sd">    features are scaled and categorical features are one-hot-encoded.</span>
+
+<span class="sd">    A score of zero tells us the synthetic data is just as good as the real at</span>
+<span class="sd">    training classifier models. Increases in these scores indicate poorer</span>
+<span class="sd">    utility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">real_X</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">real_y</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+
+    <span class="n">synth_X</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">synth_y</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+
+    <span class="c1"># split data</span>
+    <span class="n">real_X_train</span><span class="p">,</span> <span class="n">real_X_test</span><span class="p">,</span> <span class="n">real_y_train</span><span class="p">,</span> <span class="n">real_y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">real_X</span><span class="p">,</span> <span class="n">real_y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">test_prop</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+    <span class="n">synth_X_train</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">synth_y_train</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">synth_X</span><span class="p">,</span> <span class="n">synth_y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">test_prop</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+
+    <span class="c1"># preprocessing</span>
+    <span class="c1"># scale numeric</span>
+    <span class="n">numeric_transformer</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">())])</span>
+    <span class="c1"># OHE categorical</span>
+    <span class="n">categor_transformer</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;encoder&#39;</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">())])</span>
+
+    <span class="n">num_feats</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">cat_feats</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+
+    <span class="n">preprocessor</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+        <span class="n">transformers</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span> <span class="n">numeric_transformer</span><span class="p">,</span> <span class="n">num_feats</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;categor&#39;</span><span class="p">,</span> <span class="n">categor_transformer</span><span class="p">,</span> <span class="n">cat_feats</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="c1"># train real model</span>
+    <span class="n">real_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;preprocessor&#39;</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">sklearn_classifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="p">])</span>
+
+    <span class="n">real_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">real_X_train</span><span class="p">,</span> <span class="n">real_y_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="c1"># test real on real</span>
+    <span class="n">y_real_predicts_real</span> <span class="o">=</span> <span class="n">real_pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">real_X_test</span><span class="p">)</span>
+    <span class="c1"># train synth model</span>
+    <span class="n">synth_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;preprocessor&#39;</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">sklearn_classifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+    <span class="p">])</span>
+
+    <span class="n">synth_pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">synth_X_train</span><span class="p">,</span> <span class="n">synth_y_train</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+    <span class="c1"># test synth on real</span>
+    <span class="n">y_synth_predicts_real</span> <span class="o">=</span> <span class="n">synth_pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">real_X_test</span><span class="p">)</span>
+
+    <span class="c1"># compare results</span>
+    <span class="n">real_precision</span> <span class="o">=</span> <span class="n">precision_score</span><span class="p">(</span>
+        <span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_real_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+    <span class="n">real_recall</span> <span class="o">=</span> <span class="n">recall_score</span><span class="p">(</span>
+        <span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_real_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+    <span class="n">real_f1</span> <span class="o">=</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_real_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+
+    <span class="n">synth_precision</span> <span class="o">=</span> <span class="n">precision_score</span><span class="p">(</span>
+        <span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_synth_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+    <span class="n">synth_recall</span> <span class="o">=</span> <span class="n">recall_score</span><span class="p">(</span>
+        <span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_synth_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+    <span class="n">synth_f1</span> <span class="o">=</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">real_y_test</span><span class="p">,</span> <span class="n">y_synth_predicts_real</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
+
+    <span class="n">diff_precision</span> <span class="o">=</span> <span class="n">real_precision</span> <span class="o">-</span> <span class="n">synth_precision</span>
+    <span class="n">diff_recall</span> <span class="o">=</span> <span class="n">real_recall</span> <span class="o">-</span> <span class="n">synth_recall</span>
+    <span class="n">diff_f1</span> <span class="o">=</span> <span class="n">real_f1</span> <span class="o">-</span> <span class="n">synth_f1</span>
+
+    <span class="n">ClassificationResult</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;ClassificationResult&#39;</span><span class="p">,</span>
+                                      <span class="p">(</span><span class="s1">&#39;precision_difference&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;recall_difference&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;f1_difference&#39;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ClassificationResult</span><span class="p">(</span><span class="n">diff_precision</span><span class="p">,</span> <span class="n">diff_recall</span><span class="p">,</span> <span class="n">diff_f1</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
