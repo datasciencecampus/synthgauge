@@ -81,7 +81,7 @@ The following shows an example workflow for evaluating a single real/synthetic d
 
 ## Further Help
 The API is desribed in detail in the reference documentation available [here](https://datasciencecampus.github.io/synthgauge/).
-Please direct any questions to datascampus@ons.gov.uk.
+Please direct any questions to datacampus@ons.gov.uk.
 
 ## Contributing
 If you encounter any bugs as part of your usage of `synthgauge` please file an issue detailing as much information as possible and include a minimal reproducible example. If you wish to contribute code to the project please refer to [CONTRIBUTING](CONTRIBUTING.md).
