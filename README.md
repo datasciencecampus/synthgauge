@@ -33,7 +33,7 @@ The ``synthgauge`` package is not currently available on PyPI. However it can be
 
 ```bash
     pip3 install -U pip setuptools wheel
-    pip3 install git+https://github.com/datasciencecampus/synthgauge@main
+    pip3 install git+https://github.com/datasciencecampus/synthgauge@v1.0.0
 ```
 
 Import the package and check the version:
@@ -81,7 +81,7 @@ The following shows an example workflow for evaluating a single real/synthetic d
 
 ## Further Help
 The API is desribed in detail in the reference documentation available [here](https://datasciencecampus.github.io/synthgauge/).
-Please direct any questions to datascampus@ons.govuk.
+Please direct any questions to datascampus@ons.gov.uk.
 
 ## Contributing
 If you encounter any bugs as part of your usage of `synthgauge` please file an issue detailing as much information as possible and include a minimal reproducible example. If you wish to contribute code to the project please refer to [CONTRIBUTING](CONTRIBUTING.md).
