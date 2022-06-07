@@ -375,7 +375,7 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
 
 
 def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
-                  figsize=None, **kwargs):
+                  figsize=None, cmap="rocket", **kwargs):
     """Plot crosstab heatmap for two features.
 
     The two-feature crosstab calculation is performed and plotted as a heatmap.
@@ -401,6 +401,10 @@ def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
     figsize: tuple of float, optional
         Size of figure in inches (W,H). Defaults to
         ``rcParams["figure.figsize"](default: [6.4, 4.8])``.
+    cmap: str, optional
+        Palette name for heatmap and colour bar. See the documentation for
+        ``seaborn.color_palette`` on available palette formats. Defaults to
+        ``"rocket"``.
     **kwargs: dict, optional
         Any other keyword arguments to be passed to ``seaborn.heatmap``. For
         example ``annot=True`` will turn on cell annotations. See documentation
@@ -438,17 +442,17 @@ def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
     # Use same scale for real and synth
     vmin = min(freq_real.values.min(), freq_synth.values.min())
     vmax = max(freq_real.values.max(), freq_synth.values.max())
-    mpbl = mpl.cm.ScalarMappable(mpl.colors.Normalize(vmin, vmax),
-                                 cmap=sns.color_palette("rocket",
-                                 as_cmap=True))
 
-    sns.heatmap(freq_real, ax=axes[0], vmin=vmin, vmax=vmax, cbar=False,
-                **kwargs)
-    axes[0].set_title('REAL')
+    cmap = sns.color_palette(cmap, as_cmap=True)
+    mpbl = mpl.cm.ScalarMappable(mpl.colors.Normalize(vmin, vmax), cmap=cmap)
 
-    sns.heatmap(freq_synth, ax=axes[1], vmin=vmin, vmax=vmax, cbar=False,
-                **kwargs)
-    axes[1].set_title('SYNTH')
+    for freq, ax, title in zip(
+        (freq_real, freq_synth), axes, ("REAL", "SYNTH")
+    ):
+        sns.heatmap(
+            freq, vmin=vmin, vmax=vmax, cmap=cmap, cbar=False, ax=ax, **kwargs
+        )
+        ax.set_title(title)
 
     fig.colorbar(mpbl, ax=axes, shrink=0.8)
 
