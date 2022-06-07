@@ -2,7 +2,7 @@ from itertools import product
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from pandas import crosstab, cut, DataFrame, Index
+from pandas import concat, crosstab, cut, DataFrame, Index
 from pandas.core.dtypes.common import (is_categorical_dtype, is_numeric_dtype,
                                        is_object_dtype)
 import seaborn as sns
@@ -322,7 +322,7 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
                                  f"{method}")
 
             corr_results.append(data.corr(method=method).dropna(
-                0, 'all').dropna(1, 'all'))
+                axis=0, how='all').dropna(axis=1, how='all'))
 
         elif method.lower() == 'cramers_v':
             data = d[feats].select_dtypes(include=['object', 'category'])
@@ -331,7 +331,7 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
                                  f"method: {method}")
 
             corr_results.append(method_cramers_v(data).dropna(
-                0, 'all').dropna(1, 'all'))
+                axis=0, how='all').dropna(axis=1, how='all'))
 
     # Get min and max to set consistant colourbar
     corr_values = np.array(corr_results)
@@ -417,8 +417,8 @@ def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
     # Collect x and y values
     real_x, real_y = real[x], real[y]
     synth_x, synth_y = synth[x], synth[y]
-    all_x = real_x.append(synth_x)
-    all_y = real_y.append(synth_y)
+    all_x = concat((real_x, synth_x))
+    all_y = concat((real_y, synth_y))
 
     # Discretise numeric features
     try:
