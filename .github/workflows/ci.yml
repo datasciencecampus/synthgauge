@@ -28,8 +28,3 @@ jobs:
       - name: Run tests
         run: |
           python -m pytest tests
-
-      - name: Check install
-        run: |
-          cd ..
-          python -c "import synthgauge"
