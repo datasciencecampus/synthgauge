@@ -53,8 +53,10 @@ def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
     """
     if method == 'kmeans':
         combined_numeric = combined.select_dtypes(include='number')
-        clusters = KMeans(n_clusters=k, random_state=random_state).fit(
-            combined_numeric).labels_
+        clusters = KMeans(
+            n_clusters=k, algorithm="elkan", random_state=random_state).fit(
+            combined_numeric
+        ).labels_
     if method == 'kprototype':
         cat_cols = combined.select_dtypes(
             include=['object', 'category']).columns
