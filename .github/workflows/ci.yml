@@ -32,5 +32,5 @@ jobs:
       - name: Check code format
         run: |
           python -m pip install black
-          python -m black -l 80 --check src
-          python -m black -l 80 --check tests
+          python -m black -l 79 --check src
+          python -m black -l 79 --check tests
