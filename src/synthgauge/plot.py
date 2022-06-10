@@ -1,3 +1,5 @@
+""" Functions for visually evaluating synthetic data. """
+
 from itertools import product
 
 import matplotlib as mpl
@@ -143,6 +145,7 @@ def plot_joint(
     # If a feature is categorical it must be used 'as_ordered' for plotting a
     # histogram
     def order(ft):
+        """Orders the given feature if it is categorical."""
         return ft.cat.as_ordered() if hasattr(ft, "cat") else ft
 
     sns.histplot(

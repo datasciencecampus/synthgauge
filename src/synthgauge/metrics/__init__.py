@@ -1,3 +1,5 @@
+""" A submodule for all utility and privacy metrics. """
+
 from .classification import classification_comparison
 from .cluster import multi_clustered_MSD
 from .correlation import correlation_MSD, correlation_ratio_MSE, cramers_v_MSE

@@ -1,3 +1,5 @@
+""" Utility functions for handling real and synthetic data. """
+
 import pickle
 import warnings
 

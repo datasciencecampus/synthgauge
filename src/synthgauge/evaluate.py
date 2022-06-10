@@ -1,3 +1,5 @@
+""" The ``Evaluator`` class. """
+
 import pickle
 import warnings
 from copy import deepcopy
@@ -16,7 +18,24 @@ from .utils import df_combine, launder
 
 
 class Evaluator(object):
-    """ """
+    """
+    The central class in ``synthgauge`` used to hold and evaluate data via
+    metrics and visualisation.
+
+    Parameters
+    ----------
+    real: pandas.DataFrame
+        Dataframe containing the real data.
+    synth: pandas.DataFrame
+        Dataframe containing the synthetic data.
+    handle_nans: str
+        Whether to drop missing values. If yes, use "drop" (default).
+
+    Returns
+    -------
+    synthgauge.Evaluator
+        An ``Evaluator`` object ready for metric and visual evaluation.
+    """
 
     def __init__(self, real, synth, handle_nans="drop"):
         """ """

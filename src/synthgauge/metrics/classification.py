@@ -1,3 +1,5 @@
+""" Generic ``scikit-learn``-style classification utility metrics. """
+
 from collections import namedtuple
 
 from sklearn.compose import ColumnTransformer

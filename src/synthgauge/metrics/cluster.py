@@ -1,6 +1,5 @@
-"""
-clustering metric
-"""
+""" Utility metrics derived from centroid-based clustering. """
+
 import numpy as np
 from kmodes.kprototypes import KPrototypes
 from sklearn.cluster import KMeans
@@ -9,7 +8,7 @@ from ..utils import df_combine
 
 
 def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
-    """clustered mean-squared difference
+    """Clustered mean-squared difference
 
     This metric performs a cluster analysis on the data and then considers the
     proportion of synthetic data in each cluster. It measures the difference
