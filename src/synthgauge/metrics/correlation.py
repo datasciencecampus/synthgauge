@@ -91,9 +91,9 @@ def cramers_v(var1, var2):
     # Chi-squared test statistic, sample size, and minimum of rows and columns
     X2 = chi2_contingency(confusion_matrix, correction=False)[0]
     n = np.sum(confusion_matrix)
-    minDim = min(confusion_matrix.shape)-1
+    minDim = min(confusion_matrix.shape) - 1
     # Calculate Cramer's V
-    return(np.sqrt((X2/n) / minDim))
+    return np.sqrt((X2 / n) / minDim)
 
 
 def cramers_v_MSE(real, synth, feats=None):
@@ -128,15 +128,18 @@ def cramers_v_MSE(real, synth, feats=None):
     if isinstance(feats, str):
         feats = [feats]
     if feats is None:
-        feats = real.select_dtypes(include=['object', 'category']).columns
+        feats = real.select_dtypes(include=["object", "category"]).columns
     else:
-        non_cat = real[feats].select_dtypes(
-            exclude=['object', 'category']).columns
+        non_cat = (
+            real[feats].select_dtypes(exclude=["object", "category"]).columns
+        )
         if len(non_cat) > 0:
-            warnings.warn('Selected features include numeric types:'
-                          f'{non_cat} If these should not be included, rerun '
-                          'specifying different features. Otherwise, they will'
-                          ' be assumed to be encoded categories.')
+            warnings.warn(
+                "Selected features include numeric types:"
+                f"{non_cat} If these should not be included, rerun "
+                "specifying different features. Otherwise, they will"
+                " be assumed to be encoded categories."
+            )
     # find all possible feature combinations
     feat_combinations = list(combinations(feats, 2))
     real_cramers_v = []
@@ -182,13 +185,14 @@ def correlation_ratio(categorical, continuous):
         category_means[i] = np.mean(cts_in_cat)
         category_counts[i] = len(cts_in_cat)
     total_mean = np.mean(continuous)
-    numerator = np.sum(category_counts*((category_means-total_mean)**2))
-    denominator = np.sum((continuous-total_mean)**2)
-    return np.sqrt(numerator/denominator)
+    numerator = np.sum(category_counts * ((category_means - total_mean) ** 2))
+    denominator = np.sum((continuous - total_mean) ** 2)
+    return np.sqrt(numerator / denominator)
 
 
-def correlation_ratio_MSE(real, synth, categorical_feats='auto',
-                          numerical_feats=None):
+def correlation_ratio_MSE(
+    real, synth, categorical_feats="auto", numerical_feats=None
+):
     """Correlation Ratio Mean Squared Error
 
     This metric calculates the difference in association between categorical
@@ -219,21 +223,25 @@ def correlation_ratio_MSE(real, synth, categorical_feats='auto',
     `object` are used. If no numerical features are selected, all columns that
     are not listed as categorical features are used.
     """
-    if categorical_feats == 'auto':
+    if categorical_feats == "auto":
         categorical_feats = real.select_dtypes(
-            include=['object', 'category']).columns
+            include=["object", "category"]
+        ).columns
     if numerical_feats is None:
-        numerical_feats = list(set(real.columns)-set(categorical_feats))
+        numerical_feats = list(set(real.columns) - set(categorical_feats))
     real_corr_ratio = []
     synth_corr_ratio = []
-    for cat_feat, num_feat in list(product(categorical_feats,
-                                           numerical_feats)):
-        real_corr_ratio.append(correlation_ratio(
-            real[cat_feat], real[num_feat]))
-        synth_corr_ratio.append(correlation_ratio(
-            synth[cat_feat], synth[num_feat]))
+    for cat_feat, num_feat in list(
+        product(categorical_feats, numerical_feats)
+    ):
+        real_corr_ratio.append(
+            correlation_ratio(real[cat_feat], real[num_feat])
+        )
+        synth_corr_ratio.append(
+            correlation_ratio(synth[cat_feat], synth[num_feat])
+        )
     return mean_squared_error(real_corr_ratio, synth_corr_ratio)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

@@ -51,37 +51,51 @@ def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
     Additionally, it is important to note that this metric says nothing about
     how the data are distributed within clusters.
     """
-    if method == 'kmeans':
-        combined_numeric = combined.select_dtypes(include='number')
-        clusters = KMeans(
-            n_clusters=k, algorithm="elkan", random_state=random_state).fit(
-            combined_numeric
-        ).labels_
-    if method == 'kprototype':
+    if method == "kmeans":
+        combined_numeric = combined.select_dtypes(include="number")
+        clusters = (
+            KMeans(n_clusters=k, algorithm="elkan", random_state=random_state)
+            .fit(combined_numeric)
+            .labels_
+        )
+    if method == "kprototype":
         cat_cols = combined.select_dtypes(
-            include=['object', 'category']).columns
-        cat_cols_i = [n for n, col in enumerate(
-            combined.columns) if col in cat_cols]
-        clusters = KPrototypes(n_clusters=k, random_state=random_state).fit(
-            combined, categorical=cat_cols_i).labels_
+            include=["object", "category"]
+        ).columns
+        cat_cols_i = [
+            n for n, col in enumerate(combined.columns) if col in cat_cols
+        ]
+        clusters = (
+            KPrototypes(n_clusters=k, random_state=random_state)
+            .fit(combined, categorical=cat_cols_i)
+            .labels_
+        )
     cluster_proportion = []
     for ki in range(k):
-        cluster_proportion.append(sum(synthetic_indicator[clusters == ki])
-                                  / sum(clusters == ki))
+        cluster_proportion.append(
+            sum(synthetic_indicator[clusters == ki]) / sum(clusters == ki)
+        )
     cluster_proportion = np.array(cluster_proportion)
 
     # calculate error from ideal proportion
-    ideal_prop = sum(synthetic_indicator)/len(combined)
+    ideal_prop = sum(synthetic_indicator) / len(combined)
 
     prop_square_error = np.square(cluster_proportion - ideal_prop)
 
-    MSE_p = sum(prop_square_error)/len(prop_square_error)
+    MSE_p = sum(prop_square_error) / len(prop_square_error)
     # print(MSE_p)
     return MSE_p
 
 
-def multi_clustered_MSD(real, synth, feats=None, method='kmeans', k_min=10,
-                        k_max=40, random_state=None):
+def multi_clustered_MSD(
+    real,
+    synth,
+    feats=None,
+    method="kmeans",
+    k_min=10,
+    k_max=40,
+    random_state=None,
+):
     """multiple clustered mean-squared difference
 
     This metric performs the `clustered_MSD` above multiple times.
@@ -127,20 +141,24 @@ def multi_clustered_MSD(real, synth, feats=None, method='kmeans', k_min=10,
 
     """
     # combine data
-    combined = df_combine(real, synth, feats=feats,
-                          source_val_real=0, source_val_synth=1)
+    combined = df_combine(
+        real, synth, feats=feats, source_val_real=0, source_val_synth=1
+    )
     # remove source column
-    synth_bool = combined.pop('source')
+    synth_bool = combined.pop("source")
 
     cluster_MSDs = []
 
     for k in range(k_min, k_max):
         # print(k)
-        cluster_MSDs.append(clustered_MSD(
-            combined, synth_bool, method, k, random_state=random_state))
+        cluster_MSDs.append(
+            clustered_MSD(
+                combined, synth_bool, method, k, random_state=random_state
+            )
+        )
 
     return min(cluster_MSDs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

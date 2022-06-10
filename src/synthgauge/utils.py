@@ -5,18 +5,22 @@ import warnings
 
 
 def load_pickle(src):
-    """Load pickle file into object.
+    """Load pickle file into object."""
 
-    """
-
-    with open(src, 'rb') as pf:
+    with open(src, "rb") as pf:
         data = pickle.load(pf)
     return data
 
 
-def df_combine(real, synth, feats=None, source_col_name='source',
-               source_val_real='real', source_val_synth='synth'):
-    """ Combine separate dataframes of real and synthetic data.
+def df_combine(
+    real,
+    synth,
+    feats=None,
+    source_col_name="source",
+    source_val_real="real",
+    source_val_synth="synth",
+):
+    """Combine separate dataframes of real and synthetic data.
 
     The dataframes are concatenated along axis=0 and a source column is
     added to distinguish the real data from the sythetic data.
@@ -64,9 +68,15 @@ def df_combine(real, synth, feats=None, source_col_name='source',
     return data
 
 
-def df_separate(data, source_col_name, feats=None, source_val_real='real',
-                source_val_synth='synth', drop_source_col=True):
-    """ Separate a dataframe into real and synthetic data.
+def df_separate(
+    data,
+    source_col_name,
+    feats=None,
+    source_val_real="real",
+    source_val_synth="synth",
+    drop_source_col=True,
+):
+    """Separate a dataframe into real and synthetic data.
 
     The dataframe is split using a source column and real and synthetic
     flags. Optionally, specific features can be selected.
@@ -109,8 +119,8 @@ def df_separate(data, source_col_name, feats=None, source_val_real='real',
     return real, synth
 
 
-def launder(real, synth, feats=None, suffix_real='real', suffix_synth='synth'):
-    """ Launder feature names and optionally filter.
+def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
+    """Launder feature names and optionally filter.
 
     To provide clear distinction between the real and synthetic
     features, each dataframe is updated to append suffixes to the feature
@@ -145,15 +155,16 @@ def launder(real, synth, feats=None, suffix_real='real', suffix_synth='synth'):
     real = real[feats].copy()
     synth = synth[feats].copy()
 
-    real.columns = [f'{c}_{suffix_real}' for c in real.columns]
-    synth.columns = [f'{c}_{suffix_synth}' for c in synth.columns]
+    real.columns = [f"{c}_{suffix_real}" for c in real.columns]
+    synth.columns = [f"{c}_{suffix_synth}" for c in synth.columns]
 
     return real, synth
 
 
-def cat_encode(df, feats=None, return_all=False, convert_only=False,
-               force=False):
-    """ Convert object features to categories.
+def cat_encode(
+    df, feats=None, return_all=False, convert_only=False, force=False
+):
+    """Convert object features to categories.
 
     Generates a new version of the input datframe with the
     specified features categorically encoded with integer labels.
@@ -200,7 +211,7 @@ def cat_encode(df, feats=None, return_all=False, convert_only=False,
         conversion are not an 'object' type.
 
     """
-    all_obj = df.select_dtypes(include=['object', 'category']).columns
+    all_obj = df.select_dtypes(include=["object", "category"]).columns
     feats = feats or all_obj
     if isinstance(feats, str):
         feats = [feats]
@@ -208,11 +219,13 @@ def cat_encode(df, feats=None, return_all=False, convert_only=False,
     # Check for non-object type features
     non_obj = list(set(feats).difference(all_obj))
     if len(non_obj) > 0:
-        warnings.warn('Selected features include non-object types:'
-                      f'{non_obj} Is this intended? If so, rerun and '
-                      'specify `force_encode=True`. Otherwise they will '
-                      'be dropped or, if `return_all==True`, passed '
-                      'through unchanged.')
+        warnings.warn(
+            "Selected features include non-object types:"
+            f"{non_obj} Is this intended? If so, rerun and "
+            "specify `force_encode=True`. Otherwise they will "
+            "be dropped or, if `return_all==True`, passed "
+            "through unchanged."
+        )
 
     if return_all:
         out_df = df.copy()
@@ -227,7 +240,7 @@ def cat_encode(df, feats=None, return_all=False, convert_only=False,
         enc_fts = list(set(feats).difference(non_obj))
 
     for ft in enc_fts:
-        out_df[ft] = out_df[ft].astype('category')
+        out_df[ft] = out_df[ft].astype("category")
 
         if not convert_only:
             cat_dict.update({ft: out_df[ft].cat.categories})
@@ -273,15 +286,17 @@ def feature_density_diff(real, synth, feature, bins=10):
     full_range = np.concatenate((enc_real[feature], enc_synth[feature]))
     bin_edges = np.histogram_bin_edges(full_range, bins=bins)
 
-    real_hist, _ = np.histogram(enc_real[feature], bins=bin_edges,
-                                density=True)
-    synth_hist, _ = np.histogram(enc_synth[feature], bins=bin_edges,
-                                 density=True)
+    real_hist, _ = np.histogram(
+        enc_real[feature], bins=bin_edges, density=True
+    )
+    synth_hist, _ = np.histogram(
+        enc_synth[feature], bins=bin_edges, density=True
+    )
 
     hist_diff = synth_hist - real_hist
 
     return hist_diff, bin_edges
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

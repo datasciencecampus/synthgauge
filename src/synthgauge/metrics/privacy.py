@@ -32,18 +32,18 @@ def get_WEAP(synth, key, target):
     """
     synth = synth.copy()
     key_target_vc = synth.value_counts(subset=key + target).reset_index()
-    key_target_vc.columns = key + target + ['key_target_frequency']
+    key_target_vc.columns = key + target + ["key_target_frequency"]
     key_vc = synth.value_counts(key).reset_index()
-    key_vc.columns = key + ['key_frequency']
+    key_vc.columns = key + ["key_frequency"]
 
     synth = synth.merge(key_target_vc)
     synth = synth.merge(key_vc)
 
-    return synth['key_target_frequency']/synth['key_frequency']
+    return synth["key_target_frequency"] / synth["key_frequency"]
 
 
 def TCAP(real, synth, key, target):
-    """ Target Correct Attribution Probability TCAP
+    """Target Correct Attribution Probability TCAP
 
     This privacy metric calculates the average chance that the key-target
     pairings in the `synth` dataset reveal the true key-target pairings in the
@@ -82,15 +82,16 @@ def TCAP(real, synth, key, target):
     WEAP_scores = get_WEAP(synth, key, target)
     if sum(WEAP_scores == 1) == 0:
         return 0
-    synth_reduced = synth[WEAP_scores == 1][key+target]
+    synth_reduced = synth[WEAP_scores == 1][key + target]
     synth_reduced.drop_duplicates(inplace=True)
     synth_reduced.rename(
-        columns={target[0]: target[0]+'_synthguess'}, inplace=True)
+        columns={target[0]: target[0] + "_synthguess"}, inplace=True
+    )
 
-    combined = real.merge(synth_reduced, how='left', on=key)
-    target_matches = combined[target[0]] == combined[target[0]+'_synthguess']
+    combined = real.merge(synth_reduced, how="left", on=key)
+    target_matches = combined[target[0]] == combined[target[0] + "_synthguess"]
 
-    return sum(target_matches)/len(target_matches)
+    return sum(target_matches) / len(target_matches)
 
 
 def find_outliers(data, outlier_factor_threshold):
@@ -125,9 +126,14 @@ def find_outliers(data, outlier_factor_threshold):
     return outlier_bool
 
 
-def min_NN_dist(real, synth, feats=None, real_outliers_only=True,
-                outlier_factor_threshold=2):
-    """ Minimum Nearest Neighbour distance
+def min_NN_dist(
+    real,
+    synth,
+    feats=None,
+    real_outliers_only=True,
+    outlier_factor_threshold=2,
+):
+    """Minimum Nearest Neighbour distance
 
     This privacy metric returns the smallest distance between any point in
     the `real` dataset and any point in the `synth` dataset. There is an
@@ -164,8 +170,12 @@ def min_NN_dist(real, synth, feats=None, real_outliers_only=True,
     """
     combined = df_combine(real, synth, feats=feats)
     combined_recode, _ = cat_encode(combined, return_all=True)
-    real, synth = df_separate(combined_recode, source_col_name='source',
-                              source_val_real=0, source_val_synth=1)
+    real, synth = df_separate(
+        combined_recode,
+        source_col_name="source",
+        source_val_real=0,
+        source_val_synth=1,
+    )
     if real_outliers_only:
         outlier_bool = find_outliers(real, outlier_factor_threshold)
         real = real[outlier_bool]
@@ -175,9 +185,10 @@ def min_NN_dist(real, synth, feats=None, real_outliers_only=True,
     return int(min(dist))
 
 
-def sample_overlap_score(real, synth, feats=None, sample_size=0.2, runs=5,
-                         score_type='unique'):
-    """ Return percentage of overlap between real and synth data.
+def sample_overlap_score(
+    real, synth, feats=None, sample_size=0.2, runs=5, score_type="unique"
+):
+    """Return percentage of overlap between real and synth data.
 
     Samples from both the real and synthetic datasets are compared for
     similarity. This similarity, or overlap score, is based on the
@@ -225,18 +236,36 @@ def sample_overlap_score(real, synth, feats=None, sample_size=0.2, runs=5,
             nsamples = sample_size
     scores = []
     for r in range(runs):
-        sample_real = real[feats].sample(nsamples).assign(real_count=1) \
-            .groupby(feats).count().reset_index()
-        sample_synth = synth[feats].sample(nsamples).assign(synth_count=1) \
-            .groupby(feats).count().reset_index()
-        duplicates = sample_real.merge(sample_synth, how='left', on=feats,
-                                       suffixes=('_real', '_synth'),
-                                       indicator='_match')
-        if score_type == 'unique':
+        sample_real = (
+            real[feats]
+            .sample(nsamples)
+            .assign(real_count=1)
+            .groupby(feats)
+            .count()
+            .reset_index()
+        )
+        sample_synth = (
+            synth[feats]
+            .sample(nsamples)
+            .assign(synth_count=1)
+            .groupby(feats)
+            .count()
+            .reset_index()
+        )
+        duplicates = sample_real.merge(
+            sample_synth,
+            how="left",
+            on=feats,
+            suffixes=("_real", "_synth"),
+            indicator="_match",
+        )
+        if score_type == "unique":
             score = duplicates._match.value_counts(normalize=True).both
-        elif score_type == 'sample':
-            score = duplicates[duplicates._match ==
-                               'both'].real_count.sum() / nsamples
+        elif score_type == "sample":
+            score = (
+                duplicates[duplicates._match == "both"].real_count.sum()
+                / nsamples
+            )
         scores.append(score)
     return np.mean(scores)
 

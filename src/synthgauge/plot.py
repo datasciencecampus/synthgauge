@@ -3,8 +3,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas import concat, crosstab, cut, DataFrame, Index
-from pandas.core.dtypes.common import (is_categorical_dtype, is_numeric_dtype,
-                                       is_object_dtype)
+from pandas.core.dtypes.common import (
+    is_categorical_dtype,
+    is_numeric_dtype,
+    is_object_dtype,
+)
 import seaborn as sns
 from .utils import cat_encode, feature_density_diff
 from .metrics.correlation import cramers_v
@@ -12,7 +15,7 @@ from .metrics.correlation import cramers_v
 sns.set_theme()
 
 
-def suggest_label_rotation(ax, axis='x', char_lim=5):
+def suggest_label_rotation(ax, axis="x", char_lim=5):
     """Advise if labels should be rotated.
 
     For the specifed axis the maximum characters for the
@@ -34,7 +37,7 @@ def suggest_label_rotation(ax, axis='x', char_lim=5):
         True if labels should be rotated, otherwise False.
 
     """
-    tick_func = f'get_{axis.lower()}ticklabels'
+    tick_func = f"get_{axis.lower()}ticklabels"
     labels = getattr(ax, tick_func)()
     max_chars = max([len(label.get_text()) for label in labels])
     return max_chars > char_lim
@@ -99,8 +102,9 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     return fig
 
 
-def plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto',
-               figsize=None):
+def plot_joint(
+    df, x, y, groupby=None, x_bins="auto", y_bins="auto", figsize=None
+):
     """Plot bivariate and univariate graphs.
 
     Convenience function that leverages seaborn. For more granular control
@@ -136,9 +140,17 @@ def plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto',
 
     # If a feature is categorical it must be used 'as_ordered' for plotting a
     # histogram
-    def order(ft): return ft.cat.as_ordered() if hasattr(ft, 'cat') else ft
-    sns.histplot(data=df, x=order(df[x]), y=order(df[y]), hue=groupby,
-                 alpha=0.5, ax=g.ax_joint)
+    def order(ft):
+        return ft.cat.as_ordered() if hasattr(ft, "cat") else ft
+
+    sns.histplot(
+        data=df,
+        x=order(df[x]),
+        y=order(df[y]),
+        hue=groupby,
+        alpha=0.5,
+        ax=g.ax_joint,
+    )
 
     # For margins can use countplot or hist depending on data type.
     # No legends are shown for these marginal plots.
@@ -148,8 +160,14 @@ def plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto',
         if lg is not None:
             lg.remove()
     else:
-        sns.histplot(data=df, x=x, hue=groupby, bins=x_bins, ax=g.ax_marg_x,
-                     legend=False)
+        sns.histplot(
+            data=df,
+            x=x,
+            hue=groupby,
+            bins=x_bins,
+            ax=g.ax_marg_x,
+            legend=False,
+        )
 
     if is_categorical_dtype(df[y]) or is_object_dtype(df[y]):
         ax = sns.countplot(data=df, y=y, hue=groupby, ax=g.ax_marg_y)
@@ -157,13 +175,19 @@ def plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto',
         if lg is not None:
             lg.remove()
     else:
-        sns.histplot(data=df, y=y, hue=groupby, bins=y_bins, ax=g.ax_marg_y,
-                     legend=False)
+        sns.histplot(
+            data=df,
+            y=y,
+            hue=groupby,
+            bins=y_bins,
+            ax=g.ax_marg_y,
+            legend=False,
+        )
 
     return g
 
 
-def plot_histogram3d(df, x, y, x_bins='auto', y_bins='auto', figsize=None):
+def plot_histogram3d(df, x, y, x_bins="auto", y_bins="auto", figsize=None):
     """Plot 3D histogram of two features.
 
     This is similar to a 2D histogram plot with an extra axis added
@@ -192,9 +216,11 @@ def plot_histogram3d(df, x, y, x_bins='auto', y_bins='auto', figsize=None):
     matplotlib.figure.Figure
     """
     # Encode categorical data
-    cat_feats = [ft_name for ft_name, ft_series in df.iteritems()
-                 if is_categorical_dtype(ft_series)
-                 or is_object_dtype(ft_series)]
+    cat_feats = [
+        ft_name
+        for ft_name, ft_series in df.iteritems()
+        if is_categorical_dtype(ft_series) or is_object_dtype(ft_series)
+    ]
     cat_labels = dict()
 
     if len(cat_feats) > 0:
@@ -212,7 +238,7 @@ def plot_histogram3d(df, x, y, x_bins='auto', y_bins='auto', figsize=None):
 
     # Create figure
     fig = plt.figure(figsize=figsize)
-    ax = plt.axes(projection='3d')
+    ax = plt.axes(projection="3d")
 
     # Compute 2D histogram
     hist, xedges, yedges = np.histogram2d(df[x], df[y], bins=bins_xy)
@@ -228,13 +254,13 @@ def plot_histogram3d(df, x, y, x_bins='auto', y_bins='auto', figsize=None):
     zpos = np.zeros_like(dz) + 0.1
 
     # Plot the 3D bars
-    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, zsort='average')
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, zsort="average")
 
     # Set title and labels
     ax.set_xlabel(x, fontsize=16)
     ax.set_ylabel(y, fontsize=16)
-    ax.set_zlabel('$count$', fontsize=16, rotation=1)
-    ax.set_title('3D Histogram')
+    ax.set_zlabel("$count$", fontsize=16, rotation=1)
+    ax.set_title("3D Histogram")
 
     # Set tick lables for categorical features
     if x in cat_labels.keys():
@@ -247,8 +273,15 @@ def plot_histogram3d(df, x, y, x_bins='auto', y_bins='auto', figsize=None):
     return fig
 
 
-def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
-                     figcols=2, figsize=None, **kwargs):
+def plot_correlation(
+    *df,
+    feats=None,
+    method="pearson",
+    plot_diff=False,
+    figcols=2,
+    figsize=None,
+    **kwargs,
+):
     """Plot correlation between features in a DataFrame.
 
     For each dataframe provided a subplot is generated showing a
@@ -291,6 +324,7 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
     -------
     matplotlib.figure.Figure
     """
+
     def method_cramers_v(df):
         """Compute cramers_v
 
@@ -315,23 +349,31 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
         if feats is None:
             feats = d.columns
 
-        if method.lower() in ['pearson', 'spearman']:
-            data = d[feats].select_dtypes(include='number')
+        if method.lower() in ["pearson", "spearman"]:
+            data = d[feats].select_dtypes(include="number")
             if len(data.columns) == 0:
-                raise ValueError("No numeric columns available for method: "
-                                 f"{method}")
+                raise ValueError(
+                    "No numeric columns available for method: " f"{method}"
+                )
 
-            corr_results.append(data.corr(method=method).dropna(
-                axis=0, how='all').dropna(axis=1, how='all'))
+            corr_results.append(
+                data.corr(method=method)
+                .dropna(axis=0, how="all")
+                .dropna(axis=1, how="all")
+            )
 
-        elif method.lower() == 'cramers_v':
-            data = d[feats].select_dtypes(include=['object', 'category'])
+        elif method.lower() == "cramers_v":
+            data = d[feats].select_dtypes(include=["object", "category"])
             if len(data.columns) == 0:
-                raise ValueError("No categorical columns available for "
-                                 f"method: {method}")
+                raise ValueError(
+                    "No categorical columns available for " f"method: {method}"
+                )
 
-            corr_results.append(method_cramers_v(data).dropna(
-                axis=0, how='all').dropna(axis=1, how='all'))
+            corr_results.append(
+                method_cramers_v(data)
+                .dropna(axis=0, how="all")
+                .dropna(axis=1, how="all")
+            )
 
     # Get min and max to set consistant colourbar
     corr_values = np.array(corr_results)
@@ -346,14 +388,15 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
 
     n_subplots = len(corr_results)
     ncols = 1 if n_subplots == 1 else figcols
-    nrows = int(np.ceil(n_subplots/ncols))
+    nrows = int(np.ceil(n_subplots / ncols))
 
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
 
-    for ax_num, (ax, corr) in enumerate(zip(np.array(axes).ravel(),
-                                            corr_results)):
+    for ax_num, (ax, corr) in enumerate(
+        zip(np.array(axes).ravel(), corr_results)
+    ):
         if ax_num == n_subplots - 1 and plot_diff:
-            sp_title = 'Correlation Difference'
+            sp_title = "Correlation Difference"
             # Ignore vmin and vmax for this plot as scale will be different
             # to the others
             vmin = None
@@ -374,8 +417,17 @@ def plot_correlation(*df, feats=None, method='pearson', plot_diff=False,
     return fig
 
 
-def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
-                  figsize=None, cmap="rocket", **kwargs):
+def plot_crosstab(
+    real,
+    synth,
+    x,
+    y,
+    x_bins="auto",
+    y_bins="auto",
+    figsize=None,
+    cmap="rocket",
+    **kwargs,
+):
     """Plot crosstab heatmap for two features.
 
     The two-feature crosstab calculation is performed and plotted as a heatmap.
@@ -432,7 +484,7 @@ def plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto',
             real_y = cut(real_y, y_bins)
             synth_y = cut(synth_y, y_bins)
     except TypeError:
-        raise TypeError('`x_bins` and `y_bins` must not be None')
+        raise TypeError("`x_bins` and `y_bins` must not be None")
 
     freq_real = crosstab(real_x, real_y, dropna=False)
     freq_synth = crosstab(synth_x, synth_y, dropna=False)
@@ -515,8 +567,8 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     ax.scatter(x, y)
-    ax.set_xlabel('real data quantiles')
-    ax.set_ylabel('synth data quantiles')
+    ax.set_xlabel("real data quantiles")
+    ax.set_ylabel("synth data quantiles")
     ax.set_title(f'Q-Q Plot for "{feature}"')
 
     fig.canvas.draw()
@@ -532,8 +584,9 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     return fig
 
 
-def plot_feat_density_diff(real, synth, feats=None, feat_bins=10,
-                           diff_bins=10, figsize=None):
+def plot_feat_density_diff(
+    real, synth, feats=None, feat_bins=10, diff_bins=10, figsize=None
+):
     """Plot real and synth feature density differences.
 
     For each feature the feature density difference between `real` and
@@ -579,29 +632,32 @@ def plot_feat_density_diff(real, synth, feats=None, feat_bins=10,
         feats = feats or real.columns
 
     if len(feats) == 1:
-        diff_hist, diff_edges = feature_density_diff(real, synth, feats,
-                                                     feat_bins)
-        xlabel = f'{feats[0]} Binned'
-        ylabel = 'Density Difference'
-        title = f'Feature Density Difference for {feats[0]}'
+        diff_hist, diff_edges = feature_density_diff(
+            real, synth, feats, feat_bins
+        )
+        xlabel = f"{feats[0]} Binned"
+        ylabel = "Density Difference"
+        title = f"Feature Density Difference for {feats[0]}"
 
     else:
         # TODO: option to have different bins for each feature
-        diffs = [feature_density_diff(real, synth, f, feat_bins)[0]
-                 for f in feats]
+        diffs = [
+            feature_density_diff(real, synth, f, feat_bins)[0] for f in feats
+        ]
 
-        diff_hist, diff_edges = np.histogram(np.concatenate(diffs),
-                                             bins=diff_bins)
+        diff_hist, diff_edges = np.histogram(
+            np.concatenate(diffs), bins=diff_bins
+        )
 
-        xlabel = 'Difference Bins'
-        ylabel = 'Count'
-        title = 'Histogram of Density Differences'
+        xlabel = "Difference Bins"
+        ylabel = "Count"
+        title = "Histogram of Density Differences"
 
     fig, ax = plt.subplots(figsize=figsize)
 
     # default bar width is too large so use scaled bin size
     bar_width = (diff_edges[1] - diff_edges[0]) * 0.8
-    ax.bar(diff_edges[:-1], diff_hist, align='edge', width=bar_width)
+    ax.bar(diff_edges[:-1], diff_hist, align="edge", width=bar_width)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -610,5 +666,5 @@ def plot_feat_density_diff(real, synth, feats=None, feat_bins=10,
     return ax
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

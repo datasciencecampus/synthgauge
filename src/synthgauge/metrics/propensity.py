@@ -66,40 +66,41 @@ def propensity_MSE(real, synth, method, **kwargs):
 
     https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358
     """
-    if method not in ['CART', 'LogisticRegression']:
+    if method not in ["CART", "LogisticRegression"]:
         raise ValueError(
-            "method must be either 'CART' or 'LogisticRegression'")
+            "method must be either 'CART' or 'LogisticRegression'"
+        )
     # combine data
     combined = df_combine(real, synth, source_val_real=0, source_val_synth=1)
     # remove source column
-    synth_bool = combined.pop('source')
+    synth_bool = combined.pop("source")
     # encode categorical variables
     combined_encoded = pd.get_dummies(combined, drop_first=True)
-    if method == 'LogisticRegression':
+    if method == "LogisticRegression":
         # add interactions
-        combined_encoded = PolynomialFeatures(2, interaction_only=True,
-                                              include_bias=False) \
-            .fit_transform(combined_encoded)
+        combined_encoded = PolynomialFeatures(
+            2, interaction_only=True, include_bias=False
+        ).fit_transform(combined_encoded)
 
         model = LogisticRegression(**kwargs)
-    if method == 'CART':
+    if method == "CART":
         model = DecisionTreeClassifier(**kwargs)
     model.fit(combined_encoded, synth_bool)
 
     # calculate propensity for each example
     props = model.predict_proba(combined_encoded)[:, 1]
 
-    ideal_prop = len(synth)/len(combined_encoded)
+    ideal_prop = len(synth) / len(combined_encoded)
 
     props_square_error = np.square(props - ideal_prop)
 
-    MSE_p = sum(props_square_error)/len(props_square_error)
+    MSE_p = sum(props_square_error) / len(props_square_error)
 
     return MSE_p
 
 
 def expected_p_MSE(real, synth):
-    """ Expected propensity mean-squared error
+    """Expected propensity mean-squared error
 
     This is the expected propensity mean-squared error under the null case
     that the `real` and `synth` datasets are distributionally similar.
@@ -137,15 +138,19 @@ def expected_p_MSE(real, synth):
     """
     # =(k−1)(1−c)^2*c/N
     num_vars = real.shape[1]
-    num_vars_and_interactions = num_vars*(num_vars+1)/2
-    total_num_examples = real.shape[0]+synth.shape[0]
-    prop_synth = synth.shape[0]/total_num_examples
-    return ((num_vars_and_interactions)*(1.0-prop_synth)
-            ** 2*prop_synth/total_num_examples)
+    num_vars_and_interactions = num_vars * (num_vars + 1) / 2
+    total_num_examples = real.shape[0] + synth.shape[0]
+    prop_synth = synth.shape[0] / total_num_examples
+    return (
+        (num_vars_and_interactions)
+        * (1.0 - prop_synth) ** 2
+        * prop_synth
+        / total_num_examples
+    )
 
 
 def stdev_p_MSE(real, synth):
-    """ Standard deviation propensity mean-squared error
+    """Standard deviation propensity mean-squared error
 
     This is the standard deviation of the propensity mean-squared error under
     the null case that the `real` and `synth` datasets are distributionally
@@ -182,11 +187,15 @@ def stdev_p_MSE(real, synth):
     https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358 Appendix A1.
     """
     num_vars = real.shape[1]
-    num_vars_and_interactions = num_vars*(num_vars+1)/2
-    total_num_examples = real.shape[0]+synth.shape[0]
-    prop_synth = synth.shape[0]/total_num_examples
-    return ((2*(num_vars_and_interactions))
-            ** 0.5*(1.0-prop_synth)**2*prop_synth/total_num_examples)
+    num_vars_and_interactions = num_vars * (num_vars + 1) / 2
+    total_num_examples = real.shape[0] + synth.shape[0]
+    prop_synth = synth.shape[0] / total_num_examples
+    return (
+        (2 * (num_vars_and_interactions)) ** 0.5
+        * (1.0 - prop_synth) ** 2
+        * prop_synth
+        / total_num_examples
+    )
 
 
 def perm_expected_sd_p_MSE(real, synth, num_perms=20, **kwargs):
@@ -225,9 +234,10 @@ def perm_expected_sd_p_MSE(real, synth, num_perms=20, **kwargs):
     perm_MSEs = np.zeros(num_perms)
     for i in range(num_perms):
         combined = df_combine(
-            real, synth, source_val_real=0, source_val_synth=1)
+            real, synth, source_val_real=0, source_val_synth=1
+        )
         # remove source column
-        synth_bool = combined.pop('source').tolist()
+        synth_bool = combined.pop("source").tolist()
         random.shuffle(synth_bool)
         # encode categorical variables
         combined_encoded = pd.get_dummies(combined, drop_first=True)
@@ -236,18 +246,18 @@ def perm_expected_sd_p_MSE(real, synth, num_perms=20, **kwargs):
         # calculate propensity for each example
         props = model.predict_proba(combined_encoded)[:, 1]
 
-        ideal_prop = len(synth)/len(combined_encoded)
+        ideal_prop = len(synth) / len(combined_encoded)
 
         props_square_error = np.square(props - ideal_prop)
 
-        MSE_p = sum(props_square_error)/len(props_square_error)
+        MSE_p = sum(props_square_error) / len(props_square_error)
 
         perm_MSEs[i] = MSE_p
     return np.mean(perm_MSEs), np.std(perm_MSEs)
 
 
-def p_MSE_ratio(real, synth, method='CART', feats=None, **kwargs):
-    """ Propensity mean-squared error ratio
+def p_MSE_ratio(real, synth, method="CART", feats=None, **kwargs):
+    """Propensity mean-squared error ratio
 
     This is the ratio of observed propensity mean-squared error, to that
     expected under the null case that the synthetic and real datasets are
@@ -288,25 +298,28 @@ def p_MSE_ratio(real, synth, method='CART', feats=None, **kwargs):
     warnings.simplefilter("always", category=DeprecationWarning)
     warnings.warn(
         "p_MSE_ratio is now contained within `propensity_metrics`.",
-        DeprecationWarning)
+        DeprecationWarning,
+    )
     if isinstance(feats, pd.Index):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
         feats = feats or real.columns.to_list()
-    if method == 'Logistic Regression':
+    if method == "Logistic Regression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
-    if method == 'CART':
+    if method == "CART":
         exp_p_MSE, _ = perm_expected_sd_p_MSE(
-            real[feats], synth[feats], num_perms=2, **kwargs)
+            real[feats], synth[feats], num_perms=2, **kwargs
+        )
     obs_p_MSE = propensity_MSE(
-        real[feats], synth[feats], method=method, **kwargs)
-    return obs_p_MSE/exp_p_MSE
+        real[feats], synth[feats], method=method, **kwargs
+    )
+    return obs_p_MSE / exp_p_MSE
 
 
-def standardised_p_MSE(real, synth, method='CART', feats=None, **kwargs):
-    """ Standardised propensity mean-squared error
+def standardised_p_MSE(real, synth, method="CART", feats=None, **kwargs):
+    """Standardised propensity mean-squared error
 
     This is the difference between the observed propensity mean-squared error
     and that expected under the null case that the synthetic and real datasets
@@ -347,7 +360,8 @@ def standardised_p_MSE(real, synth, method='CART', feats=None, **kwargs):
     warnings.simplefilter("always", category=DeprecationWarning)
     warnings.warn(
         "standardised_p_MSE is now contained within `propensity_metrics`.",
-        DeprecationWarning)
+        DeprecationWarning,
+    )
     if isinstance(feats, pd.Index):
         feats = feats
     elif isinstance(feats, str):
@@ -355,22 +369,25 @@ def standardised_p_MSE(real, synth, method='CART', feats=None, **kwargs):
     else:
         feats = feats or real.columns.to_list()
 
-    if method == 'LogisticRegression':
+    if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
         std_p_MSE = stdev_p_MSE(real[feats], synth[feats])
 
-    if method == 'CART':
+    if method == "CART":
         exp_p_MSE, std_p_MSE = perm_expected_sd_p_MSE(
-            real[feats], synth[feats], **kwargs)
+            real[feats], synth[feats], **kwargs
+        )
 
     obs_p_MSE = propensity_MSE(
-        real[feats], synth[feats], method=method, **kwargs)
-    return (obs_p_MSE - exp_p_MSE)/std_p_MSE
+        real[feats], synth[feats], method=method, **kwargs
+    )
+    return (obs_p_MSE - exp_p_MSE) / std_p_MSE
 
 
-def propensity_metrics(real, synth, method='CART', feats=None, num_perms=20,
-                       **kwargs):
-    """ Propensity metrics
+def propensity_metrics(
+    real, synth, method="CART", feats=None, num_perms=20, **kwargs
+):
+    """Propensity metrics
 
     This function calculates three flavours of propensity mean-squared error,
     all of which quantify utility by measuring how well a classifier can be
@@ -429,25 +446,28 @@ def propensity_metrics(real, synth, method='CART', feats=None, num_perms=20,
     else:
         feats = feats or real.columns.to_list()
 
-    if method == 'LogisticRegression':
+    if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
         std_p_MSE = stdev_p_MSE(real[feats], synth[feats])
 
-    if method == 'CART':
+    if method == "CART":
         exp_p_MSE, std_p_MSE = perm_expected_sd_p_MSE(
-            real[feats], synth[feats], num_perms=num_perms, **kwargs)
+            real[feats], synth[feats], num_perms=num_perms, **kwargs
+        )
 
     obs_p_MSE = propensity_MSE(
-        real[feats], synth[feats], method=method, **kwargs)
-    standardised_p_MSE = (obs_p_MSE - exp_p_MSE)/std_p_MSE
-    ratio_p_MSE = obs_p_MSE/exp_p_MSE
+        real[feats], synth[feats], method=method, **kwargs
+    )
+    standardised_p_MSE = (obs_p_MSE - exp_p_MSE) / std_p_MSE
+    ratio_p_MSE = obs_p_MSE / exp_p_MSE
 
-    PropensityResult = namedtuple('PropensityResult', ('observed_p_MSE',
-                                                       'standardised_p_MSE',
-                                                       'ratio_p_MSE'))
+    PropensityResult = namedtuple(
+        "PropensityResult",
+        ("observed_p_MSE", "standardised_p_MSE", "ratio_p_MSE"),
+    )
 
     return PropensityResult(obs_p_MSE, standardised_p_MSE, ratio_p_MSE)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
