@@ -13,6 +13,8 @@ import synthgauge as sg
 
 @pytest.fixture
 def evaluator():
+    """An evaluator storing the datasets used to obtain the values in these
+    tests."""
     return sg.Evaluator(
         sg.datasets.make_blood_types_df(0, 0, 314),
         sg.datasets.make_blood_types_df(1, 0, 314),

@@ -1,3 +1,5 @@
+""" Tests for plotting. """
+
 import pytest
 from matplotlib.figure import Figure
 from seaborn.axisgrid import JointGrid
@@ -113,6 +115,8 @@ def test_plot_correlation(make_real, make_synth, feats, method, plot_diff):
     ],
 )
 def test_plot_correlation_method(make_real, make_synth, feats, method):
+    """Check a ``ValueError`` is raised if an inappropriate correlation method
+    is used, e.g. Pearson with categorical variables."""
     with pytest.raises(ValueError):
         plot_correlation(make_real, make_synth, feats=feats, method=method)
 
@@ -126,7 +130,7 @@ def test_plot_correlation_method(make_real, make_synth, feats, method):
     ],
 )
 def test_plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins):
-    """ """
+    """Check that ``plot_crosstab`` produces a ``Figure`` instance."""
     fig = plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins)
     assert isinstance(fig, Figure)
 
@@ -136,5 +140,7 @@ def test_plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins):
     [("age", "height", None, None), ("height", "eye_colour", None, "auto")],
 )
 def test_plot_crosstab_bins(make_real, make_synth, x, y, x_bins, y_bins):
+    """Check that a ``TypeError`` is raised if a binning strategy is not
+    specified for a continuous variable."""
     with pytest.raises(TypeError):
         plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins)
