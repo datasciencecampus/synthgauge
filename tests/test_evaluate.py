@@ -11,6 +11,8 @@ import synthgauge as sg
 
 @pytest.fixture
 def evaluator():
+    """An evaluator storing the datasets used to obtain the values in these
+    tests."""
     return sg.Evaluator(
         sg.datasets.make_blood_types_df(0, 0, 314),
         sg.datasets.make_blood_types_df(1, 0, 314),
@@ -49,6 +51,7 @@ def test_custom_metric_def(evaluator):
     """Check adding custom metric with defined function."""
 
     def length_diff(real, synth):
+        """Calculate difference in length between real and synthetic data."""
         return abs(len(real) - len(synth))
 
     evaluator.add_custom_metric("length_diff", length_diff)
@@ -59,6 +62,7 @@ def test_custom_metric_args(evaluator):
     """Check adding custom metric with arguments."""
 
     def mean_diff(real, synth, feat):
+        """Calculate difference in means of `feat` attribute."""
         return abs(mean(real[feat]) - mean(synth[feat]))
 
     evaluator.add_custom_metric("mean_diff", mean_diff, feat="weight")
