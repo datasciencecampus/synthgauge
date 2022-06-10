@@ -20,14 +20,14 @@ from .utils import df_combine, launder
 class Evaluator(object):
     """
     The central class in ``synthgauge`` used to hold and evaluate data via
-    metrics or visualisation.
+    metrics and visualisation.
 
     Parameters
     ----------
     real: pandas.DataFrame
-        The real, observed dataset to be evaluated against.
+        Dataframe containing the real data.
     synth: pandas.DataFrame
-        A synthesised version of the real data to be evaluated.
+        Dataframe containing the synthetic data.
     handle_nans: str
         Whether to drop missing values. If yes, use "drop" (default).
 

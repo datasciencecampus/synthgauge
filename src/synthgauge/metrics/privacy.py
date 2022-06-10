@@ -1,4 +1,4 @@
-""" Privacy-based metrics (rather than utility). """
+""" Privacy metrics. """
 
 import numpy as np
 import pandas as pd

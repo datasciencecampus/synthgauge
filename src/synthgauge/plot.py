@@ -1,4 +1,4 @@
-""" Functions for visualising the utility of synthetic data. """
+""" Functions for visually evaluating synthetic data. """
 
 from itertools import product
 
