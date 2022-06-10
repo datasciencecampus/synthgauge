@@ -1,9 +1,10 @@
 """
 clustering metric
 """
-from sklearn.cluster import KMeans
-from kmodes.kprototypes import KPrototypes
 import numpy as np
+from kmodes.kprototypes import KPrototypes
+from sklearn.cluster import KMeans
+
 from ..utils import df_combine
 
 

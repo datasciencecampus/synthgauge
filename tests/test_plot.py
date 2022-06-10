@@ -1,14 +1,14 @@
-from matplotlib.figure import Figure
 import pytest
+from matplotlib.figure import Figure
 from seaborn.axisgrid import JointGrid
 
 from synthgauge.datasets import make_blood_types_df
 from synthgauge.plot import (
     plot_correlation,
+    plot_crosstab,
+    plot_histogram3d,
     plot_histograms,
     plot_joint,
-    plot_histogram3d,
-    plot_crosstab,
 )
 
 

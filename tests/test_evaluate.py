@@ -3,7 +3,9 @@ Tests for the Evaluator object and its metric methods.
 """
 from copy import deepcopy
 from statistics import mean
+
 import pytest
+
 import synthgauge as sg
 
 

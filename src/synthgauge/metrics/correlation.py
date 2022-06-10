@@ -1,10 +1,11 @@
-from sklearn.metrics import mean_squared_error
+import warnings
+from itertools import combinations, product
+
 import numpy as np
 import pandas as pd
 from numpy import corrcoef
 from scipy.stats import chi2_contingency
-from itertools import combinations, product
-import warnings
+from sklearn.metrics import mean_squared_error
 
 
 def correlation_MSD(real, synth, feats=None):

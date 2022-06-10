@@ -1,6 +1,7 @@
-from sklearn.neighbors import NearestNeighbors, LocalOutlierFactor
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
+
 from ..utils import cat_encode, df_combine, df_separate
 
 

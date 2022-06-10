@@ -1,15 +1,17 @@
+import pickle
+import warnings
 from copy import deepcopy
+
+import pandas as pd
+
 from . import metrics
 from .plot import (
     plot_correlation,
     plot_crosstab,
-    plot_histograms,
     plot_histogram3d,
+    plot_histograms,
     plot_qq,
 )
-import pandas as pd
-import pickle
-import warnings
 from .utils import df_combine, launder
 
 

@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+from scipy.spatial.distance import jensenshannon
 from scipy.stats import (
     entropy,
     kruskal,
@@ -6,9 +9,6 @@ from scipy.stats import (
     wasserstein_distance,
 )
 from scipy.stats import wilcoxon as scipy_wc
-from scipy.spatial.distance import jensenshannon
-import pandas as pd
-import numpy as np
 
 from ..utils import feature_density_diff
 

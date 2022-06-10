@@ -6,10 +6,9 @@ the tests were written. In some cases more work can be done to check that the
 outputs are sensible.
 """
 import pytest
+from sklearn.ensemble import RandomForestClassifier
 
 import synthgauge as sg
-
-from sklearn.ensemble import RandomForestClassifier
 
 
 @pytest.fixture

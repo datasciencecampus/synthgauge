@@ -1,16 +1,18 @@
 from itertools import product
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from pandas import concat, crosstab, cut, DataFrame, Index
+import seaborn as sns
+from pandas import DataFrame, Index, concat, crosstab, cut
 from pandas.core.dtypes.common import (
     is_categorical_dtype,
     is_numeric_dtype,
     is_object_dtype,
 )
-import seaborn as sns
-from .utils import cat_encode, feature_density_diff
+
 from .metrics.correlation import cramers_v
+from .utils import cat_encode, feature_density_diff
 
 sns.set_theme()
 

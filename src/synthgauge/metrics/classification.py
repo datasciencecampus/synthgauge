@@ -1,9 +1,10 @@
 from collections import namedtuple
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.pipeline import Pipeline
+
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def classification_comparison(
