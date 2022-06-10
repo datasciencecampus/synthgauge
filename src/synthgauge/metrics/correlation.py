@@ -1,3 +1,5 @@
+""" Correlation-based utility metrics. """
+
 import warnings
 from itertools import combinations, product
 

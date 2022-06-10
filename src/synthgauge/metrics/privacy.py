@@ -1,3 +1,5 @@
+""" Privacy-based metrics (rather than utility). """
+
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
