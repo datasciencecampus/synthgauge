@@ -38,5 +38,5 @@ jobs:
       - name: Check imports are sorted correctly
         run: |
           python -m pip install isort
-          python -m isort --profile black --check src
-          python -m isort --profile black --check tests
+          python -m isort --profile black -l 79 --check src
+          python -m isort --profile black -l 79 --check tests
