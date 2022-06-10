@@ -1,13 +1,24 @@
+""" Generic ``scikit-learn``-style classification utility metrics. """
+
 from collections import namedtuple
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.pipeline import Pipeline
+
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
-def classification_comparison(real, synth, key, target, sklearn_classifier,
-                              random_state=None, test_prop=0.2, **kwargs):
+def classification_comparison(
+    real,
+    synth,
+    key,
+    target,
+    sklearn_classifier,
+    random_state=None,
+    test_prop=0.2,
+    **kwargs
+):
     """Classification utility metric
 
     This metric fits two classification models to `real` and `synth`
@@ -67,39 +78,51 @@ def classification_comparison(real, synth, key, target, sklearn_classifier,
 
     # split data
     real_X_train, real_X_test, real_y_train, real_y_test = train_test_split(
-        real_X, real_y, test_size=test_prop, random_state=random_state)
+        real_X, real_y, test_size=test_prop, random_state=random_state
+    )
     synth_X_train, _, synth_y_train, _ = train_test_split(
-        synth_X, synth_y, test_size=test_prop, random_state=random_state)
+        synth_X, synth_y, test_size=test_prop, random_state=random_state
+    )
 
     # preprocessing
     # scale numeric
-    numeric_transformer = Pipeline(steps=[('scaler', StandardScaler())])
+    numeric_transformer = Pipeline(steps=[("scaler", StandardScaler())])
     # OHE categorical
-    categor_transformer = Pipeline(steps=[('encoder', OneHotEncoder())])
+    categor_transformer = Pipeline(steps=[("encoder", OneHotEncoder())])
 
-    num_feats = real[key].select_dtypes(include='number').columns
-    cat_feats = real[key].select_dtypes(exclude='number').columns
+    num_feats = real[key].select_dtypes(include="number").columns
+    cat_feats = real[key].select_dtypes(exclude="number").columns
 
     preprocessor = ColumnTransformer(
         transformers=[
-            ('numeric', numeric_transformer, num_feats),
-            ('categor', categor_transformer, cat_feats)
+            ("numeric", numeric_transformer, num_feats),
+            ("categor", categor_transformer, cat_feats),
         ]
     )
     # train real model
-    real_pipeline = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', sklearn_classifier(random_state=random_state, **kwargs))
-    ])
+    real_pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                sklearn_classifier(random_state=random_state, **kwargs),
+            ),
+        ]
+    )
 
     real_pipeline.fit(real_X_train, real_y_train.values.ravel())
     # test real on real
     y_real_predicts_real = real_pipeline.predict(real_X_test)
     # train synth model
-    synth_pipeline = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', sklearn_classifier(random_state=random_state, **kwargs))
-    ])
+    synth_pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            (
+                "classifier",
+                sklearn_classifier(random_state=random_state, **kwargs),
+            ),
+        ]
+    )
 
     synth_pipeline.fit(synth_X_train, synth_y_train.values.ravel())
     # test synth on real
@@ -107,28 +130,32 @@ def classification_comparison(real, synth, key, target, sklearn_classifier,
 
     # compare results
     real_precision = precision_score(
-        real_y_test, y_real_predicts_real, average='macro')
+        real_y_test, y_real_predicts_real, average="macro"
+    )
     real_recall = recall_score(
-        real_y_test, y_real_predicts_real, average='macro')
-    real_f1 = f1_score(real_y_test, y_real_predicts_real, average='macro')
+        real_y_test, y_real_predicts_real, average="macro"
+    )
+    real_f1 = f1_score(real_y_test, y_real_predicts_real, average="macro")
 
     synth_precision = precision_score(
-        real_y_test, y_synth_predicts_real, average='macro')
+        real_y_test, y_synth_predicts_real, average="macro"
+    )
     synth_recall = recall_score(
-        real_y_test, y_synth_predicts_real, average='macro')
-    synth_f1 = f1_score(real_y_test, y_synth_predicts_real, average='macro')
+        real_y_test, y_synth_predicts_real, average="macro"
+    )
+    synth_f1 = f1_score(real_y_test, y_synth_predicts_real, average="macro")
 
     diff_precision = real_precision - synth_precision
     diff_recall = real_recall - synth_recall
     diff_f1 = real_f1 - synth_f1
 
-    ClassificationResult = namedtuple('ClassificationResult',
-                                      ('precision_difference',
-                                       'recall_difference',
-                                       'f1_difference'))
+    ClassificationResult = namedtuple(
+        "ClassificationResult",
+        ("precision_difference", "recall_difference", "f1_difference"),
+    )
 
     return ClassificationResult(diff_precision, diff_recall, diff_f1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

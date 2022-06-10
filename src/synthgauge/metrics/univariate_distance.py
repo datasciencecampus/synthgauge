@@ -1,15 +1,22 @@
-from scipy.stats import (
-    entropy, kruskal, ks_2samp, mannwhitneyu, wasserstein_distance)
-from scipy.stats import wilcoxon as scipy_wc
-from scipy.spatial.distance import jensenshannon
-import pandas as pd
+""" Univariate utility metrics. """
+
 import numpy as np
+import pandas as pd
+from scipy.spatial.distance import jensenshannon
+from scipy.stats import (
+    entropy,
+    kruskal,
+    ks_2samp,
+    mannwhitneyu,
+    wasserstein_distance,
+)
+from scipy.stats import wilcoxon as scipy_wc
 
 from ..utils import feature_density_diff
 
 
 def kolmogorov_smirnov(real, synth, feature, **kwargs):
-    """ Distance: Kolmogorov-Smirnov
+    """Distance: Kolmogorov-Smirnov
 
     The Kolmogorov-Smirnov metric calculates the maximum difference between the
     cumulative distribution functions of the `feature` in the `real` and
@@ -75,7 +82,7 @@ def kolmogorov_smirnov(real, synth, feature, **kwargs):
 
 
 def wasserstein(real, synth, feature, **kwargs):
-    """ Distance: Wasserstein
+    """Distance: Wasserstein
 
     The Wasserstein distance, or Earth Mover's distance, can be thought of as
     calculating the amount of "work" required to move from the distribution of
@@ -145,8 +152,8 @@ def wasserstein(real, synth, feature, **kwargs):
     return wasserstein_distance(real[feature], synth[feature], **kwargs)
 
 
-def jensen_shannon_distance(real, synth, feature, bins='auto', **kwargs):
-    """ Distance: Jensen-Shannon
+def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
+    """Distance: Jensen-Shannon
 
     The Jensen-Shannon distance describes the difference between the `real` and
     `synth` distributions of the `feature` in terms of entropy. It is the
@@ -217,17 +224,22 @@ def jensen_shannon_distance(real, synth, feature, bins='auto', **kwargs):
 
     """
     if bins is None:
-        values = set(np.concatenate(
-            [np.unique(real[feature]), np.unique(synth[feature])]))
-        real_bincounts = [(real[feature].values == val).sum()
-                          for val in values]
-        synth_bincounts = [(synth[feature].values == val).sum()
-                           for val in values]
+        values = set(
+            np.concatenate(
+                [np.unique(real[feature]), np.unique(synth[feature])]
+            )
+        )
+        real_bincounts = [
+            (real[feature].values == val).sum() for val in values
+        ]
+        synth_bincounts = [
+            (synth[feature].values == val).sum() for val in values
+        ]
     else:
         # assign bin edges based on joined data
-        bin_edges = np.histogram_bin_edges(np.concatenate((real[feature],
-                                                           synth[feature])),
-                                           bins=bins)
+        bin_edges = np.histogram_bin_edges(
+            np.concatenate((real[feature], synth[feature])), bins=bins
+        )
         # count the number of points in each bin seperately
         real_bincounts = np.histogram(real[feature], bin_edges)[0]
         synth_bincounts = np.histogram(synth[feature], bin_edges)[0]
@@ -235,7 +247,7 @@ def jensen_shannon_distance(real, synth, feature, bins='auto', **kwargs):
 
 
 def feature_density_diff_mae(real, synth, feats=None, bins=10):
-    """ Calculate Mean Absolute Error of feature densities.
+    """Calculate Mean Absolute Error of feature densities.
 
     For each feature the difference between the density across the bins
     within `real` and `synth` is calculated. Finally the MAE across all
@@ -272,8 +284,8 @@ def feature_density_diff_mae(real, synth, feats=None, bins=10):
     return np.mean(np.abs(np.concatenate(diffs)))
 
 
-def kullback_leibler(real, synth, feature, bins='auto', **kwargs):
-    """ Divergence: Kullback-Leibler
+def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
+    """Divergence: Kullback-Leibler
 
     The Kullback-Leibler divergence describes how much the `real` distribution
     of the `feature` varies from the `synth` in terms of entropy. This is an
@@ -348,25 +360,30 @@ def kullback_leibler(real, synth, feature, bins='auto', **kwargs):
 
     """
     if bins is None:
-        values = set(np.concatenate(
-            [np.unique(real[feature]), np.unique(synth[feature])]))
-        real_bincounts = [(real[feature].values == val).sum()
-                          for val in values]
-        synth_bincounts = [(synth[feature].values == val).sum()
-                           for val in values]
+        values = set(
+            np.concatenate(
+                [np.unique(real[feature]), np.unique(synth[feature])]
+            )
+        )
+        real_bincounts = [
+            (real[feature].values == val).sum() for val in values
+        ]
+        synth_bincounts = [
+            (synth[feature].values == val).sum() for val in values
+        ]
     else:
         # assign bin edges based on joined data
-        bin_edges = np.histogram_bin_edges(np.concatenate((real[feature],
-                                                           synth[feature])),
-                                           bins=bins)
+        bin_edges = np.histogram_bin_edges(
+            np.concatenate((real[feature], synth[feature])), bins=bins
+        )
         # count the number of points in each bin seperately
         real_bincounts = np.histogram(real[feature], bin_edges)[0]
         synth_bincounts = np.histogram(synth[feature], bin_edges)[0]
     return entropy(real_bincounts, synth_bincounts, **kwargs)
 
 
-def jensen_shannon_divergence(real, synth, feature, bins='auto', **kwargs):
-    """ Divergence: Jensen-Shannon
+def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
+    """Divergence: Jensen-Shannon
 
     The Jensen-Shannon divergence describes the difference between the `real`
     and `synth` distributions of the `feature` in terms of entropy. It is the
@@ -440,7 +457,7 @@ def jensen_shannon_divergence(real, synth, feature, bins='auto', **kwargs):
 
 
 def mann_whitney(real, synth, feature, **kwargs):
-    """ Hypothesis Test: Mann-Whitney
+    """Hypothesis Test: Mann-Whitney
 
     The Mann-Whitney test compares the distributions of data by examining how
     well-mixed they are when pooled. This is acheived by ranking the pooled
@@ -499,12 +516,13 @@ def mann_whitney(real, synth, feature, **kwargs):
     >>> mann_whitney(real_data, synth_data, 'feat2', bins = 20)
     MannwhitneyuResult(statistic=134107.0, pvalue=0.04613704446362845) # random
     """
-    return mannwhitneyu(real[feature], synth[feature],
-                        alternative='two-sided', **kwargs)
+    return mannwhitneyu(
+        real[feature], synth[feature], alternative="two-sided", **kwargs
+    )
 
 
 def wilcoxon(real, synth, feature, **kwargs):
-    """ Hypothesis Test: Wilcoxon
+    """Hypothesis Test: Wilcoxon
 
     The Wilcoxon test compares the distributions of paired data. It does this
     by ranking the differences.
@@ -567,7 +585,7 @@ def wilcoxon(real, synth, feature, **kwargs):
 
 
 def kruskal_wallis(real, synth, feature, **kwargs):
-    """ Hypothesis Test: Kruskal-Wallis
+    """Hypothesis Test: Kruskal-Wallis
 
     The Kruskal-Wallis test compares the distributions of data by examining how
     well-mixed they are when pooled. This is acheived by ranking the pooled
@@ -631,5 +649,5 @@ def kruskal_wallis(real, synth, feature, **kwargs):
     return kruskal(real[feature], synth[feature], **kwargs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
