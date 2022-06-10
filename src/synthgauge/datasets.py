@@ -1,3 +1,5 @@
+""" Functions for creating toy datasets. """
+
 import random
 
 import numpy as np

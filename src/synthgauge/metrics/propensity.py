@@ -1,3 +1,5 @@
+""" Propensity-based utility metrics. """
+
 import random
 import warnings
 from collections import namedtuple

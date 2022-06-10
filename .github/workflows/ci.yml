@@ -29,6 +29,11 @@ jobs:
         run: |
           python -m pytest tests
 
+      - name: Check absolute documentation coverage
+        run: |
+          python -m pip install interrogate
+          python -m interrogate --ignore-init-method --fail-under=100 src
+
       - name: Check code format
         run: |
           python -m pip install black
