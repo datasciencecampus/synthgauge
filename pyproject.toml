@@ -7,7 +7,7 @@ line-length = 79
 
 [tool.isort]
 profile = "black"
-line-length = 79
+line_length = 79
 
 [tool.interrogate]
 ignore-init-method = true
