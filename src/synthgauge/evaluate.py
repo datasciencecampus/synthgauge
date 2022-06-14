@@ -66,10 +66,6 @@ class Evaluator(object):
         self.real_data = real
         self.synth_data = synth
 
-    def _feat_valid(self, feat):
-        """Checks if feature is valid common feature"""
-        return feat in self.feature_names
-
     def describe_numeric(self):
         """Summarise numerical features
 
@@ -148,14 +144,13 @@ class Evaluator(object):
         """
         try:
             getattr(metrics, metric_name)
-            if metric_alias is None:
-                self.__metrics.update({metric_name: metric_kwargs})
-            else:
-                metric_kwargs.update({"metric_name": metric_name})
-                self.__metrics.update({metric_alias: metric_kwargs})
+            metric_kwargs["metric_name"] = metric_name
+            alias = metric_name if metric_alias is None else metric_alias
+            self.__metrics.update({alias: metric_kwargs})
+
         except AttributeError:
             raise NotImplementedError(
-                f"Metric '{metric_name}' is not " "implemented"
+                f"Metric '{metric_name}' is not implemented"
             )
 
     def add_custom_metric(self, metric_name, metric_func, **metric_kwargs):
@@ -181,10 +176,12 @@ class Evaluator(object):
         **metric_kwargs : dict, optional
             Extra arguments to be passed to `metric_func` during evaluation.
         """
-        metric_kwargs.update({"metric_func": metric_func})
+        metric_kwargs.update(
+            {"metric_func": metric_func, "metric_name": metric_name}
+        )
         self.__metrics.update({metric_name: metric_kwargs})
 
-    def copy_metrics(self, Other):
+    def copy_metrics(self, other):
         """Copy metrics from another Evaluator object
 
         To facilitate consistent comparisons of different synthetic datasets,
@@ -193,13 +190,13 @@ class Evaluator(object):
 
         Parameters
         ----------
-        Other: Evaluator
+        other: Evaluator
             The other evaluator object from which the metrics dictionary will
             be copied.
         """
-        if not isinstance(Other, Evaluator):
-            raise TypeError("Other must be of class Evaluator")
-        self.__metrics = deepcopy(Other.metrics)
+        if not isinstance(other, Evaluator):
+            raise TypeError("`other` must be of class Evaluator")
+        self.__metrics = deepcopy(other.metrics)
 
     def save_metrics(self, filename):
         """Save metrics to disk
@@ -240,7 +237,8 @@ class Evaluator(object):
         if len(invalid_metrics) > 0:
             invalid_str = ", ".join(invalid_metrics)
             raise ValueError(f"Invalid metrics encountered in: {invalid_str}.")
-        elif overwrite:
+
+        if overwrite:
             self.__metrics = new_metrics
         else:
             self.__metrics.update(new_metrics)
@@ -303,10 +301,7 @@ class Evaluator(object):
 
         metrics_copy = deepcopy(self.__metrics)
         for metric, kwargs in metrics_copy.items():
-            if "metric_name" in kwargs.keys():
-                metric_name = kwargs.pop("metric_name")
-            else:
-                metric_name = metric
+            metric_name = kwargs.pop("metric_name")
             if metric_name in metrics.__dict__.keys():
                 metric_func = getattr(metrics, metric_name)
             else:
@@ -315,7 +310,7 @@ class Evaluator(object):
                 self.real_data, self.synth_data, **kwargs
             )
 
-        self.metric_results = {k: v for k, v in results.items()}
+        self.metric_results = dict(results)
 
         if as_df:
             tidy_results = {}

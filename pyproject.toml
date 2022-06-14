@@ -13,3 +13,6 @@ line_length = 79
 ignore-init-method = true
 fail-under = 100
 verbose = 1
+
+[tool.coverage.report]
+omit = ["src/**/__init__.py"]

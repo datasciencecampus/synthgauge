@@ -9,6 +9,7 @@ isort>=5.10.1
 pre-commit>=2.17.0
 
 # tests
+hypothesis>=6.47.2
 pytest>=6.2.5
 
 # docs
