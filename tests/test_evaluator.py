@@ -214,9 +214,14 @@ def test_save_and_load_metrics_valid(tmp_path, evaluator, metric, overwrite):
     evaluator.save_metrics(path)
 
     old_metrics = dict(evaluator.metrics)
-    new_metrics = {"xyz": "foo"}
+    new_metrics = {"xyz": {"metric_func": lambda x: 0}}
+    new_metric_name = list(new_metrics.keys())[0]
 
-    evaluator.__metrics = new_metrics
+    evaluator = sg.Evaluator(evaluator.real_data, evaluator.synth_data)
+    evaluator.add_custom_metric(
+        new_metric_name, new_metrics[new_metric_name]["metric_func"]
+    )
+
     evaluator.load_metrics(path, overwrite)
 
     assert path.exists()
