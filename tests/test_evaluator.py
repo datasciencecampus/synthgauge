@@ -175,13 +175,10 @@ def test_add_metric_implemented(evaluator, metric, alias, kwargs):
     """Check that any implemented metric can be added."""
 
     evaluator.add_metric(metric, alias, **kwargs)
+    key = metric if alias is None else alias
 
     assert isinstance(evaluator.metrics, dict)
-
-    if alias is None:
-        assert evaluator.metrics == {metric: {**kwargs}}
-    else:
-        assert evaluator.metrics == {alias: {"metric_name": metric, **kwargs}}
+    assert evaluator.metrics == {key: {"metric_name": metric, **kwargs}}
 
 
 @given(evaluators(), st.text(alphabet=string.ascii_letters, min_size=1))
@@ -199,7 +196,9 @@ def test_add_custom_metric(evaluator, name, func):
 
     evaluator.add_custom_metric(name, func)
 
-    assert evaluator.metrics == {name: {"metric_func": func}}
+    assert evaluator.metrics == {
+        name: {"metric_name": name, "metric_func": func}
+    }
 
 
 @given(evaluators(), st.sampled_from(implemented_metrics))
@@ -236,8 +235,13 @@ def test_save_and_load_metrics_valid(tmp_path, evaluator, metric, overwrite):
     evaluator.save_metrics(path)
 
     old_metrics = dict(evaluator.metrics)
-    new_metrics = {"xyz": {"metric_func": lambda x: 0}}
-    new_metric_name = list(new_metrics.keys())[0]
+    new_metric_name = "xyz"
+    new_metrics = {
+        new_metric_name: {
+            "metric_func": lambda x: 0,
+            "metric_name": new_metric_name,
+        }
+    }
 
     evaluator = sg.Evaluator(evaluator.real_data, evaluator.synth_data)
     evaluator.add_custom_metric(
@@ -276,7 +280,7 @@ def test_drop_metric_present(evaluator, metric):
     dropped = evaluator.drop_metric(metric)
 
     assert evaluator.metrics == {}
-    assert dropped == {}
+    assert dropped is None
 
 
 @given(evaluators(), st.sampled_from(implemented_metrics))
@@ -317,10 +321,18 @@ def test_evaluate_implemented_metric(evaluator, metric, use_alias, as_df):
     if as_df:
         assert isinstance(results, pd.DataFrame)
         assert list(results.columns) == ["value"]
+
+        if len(results) > 1:
+            evaluator_results = list(*evaluator.metric_results.values())
+        else:
+            evaluator_results = list(evaluator.metric_results.values())
+
+        assert evaluator_results == results["value"].to_list()
         idxs = list(results.index)
 
     else:
         assert isinstance(results, dict)
+        assert evaluator.metric_results == results
         idxs = list(results.keys())
 
     assert idxs == [metric] or [
@@ -337,5 +349,6 @@ def test_evaluate_custom_metric(evaluator, func):
     results = evaluator.evaluate()
 
     assert isinstance(results, dict)
+    assert evaluator.metric_results == results
     assert list(results.keys()) == ["xyz"]
     assert isinstance(results.get("xyz"), float)
