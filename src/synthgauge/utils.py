@@ -1,18 +1,9 @@
 """ Utility functions for handling real and synthetic data. """
 
-import pickle
 import warnings
 
 import numpy as np
 import pandas as pd
-
-
-def load_pickle(src):
-    """Load pickle file into object."""
-
-    with open(src, "rb") as pf:
-        data = pickle.load(pf)
-    return data
 
 
 def df_combine(
@@ -104,20 +95,26 @@ def df_separate(
 
     Returns
     -------
-    pandas.DataFrame, pandas.DataFrame
+    real, synth: pandas.DataFrame, pandas.DataFrame
         Two DataFrame objects containing the real data and synthetic
         data respectively.
     """
-    feats = feats or data.columns
-    if isinstance(feats, str):
-        feats = [feats]
 
-    real = data[data[source_col_name] == source_val_real][feats].copy()
-    synth = data[data[source_col_name] == source_val_synth][feats].copy()
+    if isinstance(feats, str):
+        columns = [feats]
+    elif isinstance(feats, list):
+        columns = list(feats)
+    else:
+        columns = list(data.columns)
+
+    columns = columns + [source_col_name]
+
+    real = data[data[source_col_name] == source_val_real][columns].copy()
+    synth = data[data[source_col_name] == source_val_synth][columns].copy()
 
     if drop_source_col:
-        real.drop(columns=source_col_name, inplace=True)
-        synth.drop(columns=source_col_name, inplace=True)
+        real.drop(columns=source_col_name, inplace=True, errors="ignore")
+        synth.drop(columns=source_col_name, inplace=True, errors="ignore")
 
     return real, synth
 
