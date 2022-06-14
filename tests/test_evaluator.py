@@ -16,7 +16,14 @@ from synthgauge.metrics import __all__ as implemented_metrics
 
 
 @st.composite
-def datasets(draw, max_columns=5, available_dtypes=("float", "object")):
+def datasets(
+    draw,
+    max_columns=5,
+    available_dtypes=("float", "object"),
+    min_value=None,
+    max_value=None,
+    allow_nan=True,
+):
     """Create a pair of datasets to act as 'real' and 'synthetic'."""
 
     ncols = draw(st.integers(1, max_columns))
@@ -25,7 +32,22 @@ def datasets(draw, max_columns=5, available_dtypes=("float", "object")):
 
     columns = []
     for name, dtype in zip(names, dtypes):
-        elements = st.text(min_size=1) if dtype == "object" else None
+
+        if dtype == "object":
+            elements = st.text(alphabet=string.ascii_letters, min_size=1)
+        elif dtype == "float":
+            elements = st.floats(
+                min_value, max_value, allow_infinity=False, allow_nan=allow_nan
+            )
+        elif dtype == "int":
+            elements = st.integers(min_value, max_value)
+        elif dtype == "bool":
+            elements = st.booleans()
+        else:
+            raise ValueError(
+                "Available data types are int, float, object and bool."
+            )
+
         columns.append(column(name, dtype=dtype, elements=elements))
 
     real = draw(data_frames(columns=columns))
@@ -97,7 +119,7 @@ def test_describe_methods(datasets):
     """Check that a numeric summary table is returned."""
 
     real, synth = datasets
-    assume(not (real.empty | synth.empty))
+    assume(not (real.empty or synth.empty))
 
     common = real.columns.intersection(synth.columns)
     num_columns = real[common].select_dtypes(include="number").columns
@@ -244,3 +266,76 @@ def test_load_metrics_invalid(tmp_path, evaluator, invalid_metric):
 
     with pytest.raises(ValueError):
         evaluator.load_metrics(path)
+
+
+@given(evaluators(), st.sampled_from(implemented_metrics))
+def test_drop_metric_present(evaluator, metric):
+    """Check that a metric can be dropped from an Evaluator."""
+
+    evaluator.add_metric(metric)
+    dropped = evaluator.drop_metric(metric)
+
+    assert evaluator.metrics == {}
+    assert dropped == {}
+
+
+@given(evaluators(), st.sampled_from(implemented_metrics))
+def test_drop_metric_absent(evaluator, metric):
+    """Check that None is returned when attempting to remove a metric that is
+    not present in an Evaluator."""
+
+    dropped = evaluator.drop_metric(metric)
+
+    assert evaluator.metrics == {}
+    assert dropped is None
+
+
+@given(
+    evaluators(available_dtypes=("float",), allow_nan=False),
+    st.sampled_from(("wasserstein", "kolmogorov_smirnov", "kruskal_wallis")),
+    st.booleans(),
+    st.booleans(),
+)
+def test_evaluate_implemented_metric(evaluator, metric, use_alias, as_df):
+    """Check that an implemented metric can be evaluated and presented.
+    To ease writing this test, we only consider numeric data and a small
+    selection of univariate metrics with the same signature."""
+
+    assume(
+        not (
+            evaluator.real_data.empty
+            or evaluator.synth_data.empty
+            or evaluator.real_data.equals(evaluator.synth_data)
+        )
+    )
+
+    alias = metric if use_alias else None
+    evaluator.add_metric(metric, metric_alias=alias, feature="a")
+
+    results = evaluator.evaluate(as_df)
+
+    if as_df:
+        assert isinstance(results, pd.DataFrame)
+        assert list(results.columns) == ["value"]
+        idxs = list(results.index)
+
+    else:
+        assert isinstance(results, dict)
+        idxs = list(results.keys())
+
+    assert idxs == [metric] or [
+        "-".join((metric, item)) for item in ("statistic", "pvalue")
+    ]
+
+
+@given(evaluators(), st.functions(like=lambda r, s: None, returns=st.floats()))
+def test_evaluate_custom_metric(evaluator, func):
+    """Check that a custom (nonsense) metric can be evaluated and presented."""
+
+    evaluator.add_custom_metric("xyz", func)
+
+    results = evaluator.evaluate()
+
+    assert isinstance(results, dict)
+    assert list(results.keys()) == ["xyz"]
+    assert isinstance(results.get("xyz"), float)
