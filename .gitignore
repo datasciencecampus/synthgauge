@@ -1,5 +1,7 @@
 # named files
 .DS_Store
+.coverage
+.hypothesis
 
 # named directories
 __pycache__
