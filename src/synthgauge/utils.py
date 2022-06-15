@@ -227,17 +227,17 @@ def cat_encode(
             "through unchanged."
         )
 
-    if return_all:
-        out_df = df.copy()
-    else:
-        out_df = df[feats].copy()
-
     cat_dict = {} if not convert_only else None
 
     if force:
         enc_fts = feats
     else:
         enc_fts = list(set(feats).difference(non_obj))
+
+    if return_all:
+        out_df = df.copy()
+    else:
+        out_df = df[enc_fts].copy()
 
     for ft in enc_fts:
         out_df[ft] = out_df[ft].astype("category")
