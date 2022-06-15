@@ -2,6 +2,7 @@
 
 import string
 
+import numpy as np
 import pandas as pd
 from hypothesis import assume, given
 from hypothesis import strategies as st
@@ -107,3 +108,32 @@ def test_df_separate(datasets, feats, drop):
             original = pd.DataFrame(original[feats])
 
         assert original.equals(separate)
+
+
+@given(
+    datasets(allow_nan=False),
+    st.one_of(st.none(), st.sampled_from(("a", ["a"]))),
+)
+def test_launder(datasets, feats):
+    """Check that two datasets can have their features 'laundered'."""
+
+    real, synth = datasets
+    assume(not (real.empty or synth.empty))
+
+    laundered = utils.launder(real, synth, feats)
+
+    for label, original, clean in zip(
+        ("real", "synth"), (real, synth), laundered
+    ):
+
+        if isinstance(feats, str):
+            assert np.array_equal(original[[feats]].values, clean.values)
+            assert list(clean.columns) == [f"{feats}_{label}"]
+        elif isinstance(feats, list):
+            assert np.array_equal(original[feats].values, clean.values)
+            assert list(clean.columns) == [f"{feat}_{label}" for feat in feats]
+        else:
+            assert np.array_equal(original.values, clean.values)
+            assert list(clean.columns) == [
+                f"{feat}_{label}" for feat in original.columns
+            ]
