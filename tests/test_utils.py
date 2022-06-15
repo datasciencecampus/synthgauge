@@ -15,7 +15,7 @@ from synthgauge import utils
 @st.composite
 def datasets(
     draw,
-    max_columns=5,
+    max_columns=3,
     available_dtypes=("float", "object"),
     min_value=None,
     max_value=None,
@@ -128,13 +128,13 @@ def test_launder(datasets, feats):
     ):
 
         if isinstance(feats, str):
-            assert np.array_equal(original[[feats]].values, clean.values)
+            assert np.array_equal(original[[feats]], clean)
             assert list(clean.columns) == [f"{feats}_{label}"]
         elif isinstance(feats, list):
-            assert np.array_equal(original[feats].values, clean.values)
+            assert np.array_equal(original[feats], clean)
             assert list(clean.columns) == [f"{feat}_{label}" for feat in feats]
         else:
-            assert np.array_equal(original.values, clean.values)
+            assert np.array_equal(original, clean)
             assert list(clean.columns) == [
                 f"{feat}_{label}" for feat in original.columns
             ]
@@ -224,12 +224,32 @@ def test_cat_encode_mixed(datasets, force):
         assert cats.keys() == dtypes.keys()
 
     else:
-        numeric_columns = data.select_dtypes(include="number").columns
-        assert set(data.columns).difference(out.columns) == set(
-            numeric_columns
-        )
+        numeric_columns = set(data.select_dtypes(include="number").columns)
+        assert set(data.columns).difference(out.columns) == numeric_columns
 
     for col, categories in cats.items():
         assert pd.api.types.is_numeric_dtype(out[col])
         assert isinstance(categories, pd.Index)
         assert data[col].to_list() == [categories[code] for code in out[col]]
+
+
+@given(datasets(available_dtypes=("object",)))
+def test_cat_encode_convert_only(datasets):
+    """Check that a dataset can be categorised without being encoded."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    out, cats = utils.cat_encode(data, convert_only=True)
+
+    columns = list(data.columns)
+
+    assert cats is None
+    assert isinstance(out, pd.DataFrame)
+    assert set(data.columns) == set(out.columns)
+    assert all(np.array_equal(data[col], (out[col].values)) for col in columns)
+
+    for col in columns:
+        assert np.array_equal(data[col], out[col])
+        assert isinstance(out[col].dtype, pd.CategoricalDtype)
+        assert set(out[col].cat.categories) == set(data[col].unique())
