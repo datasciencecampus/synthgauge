@@ -309,7 +309,7 @@ def test_evaluate_implemented_metric(evaluator, metric, use_alias, as_df):
         not (
             evaluator.real_data.empty
             or evaluator.synth_data.empty
-            or evaluator.real_data.equals(evaluator.synth_data)
+            or evaluator.real_data["a"].equals(evaluator.synth_data["a"])
         )
     )
 

@@ -1,18 +1,9 @@
 """ Utility functions for handling real and synthetic data. """
 
-import pickle
 import warnings
 
 import numpy as np
 import pandas as pd
-
-
-def load_pickle(src):
-    """Load pickle file into object."""
-
-    with open(src, "rb") as pf:
-        data = pickle.load(pf)
-    return data
 
 
 def df_combine(
@@ -104,20 +95,26 @@ def df_separate(
 
     Returns
     -------
-    pandas.DataFrame, pandas.DataFrame
+    real, synth: pandas.DataFrame, pandas.DataFrame
         Two DataFrame objects containing the real data and synthetic
         data respectively.
     """
-    feats = feats or data.columns
-    if isinstance(feats, str):
-        feats = [feats]
 
-    real = data[data[source_col_name] == source_val_real][feats].copy()
-    synth = data[data[source_col_name] == source_val_synth][feats].copy()
+    if isinstance(feats, str):
+        columns = [feats]
+    elif isinstance(feats, list):
+        columns = list(feats)
+    else:
+        columns = list(data.columns)
+
+    columns = columns + [source_col_name]
+
+    real = data[data[source_col_name] == source_val_real][columns].copy()
+    synth = data[data[source_col_name] == source_val_synth][columns].copy()
 
     if drop_source_col:
-        real.drop(columns=source_col_name, inplace=True)
-        synth.drop(columns=source_col_name, inplace=True)
+        real.drop(columns=source_col_name, inplace=True, errors="ignore")
+        synth.drop(columns=source_col_name, inplace=True, errors="ignore")
 
     return real, synth
 
@@ -230,17 +227,17 @@ def cat_encode(
             "through unchanged."
         )
 
-    if return_all:
-        out_df = df.copy()
-    else:
-        out_df = df[feats].copy()
-
     cat_dict = {} if not convert_only else None
 
     if force:
         enc_fts = feats
     else:
         enc_fts = list(set(feats).difference(non_obj))
+
+    if return_all:
+        out_df = df.copy()
+    else:
+        out_df = df[enc_fts].copy()
 
     for ft in enc_fts:
         out_df[ft] = out_df[ft].astype("category")
@@ -283,11 +280,12 @@ def feature_density_diff(real, synth, feature, bins=10):
         The edges of the bins.
 
     """
-    enc_real, _ = cat_encode(real, feats=feature)
-    enc_synth, _ = cat_encode(synth, feats=feature)
 
-    full_range = np.concatenate((enc_real[feature], enc_synth[feature]))
-    bin_edges = np.histogram_bin_edges(full_range, bins=bins)
+    combined = df_combine(real, synth, feats=feature)
+    encoded, _ = cat_encode(combined, feats=feature, return_all=True)
+    enc_real, enc_synth = df_separate(encoded, "source")
+
+    bin_edges = np.histogram_bin_edges(encoded[feature], bins=bins)
 
     real_hist, _ = np.histogram(
         enc_real[feature], bins=bin_edges, density=True
