@@ -4,6 +4,7 @@ import string
 
 import numpy as np
 import pandas as pd
+import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 from hypothesis.extra.pandas import column, data_frames
@@ -137,3 +138,98 @@ def test_launder(datasets, feats):
             assert list(clean.columns) == [
                 f"{feat}_{label}" for feat in original.columns
             ]
+
+
+@given(
+    datasets(available_dtypes=("object",)),
+    st.one_of(st.none(), st.sampled_from(("a", ["a"]))),
+)
+def test_cat_encode_categorical(datasets, feats):
+    """Check that a dataset with object-only columns can be categorised
+    and integer-encoded."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    if isinstance(feats, str):
+        columns = [feats]
+    elif feats is None:
+        columns = list(data.columns)
+    else:
+        columns = list(feats)
+
+    out, cats = utils.cat_encode(data, feats)
+
+    assert isinstance(out, pd.DataFrame)
+    assert set(data[columns].columns) == set(out.columns)
+
+    assert isinstance(cats, dict)
+    assert set(cats.keys()) == set(columns)
+
+    for col, categories in cats.items():
+
+        assert pd.api.types.is_integer_dtype(out[col])
+        assert isinstance(categories, pd.Index)
+        assert data[col].to_list() == [categories[code] for code in out[col]]
+
+
+@given(datasets(available_dtypes=("float",)), st.booleans())
+def test_cat_encode_numeric(datasets, return_all):
+    """Check that a warning is sent if the dataset to be encoded has
+    numeric columns.
+
+    Also, since we are only using numeric columns, check the output is
+    empty unless we request everything be returned."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    columns = list(data.columns)
+
+    with pytest.warns(
+        UserWarning, match="^Selected features include non-object types"
+    ):
+        out, cats = utils.cat_encode(data, columns, return_all=return_all)
+
+    assert cats == {}
+
+    if return_all:
+        assert out.equals(data)
+    else:
+        assert out.empty
+        assert out.index.equals(data.index)
+        assert out.columns.equals(pd.Index([]))
+
+
+@given(datasets(allow_nan=False), st.booleans())
+def test_cat_encode_mixed(datasets, force):
+    """Check that a mixed-type dataset can be cat-encoded. We also check
+    the `force` parameter here."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    dtypes = data.dtypes.to_dict()
+    assume(len(set(dtypes.values())) > 1)
+
+    columns = list(data.columns)
+
+    with pytest.warns(
+        UserWarning, match="^Selected features include non-object types"
+    ):
+        out, cats = utils.cat_encode(data, columns, force=force)
+
+    if force:
+        assert set(out.columns) == set(columns)
+        assert cats.keys() == dtypes.keys()
+
+    else:
+        numeric_columns = data.select_dtypes(include="number").columns
+        assert set(data.columns).difference(out.columns) == set(
+            numeric_columns
+        )
+
+    for col, categories in cats.items():
+        assert pd.api.types.is_numeric_dtype(out[col])
+        assert isinstance(categories, pd.Index)
+        assert data[col].to_list() == [categories[code] for code in out[col]]
