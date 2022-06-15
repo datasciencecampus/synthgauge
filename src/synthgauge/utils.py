@@ -280,11 +280,12 @@ def feature_density_diff(real, synth, feature, bins=10):
         The edges of the bins.
 
     """
-    enc_real, _ = cat_encode(real, feats=feature)
-    enc_synth, _ = cat_encode(synth, feats=feature)
 
-    full_range = np.concatenate((enc_real[feature], enc_synth[feature]))
-    bin_edges = np.histogram_bin_edges(full_range, bins=bins)
+    combined = df_combine(real, synth, feats=feature)
+    encoded, _ = cat_encode(combined, feats=feature, return_all=True)
+    enc_real, enc_synth = df_separate(encoded, "source")
+
+    bin_edges = np.histogram_bin_edges(encoded[feature], bins=bins)
 
     real_hist, _ = np.histogram(
         enc_real[feature], bins=bin_edges, density=True
