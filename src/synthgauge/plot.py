@@ -78,12 +78,12 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
 
     """
 
-    if isinstance(feats, Index):
-        feats = feats
+    if feats is None:
+        feats = list(df.columns)
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or df.columns
+        feats = feats
 
     n_rows = int(np.ceil(len(feats) / figcols))
     fig, axes = plt.subplots(n_rows, figcols, figsize=figsize)
