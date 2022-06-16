@@ -8,7 +8,7 @@ from hypothesis import strategies as st
 
 from synthgauge import utils
 
-from .utils import datasets
+from .utils import datasets, resolve_features
 
 
 @given(datasets(), st.one_of(st.none(), st.sampled_from(("a", ["a"]))))
@@ -19,12 +19,7 @@ def test_df_combine(datasets, feats):
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    if isinstance(feats, str):
-        columns = list([feats])
-    elif isinstance(feats, list):
-        columns = list(feats)
-    else:
-        columns = list(real.columns)
+    columns = resolve_features(feats, real)
 
     combined = utils.df_combine(real, synth, feats)
 
@@ -109,12 +104,7 @@ def test_cat_encode_categorical(datasets, feats):
     data, _ = datasets
     assume(not data.empty)
 
-    if isinstance(feats, str):
-        columns = [feats]
-    elif feats is None:
-        columns = list(data.columns)
-    else:
-        columns = list(feats)
+    columns = resolve_features(feats, data)
 
     out, cats = utils.cat_encode(data, feats)
 
