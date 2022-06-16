@@ -205,6 +205,7 @@ def test_cat_encode_convert_only(datasets):
 
 
 @given(datasets(available_dtypes=("object",)), st.integers(1, 10))
+@settings(deadline=None)
 def test_feature_density_diff(datasets, bins):
     """Check that histogram-based density differences can be computed
     correctly. For the ease of testing, we only look at object (str)
