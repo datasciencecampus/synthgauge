@@ -1,6 +1,7 @@
 """Property-based tests for plotting functions."""
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pytest
 from hypothesis import HealthCheck, given, settings
@@ -369,3 +370,65 @@ def test_plot_crosstab_colour_palette(real, synth, params, cmap):
 
     assert rax.collections[0].cmap is sax.collections[0].cmap
     assert rax.collections[0].cmap is cbar.collections[-1].cmap
+
+
+@given(
+    feature=st.sampled_from(("age", "height", "weight")),
+    n_quantiles=st.one_of(st.none(), st.integers(2, 100)),
+)
+@plot_settings
+def test_plot_qq(real, synth, feature, n_quantiles):
+    """Check that a quantile-quantile plot can be created correctly for
+    two data columns. For the sake of ease, we only consider numeric
+    columns."""
+
+    fig = plot.plot_qq(real, synth, feature, n_quantiles)
+    ax = fig.axes[0]
+
+    assert isinstance(fig, plt.Figure)
+    assert fig.axes == [ax]
+    assert isinstance(ax, plt.Subplot)
+
+    assert ax.get_xlabel() == "real data quantiles"
+    assert ax.get_ylabel() == "synth data quantiles"
+    assert ax.get_title() == f'Q-Q Plot for "{feature}"'
+
+    scatter = ax.collections[0]._offsets.data
+    line = ax.lines[0]._xy
+
+    assert (
+        len(scatter) == n_quantiles
+        if isinstance(n_quantiles, int)
+        else len(real)
+    )
+    for j, data in enumerate((real, synth)):
+
+        points = scatter[:, j]
+        assert np.min(points) == data[feature].min()
+        assert np.max(points) == data[feature].max()
+
+        if n_quantiles is None or n_quantiles == len(data):
+            assert np.array_equal(points, data[feature].sort_values())
+
+    expected_line_ends = [
+        min(real[feature].min(), synth[feature].min()),
+        max(real[feature].max(), synth[feature].max()),
+    ]
+
+    assert np.array_equal(line[:, 0], line[:, 1])
+    assert np.array_equal(line[:, 0], expected_line_ends)
+
+
+@given(feature=st.sampled_from(("age", "height", "weight")))
+@plot_settings
+def test_plot_qq_unequal_lengths(real, synth, feature):
+    """Check that the real data length is preserved when the datasets
+    do not have the same number of rows and a number of quantiles is not
+    specified."""
+
+    synth = synth.iloc[:-1, :]
+
+    fig = plot.plot_qq(real, synth, feature)
+    ax = fig.axes[0]
+
+    assert len(ax.collections[0]._offsets.data) == len(real)
