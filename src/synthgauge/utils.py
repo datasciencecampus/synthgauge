@@ -249,7 +249,7 @@ def cat_encode(
     return out_df, cat_dict
 
 
-def feature_density_diff(real, synth, feature, bins=10):
+def feature_density_diff(real, synth, feature, bins=10, force=False):
     """Computes the difference between real and synth feature densities.
 
     For the specified feature the density is computed across `bins` in both
@@ -282,7 +282,9 @@ def feature_density_diff(real, synth, feature, bins=10):
     """
 
     combined = df_combine(real, synth, feats=feature)
-    encoded, _ = cat_encode(combined, feats=feature, return_all=True)
+    encoded, _ = cat_encode(
+        combined, feats=feature, force=force, return_all=True
+    )
     enc_real, enc_synth = df_separate(encoded, "source")
 
     bin_edges = np.histogram_bin_edges(encoded[feature], bins=bins)
