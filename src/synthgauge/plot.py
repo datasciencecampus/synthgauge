@@ -653,7 +653,7 @@ def plot_feat_density_diff(
 
     if len(feats) == 1:
         diff_hist, diff_edges = feature_density_diff(
-            real, synth, feats, feat_bins, force=True
+            real, synth, feats, feat_bins
         )
         xlabel = f"{feats[0]} Binned"
         ylabel = "Density Difference"
@@ -662,8 +662,7 @@ def plot_feat_density_diff(
     else:
         # TODO: option to have different bins for each feature
         diffs = [
-            feature_density_diff(real, synth, f, feat_bins, force=True)[0]
-            for f in feats
+            feature_density_diff(real, synth, f, feat_bins)[0] for f in feats
         ]
 
         diff_hist, diff_edges = np.histogram(
