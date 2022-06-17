@@ -6,7 +6,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from pandas import DataFrame, Index, concat, crosstab, cut
+from pandas import DataFrame, concat, crosstab, cut
 from pandas.core.dtypes.common import (
     is_categorical_dtype,
     is_numeric_dtype,
@@ -643,16 +643,17 @@ def plot_feat_density_diff(
     matplotlib.axes._subplots.AxesSubplot
         The matplotlib axes containing the plot.
     """
-    if isinstance(feats, Index):
-        feats = feats
+
+    if feats is None:
+        feats = list(set(real.columns).intersection(synth.columns))
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns
+        feats = feats
 
     if len(feats) == 1:
         diff_hist, diff_edges = feature_density_diff(
-            real, synth, feats, feat_bins
+            real, synth, feats, feat_bins, force=True
         )
         xlabel = f"{feats[0]} Binned"
         ylabel = "Density Difference"
@@ -661,7 +662,8 @@ def plot_feat_density_diff(
     else:
         # TODO: option to have different bins for each feature
         diffs = [
-            feature_density_diff(real, synth, f, feat_bins)[0] for f in feats
+            feature_density_diff(real, synth, f, feat_bins, force=True)[0]
+            for f in feats
         ]
 
         diff_hist, diff_edges = np.histogram(
