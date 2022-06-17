@@ -1,5 +1,6 @@
 """Property-based tests for plotting functions."""
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -442,3 +443,35 @@ def test_plot_qq_error_with_categorical_feature(real, synth, feature):
         match="^The feature to plot must be numeric not of type: category$",
     ):
         _ = plot.plot_qq(real, synth, feature)
+
+
+@given(
+    feats=blood_type_feats(),
+    fbins=st.integers(min_size=1, max_size=10),
+    dbins=st.integers(min_size=1, max_size=10),
+)
+@plot_settings
+def test_plot_feat_density_diff(real, synth, feats, fbins, dbins):
+    """Check that a feature density plot can be created correctly."""
+
+    columns = resolve_features(real, feats)
+    fig = plot.plot_feat_density_diff(real, synth, feats, fbins, dbins)
+    ax = fig.axes
+    bars = ax.containers[0]
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Subplot)
+    assert isinstance(bars, mpl.container.BarContainer)
+
+    if len(columns) == 1:
+        column = columns[0]
+        assert ax.get_xlabel() == f"{column} Binned"
+        assert ax.get_ylabel() == "Density Difference"
+        assert ax.get_title() == f"Feature Density Difference for {column}"
+        assert len(bars) == fbins
+
+    else:
+        assert ax.get_xlabel() == "Difference Bins"
+        assert ax.get_ylabel() == "Count"
+        assert ax.get_title() == "Histogram of Density Differences"
+        assert len(bars) == dbins
