@@ -446,17 +446,15 @@ def test_plot_qq_error_with_categorical_feature(real, synth, feature):
 
 
 @given(
-    feats=blood_type_feats(),
-    fbins=st.integers(min_size=1, max_size=10),
-    dbins=st.integers(min_size=1, max_size=10),
+    feats=blood_type_feats, fbins=st.integers(1, 10), dbins=st.integers(1, 10)
 )
 @plot_settings
 def test_plot_feat_density_diff(real, synth, feats, fbins, dbins):
     """Check that a feature density plot can be created correctly."""
 
-    columns = resolve_features(real, feats)
+    columns = resolve_features(feats, real)
     fig = plot.plot_feat_density_diff(real, synth, feats, fbins, dbins)
-    ax = fig.axes
+    ax = fig.axes[0]
     bars = ax.containers[0]
 
     assert isinstance(fig, plt.Figure)
