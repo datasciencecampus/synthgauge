@@ -446,9 +446,9 @@ def plot_crosstab(
     synth: pandas.DataFrame
         DataFrame containing the sythetic data.
     x: str
-        Feature to plot on x axis. Must be column in `df`.
+        Feature to plot on x axis. Must be in `real` and `synth`.
     y: str
-        Feature to plot on y axis. Must be column in `df`.
+        Feature to plot on y axis. Must be in `real` and `synth`.
     x_bins, y_bins: array_like or int or str, default='auto'
         If ``array_like`` must be sequence of bin edges. If ``int``, specifies
         the number of bins to use. If ``str``, specifies the method used to
@@ -545,7 +545,8 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     synth: pandas.DataFrame
         DataFrame containing the sythetic data.
     feature: str
-        Feature to plot.
+        Feature to plot. This feature must be a numeric attribute
+        present in `real` and `synth`.
     n_quantiles: int, optional
         Number of quantiles to calculate. If ``None`` (the default) and
         ``real[feature]`` has the same length as ``synth[feature]`` then
@@ -559,6 +560,13 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     -------
     matplotlib.figure.Figure
     """
+
+    dtype = real[feature].dtype
+    if not is_numeric_dtype(dtype):
+        raise ValueError(
+            f"The feature to plot must be numeric not of type: {dtype}"
+        )
+
     if n_quantiles is None:
         if len(real[feature]) == len(synth[feature]):
             # Matching lengths do not require computing quantiles

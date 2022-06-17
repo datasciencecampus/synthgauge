@@ -379,8 +379,7 @@ def test_plot_crosstab_colour_palette(real, synth, params, cmap):
 @plot_settings
 def test_plot_qq(real, synth, feature, n_quantiles):
     """Check that a quantile-quantile plot can be created correctly for
-    two data columns. For the sake of ease, we only consider numeric
-    columns."""
+    two numeric columns."""
 
     fig = plot.plot_qq(real, synth, feature, n_quantiles)
     ax = fig.axes[0]
@@ -422,13 +421,24 @@ def test_plot_qq(real, synth, feature, n_quantiles):
 @given(feature=st.sampled_from(("age", "height", "weight")))
 @plot_settings
 def test_plot_qq_unequal_lengths(real, synth, feature):
-    """Check that the real data length is preserved when the datasets
+    """Check that the "real" data length is preserved when the datasets
     do not have the same number of rows and a number of quantiles is not
     specified."""
 
     synth = synth.iloc[:-1, :]
-
     fig = plot.plot_qq(real, synth, feature)
-    ax = fig.axes[0]
 
-    assert len(ax.collections[0]._offsets.data) == len(real)
+    assert len(fig.axes[0].collections[0]._offsets.data) == len(real)
+
+
+@given(feature=st.sampled_from(("blood_type", "eye_colour", "hair_colour")))
+@plot_settings
+def test_plot_qq_error_with_categorical_feature(real, synth, feature):
+    """Check that a ValueError is raised when `plot_qq()` is passed a
+    non-numeric feature."""
+
+    with pytest.raises(
+        ValueError,
+        match="^The feature to plot must be numeric not of type: category$",
+    ):
+        _ = plot.plot_qq(real, synth, feature)
