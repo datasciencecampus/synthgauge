@@ -507,7 +507,13 @@ def plot_crosstab(
         (freq_real, freq_synth), axes, ("REAL", "SYNTH")
     ):
         sns.heatmap(
-            freq, vmin=vmin, vmax=vmax, cmap=cmap, cbar=False, ax=ax, **kwargs
+            freq.T,
+            vmin=vmin,
+            vmax=vmax,
+            cmap=cmap,
+            cbar=False,
+            ax=ax,
+            **kwargs,
         )
         ax.set_title(title)
 
