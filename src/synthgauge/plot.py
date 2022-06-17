@@ -6,7 +6,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from pandas import DataFrame, Index, concat, crosstab, cut
+from pandas import DataFrame, concat, crosstab, cut
 from pandas.core.dtypes.common import (
     is_categorical_dtype,
     is_numeric_dtype,
@@ -78,12 +78,12 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
 
     """
 
-    if isinstance(feats, Index):
-        feats = feats
+    if feats is None:
+        feats = list(df.columns)
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or df.columns
+        feats = feats
 
     n_rows = int(np.ceil(len(feats) / figcols))
     fig, axes = plt.subplots(n_rows, figcols, figsize=figsize)
@@ -446,9 +446,9 @@ def plot_crosstab(
     synth: pandas.DataFrame
         DataFrame containing the sythetic data.
     x: str
-        Feature to plot on x axis. Must be column in `df`.
+        Feature to plot on x axis. Must be in `real` and `synth`.
     y: str
-        Feature to plot on y axis. Must be column in `df`.
+        Feature to plot on y axis. Must be in `real` and `synth`.
     x_bins, y_bins: array_like or int or str, default='auto'
         If ``array_like`` must be sequence of bin edges. If ``int``, specifies
         the number of bins to use. If ``str``, specifies the method used to
@@ -507,7 +507,13 @@ def plot_crosstab(
         (freq_real, freq_synth), axes, ("REAL", "SYNTH")
     ):
         sns.heatmap(
-            freq, vmin=vmin, vmax=vmax, cmap=cmap, cbar=False, ax=ax, **kwargs
+            freq.T,
+            vmin=vmin,
+            vmax=vmax,
+            cmap=cmap,
+            cbar=False,
+            ax=ax,
+            **kwargs,
         )
         ax.set_title(title)
 
@@ -539,7 +545,8 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     synth: pandas.DataFrame
         DataFrame containing the sythetic data.
     feature: str
-        Feature to plot.
+        Feature to plot. This feature must be a numeric attribute
+        present in `real` and `synth`.
     n_quantiles: int, optional
         Number of quantiles to calculate. If ``None`` (the default) and
         ``real[feature]`` has the same length as ``synth[feature]`` then
@@ -553,6 +560,13 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     -------
     matplotlib.figure.Figure
     """
+
+    dtype = real[feature].dtype
+    if not is_numeric_dtype(dtype):
+        raise ValueError(
+            f"The feature to plot must be numeric not of type: {dtype}"
+        )
+
     if n_quantiles is None:
         if len(real[feature]) == len(synth[feature]):
             # Matching lengths do not require computing quantiles
@@ -629,12 +643,13 @@ def plot_feat_density_diff(
     matplotlib.axes._subplots.AxesSubplot
         The matplotlib axes containing the plot.
     """
-    if isinstance(feats, Index):
-        feats = feats
+
+    if feats is None:
+        feats = list(set(real.columns).intersection(synth.columns))
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns
+        feats = feats
 
     if len(feats) == 1:
         diff_hist, diff_edges = feature_density_diff(
@@ -668,7 +683,7 @@ def plot_feat_density_diff(
     ax.set_ylabel(ylabel)
     ax.set_title(title)
 
-    return ax
+    return fig
 
 
 if __name__ == "__main__":

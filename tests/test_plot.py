@@ -1,146 +1,475 @@
-""" Tests for plotting. """
+"""Property-based tests for plotting functions."""
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pytest
-from matplotlib.figure import Figure
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from seaborn.axisgrid import JointGrid
 
+from synthgauge import plot
 from synthgauge.datasets import make_blood_types_df
-from synthgauge.plot import (
-    plot_correlation,
-    plot_crosstab,
-    plot_histogram3d,
-    plot_histograms,
-    plot_joint,
+
+from .utils import resolve_features
+
+available_columns = (
+    "age",
+    "height",
+    "weight",
+    "hair_colour",
+    "eye_colour",
+    "blood_type",
+)
+
+blood_type_feats = st.one_of(
+    st.none(),
+    st.sampled_from(available_columns),
+    st.lists(
+        st.sampled_from(available_columns), min_size=1, max_size=4, unique=True
+    ),
+)
+
+plot_settings = settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+    max_examples=15,
+    deadline=None,
 )
 
 
+@st.composite
+def joint_params(draw):
+    """Get a valid set of joint-plot parameters. Recycled by the 3D
+    histogram and crosstab plot tests."""
+
+    x, y = draw(
+        st.lists(
+            st.sampled_from(available_columns),
+            min_size=2,
+            max_size=2,
+            unique=True,
+        )
+    )
+
+    remaining_columns = list(set(available_columns).difference({x, y}))
+    groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
+
+    return x, y, groupby
+
+
 @pytest.fixture
-def make_real():
-    """Real data."""
+def real():
+    """Make some real (noiseless) data."""
+
     return make_blood_types_df(0, 0)
 
 
 @pytest.fixture
-def make_synth():
-    """Synthetic data that differs from the real data."""
+def synth():
+    """Make some synthetic (noisy) data."""
+
     return make_blood_types_df(1, 0)
 
 
-def test_plot_hist(make_real):
-    """Check correct figure type returned with number of
-    axes matching number of columns in the DataFrame.
-    """
-    fig = plot_histograms(make_real)
-    assert isinstance(fig, Figure)
-    assert len(fig.axes) == len(make_real.columns)
-
-
-@pytest.mark.parametrize(
-    "x, y",
-    [("age", "height"), ("age", "eye_colour"), ("eye_colour", "hair_colour")],
+@given(
+    st.lists(st.text(min_size=1), min_size=1),
+    st.sampled_from(("x", "y")),
+    st.integers(1, 10),
 )
-def test_plot_joint(make_real, x, y):
-    """Check correct figure type returned with expected axes"""
-    fig = plot_joint(make_real, x, y)
+@plot_settings
+def test_suggest_label_rotation(labels, axis, limit):
+    """Check that axis tick label rotation can be flagged correctly."""
 
-    # Check figure type
+    _, ax = plt.subplots()
+    getattr(ax, f"set_{axis}ticks")(range(len(labels)))
+    getattr(ax, f"set_{axis}ticklabels")(labels)
+
+    rotate = plot.suggest_label_rotation(ax, axis, limit)
+    assert rotate is any(len(label) > limit for label in labels)
+
+
+@given(feats=blood_type_feats)
+@plot_settings
+def test_plot_histograms(real, feats):
+    """Check that a histogram (or set thereof) can be created from a dataset
+    regardless of its data types."""
+
+    columns = resolve_features(feats, real)
+    num_columns = len(columns)
+
+    fig = plot.plot_histograms(real, feats)
+    axes = fig.axes
+    num_axes = len(axes)
+
+    assert isinstance(fig, plt.Figure)
+
+    if num_columns % 2 == 0:
+        assert num_axes == num_columns
+    else:
+        assert num_axes == num_columns + 1
+        assert not axes[-1].has_data()
+
+    for col, ax in zip(columns, axes):
+
+        assert isinstance(ax, plt.Subplot)
+        assert ax.get_xlabel() == col
+        assert ax.get_ylabel().lower() == "count"
+
+        column = real[col]
+        xmin, xmax = ax.get_xlim()
+
+        if pd.api.types.is_numeric_dtype(column):
+            assert xmin < min(column) and xmax > max(column)
+        else:
+            assert (xmin, xmax) == (-0.5, column.nunique() - 0.5)
+
+
+@given(joint_params())
+@plot_settings
+def test_plot_joint(real, params):
+    """Check that a joint plot can be created from two columns of a
+    dataset."""
+
+    x, y, groupby = params
+
+    fig = plot.plot_joint(real, x, y, groupby=groupby)
+    ax, axx, axy = fig.ax_joint, fig.ax_marg_x, fig.ax_marg_y
+
     assert isinstance(fig, JointGrid)
 
-    # # Check axes labels are as expected
-    assert fig.ax_joint.get_xlabel() == x
-    assert fig.ax_joint.get_ylabel() == y
+    assert isinstance(ax, plt.Subplot)
+    assert ax.get_xlabel() == x
+    assert ax.get_ylabel() == y
+    if groupby is None:
+        assert ax.get_legend() is None
+    else:
+        assert ax.get_legend().get_title().get_text() == groupby
+
+    for name, col in zip(("x", "y"), (x, y)):
+        column = real[col]
+        vmin, vmax = sorted(getattr(ax, f"get_{name}lim")())
+
+        if pd.api.types.is_numeric_dtype(column):
+            assert vmin < min(column) and vmax > max(column)
+        else:
+            assert vmin, vmax == (-0.5, column.nunique() - 0.5)
+
+    assert isinstance(axx, plt.Subplot)
+    assert axx.get_xlabel() == x
+    assert axx.get_ylabel().lower() == "count"
+    assert axx.get_legend() is None
+
+    assert isinstance(axy, plt.Subplot)
+    assert axy.get_xlabel().lower() == "count"
+    assert axy.get_ylabel() == y
+    assert axy.get_legend() is None
 
 
-@pytest.mark.parametrize(
-    "x, y",
-    [("age", "height"), ("age", "eye_colour"), ("eye_colour", "hair_colour")],
-)
-def test_plot_hist3d_numeric(make_real, x, y):
-    """Check correct figure type returned with expected axes"""
-    fig = plot_histogram3d(make_real, x, y)
+@given(joint_params())
+@plot_settings
+def test_plot_histogram3d(real, params):
+    """Check that a 3D histogram can be created from two columns of a
+    dataset."""
 
-    # Check figure type
-    assert isinstance(fig, Figure)
+    x, y, _ = params
 
-    # Check axes labels are as expected
-    assert fig.axes[0].get_xlabel() == x
-    assert fig.axes[0].get_ylabel() == y
+    fig = plot.plot_histogram3d(real, x, y)
+    ax = fig.axes[0]
+
+    assert isinstance(fig, plt.Figure)
+
+    assert (
+        str(ax.__class__)
+        == "<class 'matplotlib.axes._subplots.Axes3DSubplot'>"
+    )
+    assert ax.get_title() == "3D Histogram"
+    assert ax.get_xlabel() == x
+    assert ax.get_ylabel() == y
+    assert ax.get_zlabel() == "$count$"
+
+    for name, col in zip(("x", "y"), (x, y)):
+        column = real[col]
+        vmin, vmax = sorted(getattr(ax, f"get_{name}lim")())
+
+        if pd.api.types.is_numeric_dtype(column):
+            assert vmin < min(column) and vmax > max(column)
+        else:
+            assert vmin, vmax == (-0.5, column.nunique() - 0.5)
 
 
-@pytest.mark.parametrize(
-    "feats, method, plot_diff",
-    [
-        (None, "pearson", False),
-        (None, "pearson", True),
-        (["age", "height"], "spearman", False),
-        (["eye_colour", "hair_colour"], "cramers_v", False),
-    ],
-)
-def test_plot_correlation(make_real, make_synth, feats, method, plot_diff):
-    """Check correct figure type returned with correct number of axes."""
-    fig = plot_correlation(
-        make_real, make_synth, feats=feats, method=method, plot_diff=plot_diff
+@given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
+@plot_settings
+def test_plot_correlation_methods(real, method):
+    """Check that a correlation heatmap can be created for a single
+    dataset with any of the implemented methods."""
+
+    fig = plot.plot_correlation(real, method=method)
+    ax, cbar = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Subplot)
+    assert isinstance(cbar, plt.Subplot)
+
+    assert ax.get_title() == "DataFrame 1 Correlation"
+    assert cbar.get_label() == "<colorbar>"
+
+    if method == "cramers_v":
+        columns = list(real.select_dtypes(exclude="number").columns)
+    else:
+        columns = list(real.select_dtypes(include="number").columns)
+
+    for col, xlab, ylab in zip(
+        columns, ax.get_xticklabels(), ax.get_yticklabels()
+    ):
+        assert {col, xlab.get_text(), ylab.get_text()} == {col}
+
+
+@given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
+@plot_settings
+def test_plot_correlation_method_errors(real, method):
+    """Check that a ValueError is raised if only categorical columns are
+    passed with a numeric correlation method or only numeric columns
+    with `cramers_v`. Also catches the `if` statement for when `feats`
+    is a single column."""
+
+    if method == "cramers_v":
+        column, match = "age", "^No categorical columns"
+    else:
+        column, match = "blood_type", "^No numeric columns"
+
+    with pytest.raises(ValueError, match=match):
+        _ = plot.plot_correlation(real, feats=column, method=method)
+
+
+@given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
+@plot_settings
+def test_plot_correlation_two_datasets(real, synth, method):
+    """Check that an array of correlation heatmaps can be produced when
+    two dataframes are passed."""
+
+    fig = plot.plot_correlation(real, synth, method=method)
+    rax, sax, rbar, sbar = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert all(isinstance(ax, plt.Subplot) for ax in fig.axes)
+    assert all(bar.get_label() == "<colorbar>" for bar in (rbar, sbar))
+
+    if method == "cramers_v":
+        columns = list(real.select_dtypes(exclude="number").columns)
+    else:
+        columns = list(real.select_dtypes(include="number").columns)
+
+    for i, ax in enumerate((rax, sax)):
+        assert ax.get_title() == f"DataFrame {i + 1} Correlation"
+        for col, xlab, ylab in zip(
+            columns, ax.get_xticklabels(), ax.get_yticklabels()
+        ):
+            assert {col, xlab.get_text(), ylab.get_text()} == {col}
+
+
+@given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
+@plot_settings
+def test_plot_correlation_difference(real, synth, method):
+    """Check that an additional heatmap can be produced for the
+    absolute difference between two correlation matrices."""
+
+    fig = plot.plot_correlation(real, synth, plot_diff=True, method=method)
+    rax, sax, dax, empty, rbar, sbar, dbar = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert all(isinstance(ax, plt.Subplot) for ax in fig.axes)
+    assert not empty.has_data()
+    assert all(bar.get_label() == "<colorbar>" for bar in (rbar, sbar, dbar))
+
+    dmin, dmax = dbar.get_ylim()
+    assert dmin == 0 and dmax <= abs(
+        max(rbar.get_ylim()) - min(sbar.get_ylim())
     )
 
-    assert isinstance(fig, Figure)
-    assert len(fig.axes) == 4 if not plot_diff else 6
+    if method == "cramers_v":
+        columns = list(real.select_dtypes(exclude="number").columns)
+    else:
+        columns = list(real.select_dtypes(include="number").columns)
 
-    # Get features from first axis
-    ax0 = fig.axes[0]
-    x_labels = [label.get_text() for label in ax0.get_xticklabels()]
-    y_labels = [label.get_text() for label in ax0.get_xticklabels()]
+    for i, ax in enumerate((rax, sax, dax)):
+        if ax is dax:
+            assert ax.get_title() == "Correlation Difference"
+        else:
+            assert ax.get_title() == f"DataFrame {i + 1} Correlation"
 
-    # Check feature lables match
-    assert x_labels == y_labels
+        for col, xlab, ylab in zip(
+            columns, ax.get_xticklabels(), ax.get_yticklabels()
+        ):
+            assert {col, xlab.get_text(), ylab.get_text()} == {col}
 
-    # Check correct features used
-    if feats is None:
-        feats = make_real.columns
-    if method in ["pearson", "spearman"]:
-        expected_feats = (
-            make_real[feats].select_dtypes(include="number").columns
+
+@given(params=joint_params())
+@plot_settings
+def test_plot_crosstab(real, synth, params):
+    """Check that an array of heatmaps can be produced correctly."""
+
+    x, y, _ = params
+    fig = plot.plot_crosstab(real, synth, x, y)
+    rax, sax, cbar = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(cbar, plt.Axes)
+    assert rax.get_title() == "REAL" and sax.get_title() == "SYNTH"
+    assert cbar.get_label() == "<colorbar>"
+
+    for ax, data in zip((rax, sax), (real, synth)):
+        assert isinstance(ax, plt.Subplot)
+        assert ax.get_xlabel() == x
+        assert ax.get_ylabel() == y
+
+        total_count = sum(ax.collections[0]._A)
+        binning_error = sum(
+            pd.api.types.is_numeric_dtype(data[col]) for col in (x, y)
         )
-    elif method == "cramers_v":
-        expected_feats = (
-            make_real[feats].select_dtypes(exclude="number").columns
-        )
-    assert expected_feats.to_list() == x_labels
+        nrows = len(data)
+        assert total_count in range(nrows - binning_error, nrows + 1)
 
 
-@pytest.mark.parametrize(
-    "feats, method,",
-    [
-        (["age", "height"], "cramers_v"),
-        (["eye_colour", "hair_colour"], "pearson"),
-    ],
+@given(
+    columns=st.lists(
+        st.sampled_from(("age", "height", "weight")),
+        unique=True,
+        min_size=2,
+        max_size=2,
+    )
 )
-def test_plot_correlation_method(make_real, make_synth, feats, method):
-    """Check a ``ValueError`` is raised if an inappropriate correlation method
-    is used, e.g. Pearson with categorical variables."""
-    with pytest.raises(ValueError):
-        plot_correlation(make_real, make_synth, feats=feats, method=method)
+@plot_settings
+def test_plot_crosstab_error(real, synth, columns):
+    """Check that a TypeError is thrown when neither binning method is
+    specified for a crosstab plot of two numeric columns."""
+
+    with pytest.raises(
+        TypeError, match="^`x_bins` and `y_bins` must not be None$"
+    ):
+        x, y = columns
+        _ = plot.plot_crosstab(real, synth, x, y, x_bins=None, y_bins=None)
 
 
-@pytest.mark.parametrize(
-    "x, y, x_bins, y_bins",
-    [
-        ("age", "height", "auto", "auto"),
-        ("eye_colour", "hair_colour", 5, 5),
-        ("height", "eye_colour", 10, "auto"),
-    ],
+@given(
+    params=joint_params(),
+    cmap=st.sampled_from(("viridis", "ch:s=.25,rot=-.25", "light:coral")),
 )
-def test_plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins):
-    """Check that ``plot_crosstab`` produces a ``Figure`` instance."""
-    fig = plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins)
-    assert isinstance(fig, Figure)
+@plot_settings
+def test_plot_crosstab_colour_palette(real, synth, params, cmap):
+    """Check that a colour palette (map) can be passed to a crosstab
+    plot correctly, following through to each heatmap and the colour
+    bar.
+
+    This test serves to cover this issue (#1) in the repository:
+        https://github.com/datasciencecampus/synthgauge/issues/1
+    """
+
+    x, y, _ = params
+    fig = plot.plot_crosstab(real, synth, x, y, cmap=cmap)
+    rax, sax, cbar = fig.axes
+
+    assert rax.collections[0].cmap is sax.collections[0].cmap
+    assert rax.collections[0].cmap is cbar.collections[-1].cmap
 
 
-@pytest.mark.parametrize(
-    "x, y, x_bins, y_bins",
-    [("age", "height", None, None), ("height", "eye_colour", None, "auto")],
+@given(
+    feature=st.sampled_from(("age", "height", "weight")),
+    n_quantiles=st.one_of(st.none(), st.integers(2, 100)),
 )
-def test_plot_crosstab_bins(make_real, make_synth, x, y, x_bins, y_bins):
-    """Check that a ``TypeError`` is raised if a binning strategy is not
-    specified for a continuous variable."""
-    with pytest.raises(TypeError):
-        plot_crosstab(make_real, make_synth, x, y, x_bins, y_bins)
+@plot_settings
+def test_plot_qq(real, synth, feature, n_quantiles):
+    """Check that a quantile-quantile plot can be created correctly for
+    two numeric columns."""
+
+    fig = plot.plot_qq(real, synth, feature, n_quantiles)
+    ax = fig.axes[0]
+
+    assert isinstance(fig, plt.Figure)
+    assert fig.axes == [ax]
+    assert isinstance(ax, plt.Subplot)
+
+    assert ax.get_xlabel() == "real data quantiles"
+    assert ax.get_ylabel() == "synth data quantiles"
+    assert ax.get_title() == f'Q-Q Plot for "{feature}"'
+
+    scatter = ax.collections[0]._offsets.data
+    line = ax.lines[0]._xy
+
+    assert (
+        len(scatter) == n_quantiles
+        if isinstance(n_quantiles, int)
+        else len(real)
+    )
+    for j, data in enumerate((real, synth)):
+
+        points = scatter[:, j]
+        assert np.min(points) == data[feature].min()
+        assert np.max(points) == data[feature].max()
+
+        if n_quantiles is None or n_quantiles == len(data):
+            assert np.array_equal(points, data[feature].sort_values())
+
+    expected_line_ends = [
+        min(real[feature].min(), synth[feature].min()),
+        max(real[feature].max(), synth[feature].max()),
+    ]
+
+    assert np.array_equal(line[:, 0], line[:, 1])
+    assert np.array_equal(line[:, 0], expected_line_ends)
+
+
+@given(feature=st.sampled_from(("age", "height", "weight")))
+@plot_settings
+def test_plot_qq_unequal_lengths(real, synth, feature):
+    """Check that the "real" data length is preserved when the datasets
+    do not have the same number of rows and a number of quantiles is not
+    specified."""
+
+    synth = synth.iloc[:-1, :]
+    fig = plot.plot_qq(real, synth, feature)
+
+    assert len(fig.axes[0].collections[0]._offsets.data) == len(real)
+
+
+@given(feature=st.sampled_from(("blood_type", "eye_colour", "hair_colour")))
+@plot_settings
+def test_plot_qq_error_with_categorical_feature(real, synth, feature):
+    """Check that a ValueError is raised when `plot_qq()` is passed a
+    non-numeric feature."""
+
+    with pytest.raises(
+        ValueError,
+        match="^The feature to plot must be numeric not of type: category$",
+    ):
+        _ = plot.plot_qq(real, synth, feature)
+
+
+@given(
+    feats=blood_type_feats, fbins=st.integers(1, 10), dbins=st.integers(1, 10)
+)
+@plot_settings
+def test_plot_feat_density_diff(real, synth, feats, fbins, dbins):
+    """Check that a feature density plot can be created correctly."""
+
+    columns = resolve_features(feats, real)
+    fig = plot.plot_feat_density_diff(real, synth, feats, fbins, dbins)
+    ax = fig.axes[0]
+    bars = ax.containers[0]
+
+    assert isinstance(fig, plt.Figure)
+    assert isinstance(ax, plt.Subplot)
+    assert isinstance(bars, mpl.container.BarContainer)
+
+    if len(columns) == 1:
+        column = columns[0]
+        assert ax.get_xlabel() == f"{column} Binned"
+        assert ax.get_ylabel() == "Density Difference"
+        assert ax.get_title() == f"Feature Density Difference for {column}"
+        assert len(bars) == fbins
+
+    else:
+        assert ax.get_xlabel() == "Difference Bins"
+        assert ax.get_ylabel() == "Count"
+        assert ax.get_title() == "Histogram of Density Differences"
+        assert len(bars) == dbins

@@ -8,6 +8,19 @@ from hypothesis.extra.pandas import column, data_frames
 import synthgauge as sg
 
 
+def resolve_features(feats, data):
+    """Resolve the specified features so they are always a list."""
+
+    if isinstance(feats, str):
+        columns = list([feats])
+    elif isinstance(feats, list):
+        columns = list(feats)
+    else:
+        columns = list(data.columns)
+
+    return columns
+
+
 @st.composite
 def datasets(
     draw,
