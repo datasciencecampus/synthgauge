@@ -1,12 +1,63 @@
 """ Generic ``scikit-learn``-style classification utility metrics. """
 
+import inspect
 from collections import namedtuple
 
+import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+
+def _make_preprocessor(data, key):
+    """Make a pre-processing pipe for transforming numeric and
+    categorical columns."""
+
+    numeric_columns = data[key].select_dtypes(include="number").columns
+    categorical_columns = data[key].select_dtypes(exclude="number").columns
+
+    numeric_transformer = Pipeline(steps=[("scaler", StandardScaler())])
+    categorical_transformer = Pipeline(steps=[("encoder", OneHotEncoder())])
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("numeric", numeric_transformer, numeric_columns),
+            ("categorical", categorical_transformer, categorical_columns),
+        ]
+    )
+
+    return preprocessor
+
+
+def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
+    """Create the pipeline of data pre-processing and classification."""
+
+    classifier_params = inspect.signature(classifier).parameters
+    if classifier_params.get("random_state", None):
+        kwargs["random_state"] = random_state
+
+    pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", classifier(**kwargs)),
+        ]
+    )
+
+    return pipeline
+
+
+def _get_scores(test, pred):
+    """Calculate the precision, recall and f1 scores for a set of
+    predicted values."""
+
+    scores = [
+        score_func(test, pred, average="macro")
+        for score_func in (precision_score, recall_score, f1_score)
+    ]
+
+    return scores
 
 
 def classification_comparison(
@@ -70,91 +121,48 @@ def classification_comparison(
     training classifier models. Increases in these scores indicate poorer
     utility.
     """
-    real_X = real[key]
-    real_y = real[target]
 
-    synth_X = synth[key]
-    synth_y = synth[target]
-
-    # split data
     real_X_train, real_X_test, real_y_train, real_y_test = train_test_split(
-        real_X, real_y, test_size=test_prop, random_state=random_state
+        real[key], real[target], test_size=test_prop, random_state=random_state
     )
+
     synth_X_train, _, synth_y_train, _ = train_test_split(
-        synth_X, synth_y, test_size=test_prop, random_state=random_state
+        synth[key],
+        synth[target],
+        test_size=test_prop,
+        random_state=random_state,
     )
 
     # preprocessing
-    # scale numeric
-    numeric_transformer = Pipeline(steps=[("scaler", StandardScaler())])
-    # OHE categorical
-    categor_transformer = Pipeline(steps=[("encoder", OneHotEncoder())])
+    preprocessor = _make_preprocessor(real, key)
 
-    num_feats = real[key].select_dtypes(include="number").columns
-    cat_feats = real[key].select_dtypes(exclude="number").columns
-
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("numeric", numeric_transformer, num_feats),
-            ("categor", categor_transformer, cat_feats),
-        ]
-    )
-    # train real model
-    real_pipeline = Pipeline(
-        steps=[
-            ("preprocessor", preprocessor),
-            (
-                "classifier",
-                sklearn_classifier(random_state=random_state, **kwargs),
-            ),
-        ]
+    # train real model, test on real
+    real_pipeline = _make_pipeline(
+        sklearn_classifier, random_state, preprocessor, **kwargs
     )
 
     real_pipeline.fit(real_X_train, real_y_train.values.ravel())
-    # test real on real
     y_real_predicts_real = real_pipeline.predict(real_X_test)
-    # train synth model
-    synth_pipeline = Pipeline(
-        steps=[
-            ("preprocessor", preprocessor),
-            (
-                "classifier",
-                sklearn_classifier(random_state=random_state, **kwargs),
-            ),
-        ]
+
+    # train synth model, test on real
+    synth_pipeline = _make_pipeline(
+        sklearn_classifier, random_state, preprocessor, **kwargs
     )
 
     synth_pipeline.fit(synth_X_train, synth_y_train.values.ravel())
-    # test synth on real
     y_synth_predicts_real = synth_pipeline.predict(real_X_test)
 
     # compare results
-    real_precision = precision_score(
-        real_y_test, y_real_predicts_real, average="macro"
-    )
-    real_recall = recall_score(
-        real_y_test, y_real_predicts_real, average="macro"
-    )
-    real_f1 = f1_score(real_y_test, y_real_predicts_real, average="macro")
-
-    synth_precision = precision_score(
-        real_y_test, y_synth_predicts_real, average="macro"
-    )
-    synth_recall = recall_score(
-        real_y_test, y_synth_predicts_real, average="macro"
-    )
-    synth_f1 = f1_score(real_y_test, y_synth_predicts_real, average="macro")
-
-    diff_precision = real_precision - synth_precision
-    diff_recall = real_recall - synth_recall
-    diff_f1 = real_f1 - synth_f1
+    real_scores = _get_scores(real_y_test, y_real_predicts_real)
+    synth_scores = _get_scores(real_y_test, y_synth_predicts_real)
+    score_differences = np.subtract(real_scores, synth_scores)
 
     ClassificationResult = namedtuple(
         "ClassificationResult",
         ("precision_difference", "recall_difference", "f1_difference"),
     )
 
-    return ClassificationResult(diff_precision, diff_recall, diff_f1)
+    return ClassificationResult(*score_differences)
 
 
 if __name__ == "__main__":
