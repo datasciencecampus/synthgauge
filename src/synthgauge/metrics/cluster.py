@@ -1,10 +1,52 @@
 """ Utility metrics derived from centroid-based clustering. """
 
 import numpy as np
+import pandas as pd
 from kmodes.kprototypes import KPrototypes
 from sklearn.cluster import KMeans
 
 from ..utils import df_combine
+
+
+def _get_cluster_labels(combined, method, k, random_state):
+    """Apply the chosen clustering method to a dataset and return its
+    final labels."""
+
+    if method == "kmeans":
+        numeric = combined.select_dtypes(include="number")
+        model = KMeans(
+            n_clusters=k, algorithm="elkan", random_state=random_state
+        ).fit(numeric)
+
+    elif method == "kprototypes":
+        categorical_idxs = [
+            i
+            for i, dtype in enumerate(combined.dtypes)
+            if not pd.api.types.is_numeric_dtype(dtype)
+        ]
+        model = KPrototypes(
+            n_clusters=k, random_state=random_state, n_init=1
+        ).fit(combined, categorical=categorical_idxs)
+
+    else:
+        raise ValueError(
+            'Clustering method must be one of `"kmeans"` or'
+            f'`"kprototypes"` not {method}.'
+        )
+
+    return model.labels_.astype(int)
+
+
+def _get_cluster_proportions(labels, synthetic_indicator, k):
+    """Calculate the proportion of each cluster that is synthetic."""
+
+    proportions = []
+    for ki in range(k):
+        proportions.append(
+            sum(synthetic_indicator[labels == ki]) / sum(labels == ki)
+        )
+
+    return np.array(proportions)
 
 
 def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
@@ -51,40 +93,15 @@ def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
     Additionally, it is important to note that this metric says nothing about
     how the data are distributed within clusters.
     """
-    if method == "kmeans":
-        combined_numeric = combined.select_dtypes(include="number")
-        clusters = (
-            KMeans(n_clusters=k, algorithm="elkan", random_state=random_state)
-            .fit(combined_numeric)
-            .labels_
-        )
-    if method == "kprototype":
-        cat_cols = combined.select_dtypes(
-            include=["object", "category"]
-        ).columns
-        cat_cols_i = [
-            n for n, col in enumerate(combined.columns) if col in cat_cols
-        ]
-        clusters = (
-            KPrototypes(n_clusters=k, random_state=random_state)
-            .fit(combined, categorical=cat_cols_i)
-            .labels_
-        )
-    cluster_proportion = []
-    for ki in range(k):
-        cluster_proportion.append(
-            sum(synthetic_indicator[clusters == ki]) / sum(clusters == ki)
-        )
-    cluster_proportion = np.array(cluster_proportion)
+
+    labels = _get_cluster_labels(combined, method, k, random_state)
+    proportions = _get_cluster_proportions(labels, synthetic_indicator, k)
 
     # calculate error from ideal proportion
-    ideal_prop = sum(synthetic_indicator) / len(combined)
+    ideal_prop = np.mean(synthetic_indicator)
+    prop_square_error = np.square(proportions - ideal_prop)
 
-    prop_square_error = np.square(cluster_proportion - ideal_prop)
-
-    MSE_p = sum(prop_square_error) / len(prop_square_error)
-    # print(MSE_p)
-    return MSE_p
+    return np.mean(prop_square_error)
 
 
 def multi_clustered_MSD(
@@ -149,7 +166,7 @@ def multi_clustered_MSD(
 
     cluster_MSDs = []
 
-    for k in range(k_min, k_max):
+    for k in range(k_min, k_max + 1):
         # print(k)
         cluster_MSDs.append(
             clustered_MSD(
