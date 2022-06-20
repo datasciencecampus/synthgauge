@@ -10,7 +10,6 @@ from hypothesis import strategies as st
 from seaborn.axisgrid import JointGrid
 
 from synthgauge import plot
-from synthgauge.datasets import make_blood_types_df
 
 from .utils import resolve_features
 
@@ -56,20 +55,6 @@ def joint_params(draw):
     groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
 
     return x, y, groupby
-
-
-@pytest.fixture
-def real():
-    """Make some real (noiseless) data."""
-
-    return make_blood_types_df(0, 0)
-
-
-@pytest.fixture
-def synth():
-    """Make some synthetic (noisy) data."""
-
-    return make_blood_types_df(1, 0)
 
 
 @given(

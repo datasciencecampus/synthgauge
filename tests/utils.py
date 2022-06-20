@@ -2,6 +2,7 @@
 
 import string
 
+import pytest
 from hypothesis import strategies as st
 from hypothesis.extra.pandas import column, data_frames
 
@@ -21,20 +22,41 @@ def resolve_features(feats, data):
     return columns
 
 
+@pytest.fixture
+def real():
+    """Make some real (noiseless) data."""
+
+    return sg.datasets.make_blood_types_df(0, 0)
+
+
+@pytest.fixture
+def synth():
+    """Make some synthetic (noisy) data."""
+
+    return sg.datasets.make_blood_types_df(1, 0)
+
+
 @st.composite
 def datasets(
     draw,
+    min_columns=1,
     max_columns=3,
     available_dtypes=("float", "object"),
     min_value=None,
     max_value=None,
     allow_nan=True,
+    column_spec=None,
 ):
     """Create a pair of datasets to act as 'real' and 'synth' in tests."""
 
-    ncols = draw(st.integers(1, max_columns))
-    names = string.ascii_lowercase[: ncols - 1]
-    dtypes = (draw(st.sampled_from(available_dtypes)) for _ in names)
+    if column_spec is None:
+        ncols = draw(st.integers(min_columns, max_columns))
+        names = string.ascii_lowercase[: ncols - 1]
+        dtypes = (draw(st.sampled_from(available_dtypes)) for _ in names)
+
+    else:
+        names = column_spec.keys()
+        dtypes = column_spec.values()
 
     columns = []
     for name, dtype in zip(names, dtypes):
