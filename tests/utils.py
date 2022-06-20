@@ -2,7 +2,6 @@
 
 import string
 
-import pytest
 from hypothesis import strategies as st
 from hypothesis.extra.pandas import column, data_frames
 
@@ -20,20 +19,6 @@ def resolve_features(feats, data):
         columns = list(data.columns)
 
     return columns
-
-
-@pytest.fixture
-def real():
-    """Make some real (noiseless) data."""
-
-    return sg.datasets.make_blood_types_df(0, 0)
-
-
-@pytest.fixture
-def synth():
-    """Make some synthetic (noisy) data."""
-
-    return sg.datasets.make_blood_types_df(1, 0)
 
 
 @st.composite
