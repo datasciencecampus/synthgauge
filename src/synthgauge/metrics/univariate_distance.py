@@ -290,9 +290,9 @@ def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
     """Divergence: Kullback-Leibler
 
     The Kullback-Leibler divergence describes how much the `real` distribution
-    of the `feature` varies from the `synth` in terms of entropy. This is an
-    assymmetric measure so does not describe the opposing variation. Since it
-    measures the variation between probabilities, the data are first
+    of the `feature` varies from the `synth` in terms of relative entropy. This
+    is an assymmetric measure so does not describe the opposing variation.
+    Since it measures the variation between probabilities, the data are first
     discretised into bins.
 
 
@@ -332,12 +332,9 @@ def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
     we might expect seeing an example from the real data, relative to the
     distribution of the synthetic.
 
-    The divergence is zero if the distributions are identical, and is bounded
-    above by one if they are nothing alike. This method is therefore good
-    for comparing multiple synthetic datasets, or features within a dataset,
-    to see which is closest to the real. However, as this is not a test,
-    there is no threshold distance below which we can claim the distributions
-    are statistically the same.
+    The divergence is zero if the distributions are identical, and larger
+    values indicate that the two discretised distribution are further from one
+    another.
 
     An optimal 'bins' value has not been suggested.
 
