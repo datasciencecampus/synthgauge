@@ -7,7 +7,13 @@ import numpy as np
 import pandas as pd
 from numpy import corrcoef
 from scipy.stats import chi2_contingency
-from sklearn.metrics import mean_squared_error
+
+
+def _mean_squared_error(x, y):
+    """Calculate the mean-squared error between two numeric objects or
+    two arrays."""
+
+    return np.mean((np.array(x) - np.array(y)) ** 2)
 
 
 def correlation_MSD(real, synth, feats=None):
@@ -48,7 +54,7 @@ def correlation_MSD(real, synth, feats=None):
     threshold value below which we can claim the datasets are statistically
     the same.
     """
-    if isinstance(feats, pd.Index):
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
@@ -61,7 +67,7 @@ def correlation_MSD(real, synth, feats=None):
     real_corr = corrcoef(real_numeric, rowvar=False)
     synth_corr = corrcoef(synth_numeric, rowvar=False)
     # return mean squared difference
-    return mean_squared_error(real_corr, synth_corr)
+    return _mean_squared_error(real_corr, synth_corr)
 
 
 def cramers_v(var1, var2):
@@ -151,7 +157,8 @@ def cramers_v_MSE(real, synth, feats=None):
     for feat1, feat2 in feat_combinations:
         real_cramers_v.append(cramers_v(real[feat1], real[feat2]))
         synth_cramers_v.append(cramers_v(synth[feat1], synth[feat2]))
-    return mean_squared_error(real_cramers_v, synth_cramers_v)
+
+    return _mean_squared_error(real_cramers_v, synth_cramers_v)
 
 
 def correlation_ratio(categorical, continuous):
@@ -160,6 +167,9 @@ def correlation_ratio(categorical, continuous):
     Calculates the correlation ratio for categorical-continuous association.
     Describes the possibility of deducing the corresponding category for a
     given continuous value.
+
+    Missing values are not permitted in either series. Any rows with a missing
+    value are dropped from both series before calculating the ratio.
 
     Returns a value in the range [0,1] where 0 means a category can not be
     determined given a continuous measurement and 1 means it can with absolute
@@ -180,7 +190,11 @@ def correlation_ratio(categorical, continuous):
     -----
     See https://en.wikipedia.org/wiki/Correlation_ratio for more details.
     """
-    categories = pd.unique(categorical)
+
+    combined = pd.concat((categorical, continuous), axis=1).dropna()
+    categorical, continuous = combined.values.T
+
+    categories = np.unique(categorical)
     category_means = np.zeros(len(categories))
     category_counts = np.zeros(len(categories))
     for i, cat in enumerate(categories):
@@ -194,7 +208,7 @@ def correlation_ratio(categorical, continuous):
 
 
 def correlation_ratio_MSE(
-    real, synth, categorical_feats="auto", numerical_feats=None
+    real, synth, categorical_feats=None, numerical_feats=None
 ):
     """Correlation Ratio Mean Squared Error
 
@@ -207,12 +221,13 @@ def correlation_ratio_MSE(
         Dataframe containing the real data.
     synth : pandas dataframe
         Dataframe containing the synthetic data.
-    categorical_feats: str or list of str, optional
+    categorical_feats: list of str, optional
         Categorical feature(s) in `real` and `synth` to include in comparison.
-        By default all object and categorical columns are selected.
-    numerical_feats: str or list of str, optional
+        If ``None`` (default), all object and categorical columns are selected.
+    numerical_feats: list of str, optional
         Numerical feature(s) in `real` and `synth` to include in comparison.
-        By default all columns not in `categorical_feats` are selected.
+        If ``None`` (default), all columns not in `categorical_feats` are
+        selected.
 
     Returns
     -------
@@ -226,12 +241,15 @@ def correlation_ratio_MSE(
     `object` are used. If no numerical features are selected, all columns that
     are not listed as categorical features are used.
     """
-    if categorical_feats == "auto":
+
+    if categorical_feats is None:
         categorical_feats = real.select_dtypes(
             include=["object", "category"]
         ).columns
+
     if numerical_feats is None:
-        numerical_feats = list(set(real.columns) - set(categorical_feats))
+        numerical_feats = list(set(real.columns).difference(categorical_feats))
+
     real_corr_ratio = []
     synth_corr_ratio = []
     for cat_feat, num_feat in list(
@@ -243,7 +261,8 @@ def correlation_ratio_MSE(
         synth_corr_ratio.append(
             correlation_ratio(synth[cat_feat], synth[num_feat])
         )
-    return mean_squared_error(real_corr_ratio, synth_corr_ratio)
+
+    return _mean_squared_error(real_corr_ratio, synth_corr_ratio)
 
 
 if __name__ == "__main__":
