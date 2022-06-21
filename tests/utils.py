@@ -36,7 +36,7 @@ def datasets(
 
     if column_spec is None:
         ncols = draw(st.integers(min_columns, max_columns))
-        names = string.ascii_lowercase[: ncols - 1]
+        names = string.ascii_lowercase[:ncols]
         dtypes = (draw(st.sampled_from(available_dtypes)) for _ in names)
 
     else:
