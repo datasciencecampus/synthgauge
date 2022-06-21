@@ -20,7 +20,7 @@ def test_kolmogorov_smirnov(datasets):
     result = univariate.kolmogorov_smirnov(real, synth, "a")
     stat, pval = result
 
-    assert isinstance(result, stats._stats_py.KstestResult)
+    assert repr(result).startswith("KstestResult")
     assert isinstance(stat, float)
     assert isinstance(pval, float)
     assert pval >= 0 and pval <= 1
@@ -115,12 +115,12 @@ def test_feature_density_diff_mae(datasets, feats, bins):
 def test_kullback_leibler(datasets, bins):
     """Check that the Kullback-Leibler divergence can be calculated.
 
-    We ensure that the real dataset has at least as many unique values
-    as the synthetic dataset. Failure to do this means the divergence
-    is not bounded above by 1."""
+    When treating the data as categorical, we ensure that the real
+    dataset has at least as many unique values as the synthetic dataset;
+    without this, the divergence is not bounded above by 1."""
 
     real, synth = datasets
-    if synth["a"].nunique() > real["a"].nunique():
+    if bins is None and synth["a"].nunique() > real["a"].nunique():
         real, synth = synth, real
 
     assume(not (real.empty or synth.empty))
@@ -177,7 +177,7 @@ def test_kruskal_wallis(datasets):
     result = univariate.kruskal_wallis(real, synth, "a")
     stat, pval = result
 
-    assert isinstance(result, stats._stats_py.KruskalResult)
+    assert repr(result).startswith("KruskalResult")
     assert isinstance(stat, float)
     assert isinstance(pval, float)
     assert (np.isnan(stat) and np.isnan(pval)) or (pval >= 0 and pval <= 1)
