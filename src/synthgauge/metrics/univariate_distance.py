@@ -243,6 +243,7 @@ def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
         # count the number of points in each bin seperately
         real_bincounts = np.histogram(real[feature], bin_edges)[0]
         synth_bincounts = np.histogram(synth[feature], bin_edges)[0]
+
     return jensenshannon(real_bincounts, synth_bincounts, **kwargs)
 
 
@@ -274,12 +275,13 @@ def feature_density_diff_mae(real, synth, feats=None, bins=10):
     float:
         Mean Absolute Error of feature densities.
     """
-    if isinstance(feats, pd.Index):
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns
+        feats = real.columns
+
     diffs = [feature_density_diff(real, synth, f, bins)[0] for f in feats]
     return np.mean(np.abs(np.concatenate(diffs)))
 
