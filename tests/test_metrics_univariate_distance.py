@@ -104,12 +104,7 @@ def test_feature_density_diff_mae(datasets, feats, bins):
 
 
 @given(
-    datasets(
-        column_spec={"a": "float"},
-        min_value=0,
-        max_value=1000,
-        allow_nan=False,
-    ),
+    datasets(column_spec={"a": "float"}, allow_nan=False),
     st.one_of(st.none(), st.integers(1, 10)),
 )
 def test_kullback_leibler(datasets, bins):
@@ -120,15 +115,12 @@ def test_kullback_leibler(datasets, bins):
     without this, the divergence is not bounded above by 1."""
 
     real, synth = datasets
-    if bins is None and synth["a"].nunique() > real["a"].nunique():
-        real, synth = synth, real
-
     assume(not (real.empty or synth.empty))
 
     divergence = univariate.kullback_leibler(real, synth, "a", bins)
 
     assert isinstance(divergence, float)
-    assert np.isinf(divergence) or (divergence >= 0 and divergence <= 1)
+    assert np.isnan(divergence) or divergence >= 0
 
 
 @given(datasets(column_spec={"a": "float"}))
