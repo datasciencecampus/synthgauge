@@ -22,8 +22,8 @@ def test_kolmogorov_smirnov(datasets):
 
     assert repr(result).startswith("KstestResult")
     assert isinstance(stat, float)
-    assert isinstance(pval, float)
-    assert pval >= 0 and pval <= 1
+    assert isinstance(pval, (float, int))
+    assert (np.isnan(stat) and np.isnan(pval)) or (pval >= 0 and pval <= 1)
 
 
 @given(datasets(column_spec={"a": "float"}))
@@ -140,7 +140,7 @@ def test_mann_whitney(datasets):
 
     assert isinstance(result, stats._mannwhitneyu.MannwhitneyuResult)
     assert isinstance(stat, float)
-    assert isinstance(pval, float)
+    assert isinstance(pval, (float, int))
     assert (np.isnan(stat) and np.isnan(pval)) or (pval >= 0 and pval <= 1)
 
 
@@ -160,7 +160,7 @@ def test_wilcoxon(datasets):
 
     assert isinstance(result, stats._morestats.WilcoxonResult)
     assert isinstance(stat, float)
-    assert isinstance(pval, float)
+    assert isinstance(pval, (float, int))
     assert (np.isnan(stat) and np.isnan(pval)) or (pval >= 0 and pval <= 1)
 
 
@@ -183,5 +183,5 @@ def test_kruskal_wallis(datasets):
 
     assert repr(result).startswith("KruskalResult")
     assert isinstance(stat, float)
-    assert isinstance(pval, float)
+    assert isinstance(pval, (float, int))
     assert (np.isnan(stat) and np.isnan(pval)) or (pval >= 0 and pval <= 1)
