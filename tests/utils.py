@@ -7,6 +7,23 @@ from hypothesis.extra.pandas import column, data_frames
 
 import synthgauge as sg
 
+available_columns = (
+    "age",
+    "height",
+    "weight",
+    "hair_colour",
+    "eye_colour",
+    "blood_type",
+)
+
+blood_type_feats = st.one_of(
+    st.none(),
+    st.sampled_from(available_columns),
+    st.lists(
+        st.sampled_from(available_columns), min_size=1, max_size=4, unique=True
+    ),
+)
+
 
 def resolve_features(feats, data):
     """Resolve the specified features so they are always a list."""
