@@ -79,6 +79,12 @@ def TCAP(real, synth, key, target):
 
     This method only works with categorical data, so binning of continuous data
     may be required.
+
+    Full details may be found in:
+
+    Taub and Elliott (2019). The Synthetic Data Challenge. The Hague,
+    The Netherlands: Joint UNECE/Eurostat Work Session on Statistical
+    Data Confidentiality, Session 3.
     """
     if not isinstance(target, list):
         target = [target]
@@ -224,19 +230,20 @@ def sample_overlap_score(
     float:
         Overlap score between `real` and `synth`
     """
-    if isinstance(feats, pd.Index):
+
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns.to_list()
+        feats = real.columns.to_list()
+
+    min_num_rows = min(real.shape[0], synth.shape[0])
     if 0 <= sample_size <= 1:
-        nsamples = int(real.shape[0] * sample_size)
+        nsamples = int(min_num_rows * sample_size)
     else:
-        if sample_size > real.shape[0]:
-            nsamples = real.shape[0]
-        else:
-            nsamples = sample_size
+        nsamples = min(min_num_rows, sample_size)
+
     scores = []
     for r in range(runs):
         sample_real = (
