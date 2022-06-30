@@ -165,11 +165,18 @@ def test_wilcoxon(datasets):
 
 
 @given(datasets(column_spec={"a": "float"}))
+@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_kruskal_wallis(datasets):
     """Check that the Kruskal-Wallis test can be run correctly."""
 
     real, synth = datasets
-    assume(not (real.empty or synth.empty or real.equals(synth)))
+    assume(
+        not (
+            real.empty
+            or synth.empty
+            or real.drop_duplicates().equals(synth.drop_duplicates())
+        )
+    )
 
     result = univariate.kruskal_wallis(real, synth, "a")
     stat, pval = result
