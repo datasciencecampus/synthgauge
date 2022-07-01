@@ -445,12 +445,12 @@ def propensity_metrics(
     The ratio tends towards one when the datasets are similar and increases
     otherwise.
     """
-    if isinstance(feats, pd.Index):
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns.to_list()
+        feats = real.columns.to_list()
 
     if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
