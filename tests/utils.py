@@ -7,6 +7,23 @@ from hypothesis.extra.pandas import column, data_frames
 
 import synthgauge as sg
 
+available_columns = (
+    "age",
+    "height",
+    "weight",
+    "hair_colour",
+    "eye_colour",
+    "blood_type",
+)
+
+blood_type_feats = st.one_of(
+    st.none(),
+    st.sampled_from(available_columns),
+    st.lists(
+        st.sampled_from(available_columns), min_size=1, max_size=4, unique=True
+    ),
+)
+
 
 def resolve_features(feats, data):
     """Resolve the specified features so they are always a list."""
@@ -24,17 +41,24 @@ def resolve_features(feats, data):
 @st.composite
 def datasets(
     draw,
+    min_columns=1,
     max_columns=3,
     available_dtypes=("float", "object"),
     min_value=None,
     max_value=None,
     allow_nan=True,
+    column_spec=None,
 ):
     """Create a pair of datasets to act as 'real' and 'synth' in tests."""
 
-    ncols = draw(st.integers(1, max_columns))
-    names = string.ascii_lowercase[: ncols - 1]
-    dtypes = (draw(st.sampled_from(available_dtypes)) for _ in names)
+    if column_spec is None:
+        ncols = draw(st.integers(min_columns, max_columns))
+        names = string.ascii_lowercase[:ncols]
+        dtypes = (draw(st.sampled_from(available_dtypes)) for _ in names)
+
+    else:
+        names = column_spec.keys()
+        dtypes = column_spec.values()
 
     columns = []
     for name, dtype in zip(names, dtypes):

@@ -146,7 +146,7 @@ def expected_p_MSE(real, synth):
     total_num_examples = real.shape[0] + synth.shape[0]
     prop_synth = synth.shape[0] / total_num_examples
     return (
-        (num_vars_and_interactions)
+        (num_vars_and_interactions - 1)
         * (1.0 - prop_synth) ** 2
         * prop_synth
         / total_num_examples
@@ -195,7 +195,7 @@ def stdev_p_MSE(real, synth):
     total_num_examples = real.shape[0] + synth.shape[0]
     prop_synth = synth.shape[0] / total_num_examples
     return (
-        (2 * (num_vars_and_interactions)) ** 0.5
+        (2 * (num_vars_and_interactions - 1)) ** 0.5
         * (1.0 - prop_synth) ** 2
         * prop_synth
         / total_num_examples
@@ -304,17 +304,19 @@ def p_MSE_ratio(real, synth, method="CART", feats=None, **kwargs):
         "p_MSE_ratio is now contained within `propensity_metrics`.",
         DeprecationWarning,
     )
-    if isinstance(feats, pd.Index):
+
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns.to_list()
-    if method == "Logistic Regression":
+        feats = real.columns.to_list()
+
+    if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
     if method == "CART":
         exp_p_MSE, _ = perm_expected_sd_p_MSE(
-            real[feats], synth[feats], num_perms=2, **kwargs
+            real[feats], synth[feats], **kwargs
         )
     obs_p_MSE = propensity_MSE(
         real[feats], synth[feats], method=method, **kwargs
@@ -366,12 +368,12 @@ def standardised_p_MSE(real, synth, method="CART", feats=None, **kwargs):
         "standardised_p_MSE is now contained within `propensity_metrics`.",
         DeprecationWarning,
     )
-    if isinstance(feats, pd.Index):
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns.to_list()
+        feats = real.columns.to_list()
 
     if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])
@@ -443,12 +445,12 @@ def propensity_metrics(
     The ratio tends towards one when the datasets are similar and increases
     otherwise.
     """
-    if isinstance(feats, pd.Index):
+    if isinstance(feats, (list, pd.Index)):
         feats = feats
     elif isinstance(feats, str):
         feats = [feats]
     else:
-        feats = feats or real.columns.to_list()
+        feats = real.columns.to_list()
 
     if method == "LogisticRegression":
         exp_p_MSE = expected_p_MSE(real[feats], synth[feats])

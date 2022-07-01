@@ -124,10 +124,10 @@ def test_propensity_metric_logistic(evaluator):
         0.014081072437202892
     )
     assert results["propensity_logrg"].standardised_p_MSE == pytest.approx(
-        31.523736020704618
+        32.460330979335154
     )
     assert results["propensity_logrg"].ratio_p_MSE == pytest.approx(
-        10.728436142630775
+        11.264857949762312
     )
 
 

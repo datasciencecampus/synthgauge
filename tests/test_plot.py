@@ -10,26 +10,8 @@ from hypothesis import strategies as st
 from seaborn.axisgrid import JointGrid
 
 from synthgauge import plot
-from synthgauge.datasets import make_blood_types_df
 
-from .utils import resolve_features
-
-available_columns = (
-    "age",
-    "height",
-    "weight",
-    "hair_colour",
-    "eye_colour",
-    "blood_type",
-)
-
-blood_type_feats = st.one_of(
-    st.none(),
-    st.sampled_from(available_columns),
-    st.lists(
-        st.sampled_from(available_columns), min_size=1, max_size=4, unique=True
-    ),
-)
+from .utils import available_columns, blood_type_feats, resolve_features
 
 plot_settings = settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
@@ -56,20 +38,6 @@ def joint_params(draw):
     groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
 
     return x, y, groupby
-
-
-@pytest.fixture
-def real():
-    """Make some real (noiseless) data."""
-
-    return make_blood_types_df(0, 0)
-
-
-@pytest.fixture
-def synth():
-    """Make some synthetic (noisy) data."""
-
-    return make_blood_types_df(1, 0)
 
 
 @given(
