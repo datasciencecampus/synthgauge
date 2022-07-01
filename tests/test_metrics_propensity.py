@@ -99,7 +99,9 @@ def test_stdev_p_MSE(real, synth, seed):
 
 
 @given(st.integers(0, 100))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None
+)
 def test_perm_expected_sd_p_MSE(real, synth, seed):
     """Check that the permutation-based expectation and std. dev. can
     be calculated for a pair of datasets."""
@@ -131,7 +133,7 @@ def test_perm_expected_sd_p_MSE(real, synth, seed):
 )
 @settings(
     deadline=None,
-    max_examples=50,
+    max_examples=30,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_p_MSE_ratio(real, synth, method, feats, seed):
@@ -157,7 +159,7 @@ def test_p_MSE_ratio(real, synth, method, feats, seed):
 )
 @settings(
     deadline=None,
-    max_examples=50,
+    max_examples=30,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_standardised_p_MSE(real, synth, method, feats, seed):
@@ -170,3 +172,24 @@ def test_standardised_p_MSE(real, synth, method, feats, seed):
     standardised = propensity.standardised_p_MSE(real, synth, method, feats)
 
     assert isinstance(standardised, float)
+
+
+@given(st.sampled_from(("CART", "LogisticRegression")), blood_type_feats)
+@settings(
+    deadline=None,
+    max_examples=30,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+def test_propensity_metrics(real, synth, method, feats):
+    """Check that the propensity metric wrapper function returns its
+    named tuple. Further tests for the individual metrics are above."""
+
+    result = propensity.propensity_metrics(real, synth, method, feats)
+
+    assert repr(result).startswith("PropensityResult")
+    assert result._fields == (
+        "observed_p_MSE",
+        "standardised_p_MSE",
+        "ratio_p_MSE",
+    )
+    assert all(isinstance(val, float) for val in result)
