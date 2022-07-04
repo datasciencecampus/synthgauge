@@ -20,23 +20,6 @@ plot_settings = settings(
 )
 
 
-@given(
-    st.lists(st.text(min_size=1), min_size=1),
-    st.sampled_from(("x", "y")),
-    st.integers(1, 10),
-)
-@plot_settings
-def test_suggest_label_rotation(labels, axis, limit):
-    """Check that axis tick label rotation can be flagged correctly."""
-
-    _, ax = plt.subplots()
-    getattr(ax, f"set_{axis}ticks")(range(len(labels)))
-    getattr(ax, f"set_{axis}ticklabels")(labels)
-
-    rotate = plot.suggest_label_rotation(ax, axis, limit)
-    assert rotate is any(len(label) > limit for label in labels)
-
-
 @given(feats=blood_type_feats)
 @plot_settings
 def test_plot_histograms(real, feats):

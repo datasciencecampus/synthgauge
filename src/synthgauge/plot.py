@@ -19,34 +19,6 @@ from .utils import cat_encode, feature_density_diff
 sns.set_theme()
 
 
-def suggest_label_rotation(ax, axis="x", char_lim=5):
-    """Advise if labels should be rotated.
-
-    For the specifed axis the maximum characters for the
-    labels is calculated. If this is above `char_lim` the function
-    will return `True` to suggest that labels should be rotated
-
-    Parameters
-    ----------
-    ax: matplotlib.axes.Axes
-        Axes to analyse.
-    axis: str, optional
-        Default is 'x'.
-    char_lim: int, optional
-        Default is `5`.
-
-    Returns
-    -------
-    bool
-        True if labels should be rotated, otherwise False.
-
-    """
-    tick_func = f"get_{axis.lower()}ticklabels"
-    labels = getattr(ax, tick_func)()
-    max_chars = max([len(label.get_text()) for label in labels])
-    return max_chars > char_lim
-
-
 def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     """Plot feature distributions.
 
