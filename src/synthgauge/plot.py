@@ -590,11 +590,6 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     ax.set_ylabel("synth data quantiles")
     ax.set_title(f'Q-Q Plot for "{feature}"')
 
-    fig.canvas.draw()
-    if suggest_label_rotation(ax):
-        ax.set_xticks(ax.get_xticks())
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-
     # Plot X = Y
     min_xy = min(x.min(), y.min())
     max_xy = max(x.max(), y.max())
