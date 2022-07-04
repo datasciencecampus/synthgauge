@@ -4,6 +4,7 @@ import itertools as it
 import pickle
 import string
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,7 +14,7 @@ from hypothesis import strategies as st
 import synthgauge as sg
 from synthgauge.metrics import __all__ as implemented_metrics
 
-from .utils import datasets, evaluators
+from .utils import datasets, evaluators, joint_params
 
 
 @given(datasets())
@@ -302,3 +303,110 @@ def test_evaluate_custom_metric(evaluator, func):
     assert evaluator.metric_results == results
     assert list(results.keys()) == ["xyz"]
     assert isinstance(results.get("xyz"), float)
+
+
+@given(
+    st.tuples(
+        st.floats(1, 5, allow_nan=False), st.floats(1, 5, allow_nan=False)
+    )
+)
+@settings(
+    deadline=None,
+    max_examples=15,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+def test_plot_histograms(real, synth, size):
+    """Check that the histograms method produces a figure. Full tests
+    of the underlying function are in `tests/test_plot.py`."""
+
+    evaluator = sg.Evaluator(real, synth)
+
+    fig = evaluator.plot_histograms(figsize=size)
+
+    assert isinstance(fig, plt.Figure)
+    assert np.array_equal(fig.get_size_inches(), size)
+
+
+@given(
+    joint_params(),
+    st.sampled_from(("real", "synth", "combined")),
+)
+@settings(
+    deadline=None,
+    max_examples=15,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+def test_plot_histogram3d(real, synth, params, which_data):
+    """Check that the 3D histogram method produces a figure. Full tests
+    of the underlying function are in `tests/test_plot.py`."""
+
+    x, y, _ = params
+    evaluator = sg.Evaluator(real, synth)
+
+    fig = evaluator.plot_histogram3d(which_data, x, y)
+    ax = fig.axes[0]
+
+    assert isinstance(fig, plt.Figure)
+    assert ax.get_xlabel() == x
+    assert ax.get_ylabel() == y
+
+
+@given(st.sampled_from(("pearson", "cramers_v", "spearman")))
+@settings(
+    deadline=None,
+    max_examples=15,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+def test_plot_correlation(real, synth, method):
+    """Check that the correlation method produces a figure. Full tests
+    of the underlying function are in `tests/test_plot.py`."""
+
+    evaluator = sg.Evaluator(real, synth)
+
+    fig = evaluator.plot_correlation(method=method)
+    rax, sax, dax, empty, rbar, sbar, dbar = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert len(fig.axes) == len(
+        ("real", "synth", "diff", "empty", "rbar", "sbar", "dbar")
+    )
+
+
+@given(joint_params())
+@settings(
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+def test_plot_crosstab(real, synth, params):
+    """Check that the crosstab method produces a figure. Full tests of
+    the underlying function are in `tests/test_plot.py`."""
+
+    x, y, _ = params
+    evaluator = sg.Evaluator(real, synth)
+
+    fig = evaluator.plot_crosstab(x, y)
+    rax, sax, _ = fig.axes
+
+    assert isinstance(fig, plt.Figure)
+    assert len(fig.axes) == len(("REAL", "SYNTH", "cbar"))
+
+    for ax in (rax, sax):
+        assert ax.get_xlabel() == x
+        assert ax.get_ylabel() == y
+
+
+@given(st.sampled_from(("age", "height", "weight")))
+@settings(
+    deadline=None,
+    max_examples=15,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+def test_plot_qq(real, synth, feature):
+    """Check that the QQ-plot method produces a figure. Full tests of
+    the underlying function are in `tests/test_plot.py`."""
+
+    evaluator = sg.Evaluator(real, synth)
+
+    fig = evaluator.plot_qq(feature)
+
+    assert isinstance(fig, plt.Figure)
+    assert len(fig.axes) == 1

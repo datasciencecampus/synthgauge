@@ -94,3 +94,24 @@ def evaluators(draw, **kwargs):
     evaluator = sg.Evaluator(real, synth)
 
     return evaluator
+
+
+@st.composite
+def joint_params(draw):
+    """Get a valid set of joint-plot parameters. Recycled by the 3D
+    histogram and crosstab plot tests in `test_plot.py` and
+    `test_evaluator.py`."""
+
+    x, y = draw(
+        st.lists(
+            st.sampled_from(available_columns),
+            min_size=2,
+            max_size=2,
+            unique=True,
+        )
+    )
+
+    remaining_columns = list(set(available_columns).difference({x, y}))
+    groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
+
+    return x, y, groupby

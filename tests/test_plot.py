@@ -11,50 +11,13 @@ from seaborn.axisgrid import JointGrid
 
 from synthgauge import plot
 
-from .utils import available_columns, blood_type_feats, resolve_features
+from .utils import blood_type_feats, joint_params, resolve_features
 
 plot_settings = settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     max_examples=15,
     deadline=None,
 )
-
-
-@st.composite
-def joint_params(draw):
-    """Get a valid set of joint-plot parameters. Recycled by the 3D
-    histogram and crosstab plot tests."""
-
-    x, y = draw(
-        st.lists(
-            st.sampled_from(available_columns),
-            min_size=2,
-            max_size=2,
-            unique=True,
-        )
-    )
-
-    remaining_columns = list(set(available_columns).difference({x, y}))
-    groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
-
-    return x, y, groupby
-
-
-@given(
-    st.lists(st.text(min_size=1), min_size=1),
-    st.sampled_from(("x", "y")),
-    st.integers(1, 10),
-)
-@plot_settings
-def test_suggest_label_rotation(labels, axis, limit):
-    """Check that axis tick label rotation can be flagged correctly."""
-
-    _, ax = plt.subplots()
-    getattr(ax, f"set_{axis}ticks")(range(len(labels)))
-    getattr(ax, f"set_{axis}ticklabels")(labels)
-
-    rotate = plot.suggest_label_rotation(ax, axis, limit)
-    assert rotate is any(len(label) > limit for label in labels)
 
 
 @given(feats=blood_type_feats)

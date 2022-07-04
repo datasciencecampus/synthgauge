@@ -19,34 +19,6 @@ from .utils import cat_encode, feature_density_diff
 sns.set_theme()
 
 
-def suggest_label_rotation(ax, axis="x", char_lim=5):
-    """Advise if labels should be rotated.
-
-    For the specifed axis the maximum characters for the
-    labels is calculated. If this is above `char_lim` the function
-    will return `True` to suggest that labels should be rotated
-
-    Parameters
-    ----------
-    ax: matplotlib.axes.Axes
-        Axes to analyse.
-    axis: str, optional
-        Default is 'x'.
-    char_lim: int, optional
-        Default is `5`.
-
-    Returns
-    -------
-    bool
-        True if labels should be rotated, otherwise False.
-
-    """
-    tick_func = f"get_{axis.lower()}ticklabels"
-    labels = getattr(ax, tick_func)()
-    max_chars = max([len(label.get_text()) for label in labels])
-    return max_chars > char_lim
-
-
 def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     """Plot feature distributions.
 
@@ -589,11 +561,6 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
     ax.set_xlabel("real data quantiles")
     ax.set_ylabel("synth data quantiles")
     ax.set_title(f'Q-Q Plot for "{feature}"')
-
-    fig.canvas.draw()
-    if suggest_label_rotation(ax):
-        ax.set_xticks(ax.get_xticks())
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
 
     # Plot X = Y
     min_xy = min(x.min(), y.min())
