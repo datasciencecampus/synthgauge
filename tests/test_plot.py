@@ -11,33 +11,13 @@ from seaborn.axisgrid import JointGrid
 
 from synthgauge import plot
 
-from .utils import available_columns, blood_type_feats, resolve_features
+from .utils import blood_type_feats, joint_params, resolve_features
 
 plot_settings = settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
     max_examples=15,
     deadline=None,
 )
-
-
-@st.composite
-def joint_params(draw):
-    """Get a valid set of joint-plot parameters. Recycled by the 3D
-    histogram and crosstab plot tests."""
-
-    x, y = draw(
-        st.lists(
-            st.sampled_from(available_columns),
-            min_size=2,
-            max_size=2,
-            unique=True,
-        )
-    )
-
-    remaining_columns = list(set(available_columns).difference({x, y}))
-    groupby = draw(st.one_of(st.none(), st.sampled_from(remaining_columns)))
-
-    return x, y, groupby
 
 
 @given(
