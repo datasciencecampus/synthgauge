@@ -9,11 +9,11 @@ import synthgauge as sg
 def real():
     """Make some real (noiseless) data."""
 
-    return sg.datasets.make_blood_types_df(0, 0)
+    return sg.datasets.make_blood_types_df(0, 0, 0)
 
 
 @pytest.fixture
 def synth():
     """Make some synthetic (noisy) data."""
 
-    return sg.datasets.make_blood_types_df(1, 0)
+    return sg.datasets.make_blood_types_df(1, 0, 0)
