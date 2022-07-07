@@ -5,6 +5,49 @@ import pandas as pd
 from sklearn.datasets import make_classification
 
 
+def _adjust_data_elements(X, y, noise, nan_prop, seed):
+    """Adjust the given data and put it into a dataframe.
+    This function is not intended to be used directly by users.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        The data array to be adjusted.
+    y : np.ndarray
+        A set of labels for classifying the rows of `data`.
+    noise : float
+        The amount of noise to inject into the data. Specifically,
+        this controls the `scale` parameter of a zero-centred normal
+        distribution.
+    nan_prop : float
+        The proportion of elements to replace with missing values.
+    seed : int
+        A random seed used to choose missing element indices and sample
+        noise.
+
+    Returns
+    -------
+    data : pandas.DataFrame
+        The adjusted, combined dataframe.
+    """
+
+    rng = np.random.default_rng(seed)
+
+    data = np.column_stack((X, y))
+
+    num_cols = data.shape[1]
+    num_nans = int(data.size * nan_prop)
+    nan_idxs = rng.choice(data.size, num_nans, replace=False)
+    nan_coords = [(idx // num_cols, idx % num_cols) for idx in nan_idxs]
+
+    if nan_coords:
+        data[tuple(np.transpose(nan_coords))] = np.nan
+
+    data = pd.DataFrame(data + rng.normal(scale=noise, size=data.shape))
+
+    return data
+
+
 def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
     """Create a toy dataset about blood types and physical atrtibutes.
 
@@ -44,19 +87,7 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
         random_state=random_seed,
     )
 
-    rng = np.random.default_rng(random_seed)
-
-    mat = np.column_stack((X, 3 * y))
-
-    num_cols = mat.shape[1]
-    num_nans = int(mat.size * proportion_nan)
-    nan_idxs = rng.choice(mat.size, num_nans, replace=False)
-    nan_coords = [(idx // num_cols, idx % num_cols) for idx in nan_idxs]
-
-    for x, y in nan_coords:
-        mat[x, y] = np.nan
-
-    df = pd.DataFrame(mat + rng.normal(scale=noise, size=(1000, 6)))
+    df = _adjust_data_elements(X, y, noise, proportion_nan, random_seed)
 
     df.columns = [
         "age",
