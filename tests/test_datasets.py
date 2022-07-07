@@ -23,7 +23,7 @@ def data_and_labels(draw, rlims=(10, 1000), clims=(2, 6)):
         arrays(int, (len(data),), elements=st.integers(0, len(data)))
     )
 
-    return data, labels
+    return data, labels * 3
 
 
 @given(
