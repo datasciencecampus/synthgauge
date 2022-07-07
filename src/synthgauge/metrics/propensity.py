@@ -1,10 +1,10 @@
 """ Propensity-based utility metrics. """
 
-import math
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+import scipy.special
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeClassifier
@@ -167,7 +167,7 @@ def _pmse_logr_statistics(combined, indicator):
     """
 
     num_rows, num_cols = combined.shape
-    num_predictors = num_cols + math.comb(num_cols, 2)
+    num_predictors = num_cols + scipy.special.binom(num_cols, 2)
     prop_synth = indicator.mean()
 
     loc = (num_predictors - 1) * (1 - prop_synth) ** 2 / num_rows
