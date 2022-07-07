@@ -33,7 +33,7 @@ def _adjust_data_elements(X, y, noise, nan_prop, seed):
 
     rng = np.random.default_rng(seed)
 
-    data = np.column_stack((X, 3 * y))
+    data = np.column_stack((X, y))
 
     num_cols = data.shape[1]
     num_nans = int(data.size * nan_prop)

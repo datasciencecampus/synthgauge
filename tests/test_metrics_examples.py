@@ -75,12 +75,12 @@ def test_classification_metric(evaluator):
     result = evaluator.evaluate()
     assert result[
         "classification_comparison"
-    ].precision_difference == pytest.approx(0.15517528223410582)
+    ].precision_difference == pytest.approx(0.43868978507905143)
     assert result[
         "classification_comparison"
-    ].recall_difference == pytest.approx(0.13277485906646613)
+    ].recall_difference == pytest.approx(0.28062078823769654)
     assert result["classification_comparison"].f1_difference == pytest.approx(
-        0.17027964540942908
+        0.41882618117604753
     )
 
 
@@ -104,8 +104,8 @@ def test_correlation_metrics(evaluator):
     assert evaluator.metric_results == pytest.approx(
         {
             "correlation_MSD": 0.007424314497449256,
-            "cramers_v_MSE": 0.002962646353570354,
-            "correlation_ratio_MSE": 0.032584068389499725,
+            "cramers_v_MSE": 0.00971817461064437,
+            "correlation_ratio_MSE": 0.06174834836187228,
         }
     )
 
@@ -122,13 +122,13 @@ def test_propensity_metric_logistic(evaluator):
     )
     results = evaluator.evaluate()
     assert results["propensity_logrg"].observed_p_MSE == pytest.approx(
-        0.019468541336881976
+        0.05493054447730439
     )
     assert results["propensity_logrg"].standardised_p_MSE == pytest.approx(
-        15.918310234965006
+        65.6818850109618
     )
     assert results["propensity_logrg"].ratio_p_MSE == pytest.approx(
-        2.396128164539284
+        6.7606823972066445
     )
 
 
@@ -142,13 +142,13 @@ def test_propensity_metric_CART(evaluator):
     )
     results = evaluator.evaluate()
     assert results["propensity_metrics"].observed_p_MSE == pytest.approx(
-        0.24658333333333332
+        0.24683333333333332
     )
     assert results["propensity_metrics"].standardised_p_MSE == pytest.approx(
-        0.3251330271604647
+        0.32171687896285317
     )
     assert results["propensity_metrics"].ratio_p_MSE == pytest.approx(
-        1.0008733541738686
+        1.0008369591991682
     )
 
 
@@ -160,7 +160,7 @@ def test_TCAP(evaluator):
         target="blood_type",
     )
     evaluator.evaluate()
-    assert evaluator.metric_results == pytest.approx({"TCAP": 0.009})
+    assert evaluator.metric_results == pytest.approx({"TCAP": 0.007})
 
 
 def test_NN_dist(evaluator):
