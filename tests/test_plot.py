@@ -253,13 +253,7 @@ def test_plot_crosstab(real, synth, params):
         assert isinstance(ax, plt.Subplot)
         assert ax.get_xlabel() == x
         assert ax.get_ylabel() == y
-
-        total_count = sum(ax.collections[0]._A)
-        binning_error = sum(
-            pd.api.types.is_numeric_dtype(data[col]) for col in (x, y)
-        )
-        nrows = len(data)
-        assert total_count in range(nrows - binning_error, nrows + 1)
+        assert sum(ax.collections[0]._A) <= len(data)
 
 
 @given(

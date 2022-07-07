@@ -1,26 +1,27 @@
 """ Functions for creating toy datasets. """
 
-import random
-
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 
 
-def make_blood_types_df(noise=0, proportion_nan=0, random_seed=42):
-    """Create Dummy Data for examples
+def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
+    """Create a toy dataset about blood types and physical atrtibutes.
 
-    This function creates dummy data for the synthgauge examples.
+    This function is used to create data for the package's examples and
+    its tests. Its outputs are not intended to imply or be used for any
+    meaningful data analysis.
 
     Parameters
     ----------
-    noise : int
-        Standard deviation of the Gaussian noise to add to the data, default
-        zero.
-    proportion_nan: float [0,1]
-        Proportion of dataset to replace with nans.
+    noise : float
+        Standard deviation of the Gaussian noise to add to the data.
+        Default is one and must be non-negative.
+    proportion_nan: float [0, 1]
+        Proportion of dataset to replace with missing values. Default is
+        zero, i.e. complete data.
     random_seed : int
-        Use for reproducibility.
+        The seed used for any PRNGs. Used for reproducibility.
 
     Returns
     -------
@@ -28,7 +29,7 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=42):
 
     Notes
     -----
-    The amout of noise can be tuned to crudely simulate the creation of
+    The amount of noise can be tuned to crudely simulate the creation of
     synthetic data.
     """
 
@@ -43,16 +44,19 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=42):
         random_state=random_seed,
     )
 
-    np.random.seed(random_seed)
-    random.seed(random_seed)
+    rng = np.random.default_rng(random_seed)
 
     mat = np.column_stack((X, 3 * y))
-    prop = int(mat.size * proportion_nan)
-    i = [random.choice(range(mat.shape[0])) for _ in range(prop)]
-    j = [random.choice(range(mat.shape[1])) for _ in range(prop)]
-    mat[i, j] = np.NaN
 
-    df = pd.DataFrame(mat + np.random.normal(scale=noise, size=(1000, 6)))
+    num_cols = mat.shape[1]
+    num_nans = int(mat.size * proportion_nan)
+    nan_idxs = rng.choice(mat.size, num_nans, replace=False)
+    nan_coords = [(idx // num_cols, idx % num_cols) for idx in nan_idxs]
+
+    for x, y in nan_coords:
+        mat[x, y] = np.nan
+
+    df = pd.DataFrame(mat + rng.normal(scale=noise, size=(1000, 6)))
 
     df.columns = [
         "age",

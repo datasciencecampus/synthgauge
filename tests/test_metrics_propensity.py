@@ -3,13 +3,14 @@
 import string
 
 import numpy as np
+import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from synthgauge.metrics import propensity
 
-from .utils import blood_type_feats
+from .utils import datasets
 
 
 def _reduce_synthetic(synth, seed):
@@ -22,20 +23,60 @@ def _reduce_synthetic(synth, seed):
     return synth
 
 
-@given(st.sampled_from(("LogisticRegression", "CART")), st.integers(0, 100))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_propensity_MSE(real, synth, method, seed):
+@given(datasets())
+def test_combined_and_pop(datasets):
+    """Check that two datasets can be concatenated and their origins
+    preserved."""
+
+    real, synth = datasets
+    assume(not (real.empty or synth.empty))
+
+    combined, indicator = propensity._combine_and_pop(real, synth)
+
+    assert isinstance(combined, pd.DataFrame)
+    assert isinstance(indicator, np.ndarray)
+
+    assert set(indicator) == {0, 1}
+    assert len(combined) == len(real) + len(synth)
+    assert len(indicator) == len(combined)
+    assert sum(indicator) == len(synth)
+
+
+@given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
+@settings(
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+def test_get_propensity_scores(real, synth, method, seed):
+    """Check that a set of propensity scores can be obtained."""
+
+    combined, indicator = propensity._combine_and_pop(real, synth)
+
+    scores = propensity._get_propensity_scores(
+        combined, indicator, method, random_state=seed
+    )
+
+    assert isinstance(scores, np.ndarray)
+    assert scores.shape == (len(combined),)
+    assert np.logical_and(scores >= 0, scores <= 1).all()
+
+
+@given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
+@settings(
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+def test_pmse(real, synth, method, seed):
     """Check that either model can be used to obtain a propensity score
     mean-squared error. We first drop a random set of synthetic rows so
     that the bounds on pMSE can be verified."""
 
     synth = _reduce_synthetic(synth, seed)
-    synth_prop = len(synth) / (len(real) + len(synth))
+    combined, indicator = propensity._combine_and_pop(real, synth)
+    synth_prop = np.mean(indicator)
 
-    pmse = propensity.propensity_MSE(real, synth, method)
+    pmse = propensity.pmse(combined, indicator, method, random_state=seed)
 
     assert isinstance(pmse, float)
-    assert pmse >= 0
+    assert pmse >= 0 and pmse <= 1 - synth_prop
 
     if synth_prop > 0.5:
         assert pmse <= synth_prop**2
@@ -43,148 +84,119 @@ def test_propensity_MSE(real, synth, method, seed):
         assert pmse <= synth_prop**2 - 2 * synth_prop + 1
 
 
-@given(st.text(string.ascii_letters, min_size=1))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_propensity_MSE_method_error(real, synth, method):
-    """Check that a ValueError is raised if the propensity model is not
-    one of CART or LogisticRegression."""
-
-    match = "^method must be either 'CART' or 'LogisticRegression'$"
-    with pytest.raises(ValueError, match=match):
-        _ = propensity.propensity_MSE(real, synth, method)
-
-
 @given(st.integers(0, 100))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_expected_p_MSE(real, synth, seed):
-    """Check that the expected pMSE is calculated correctly."""
+def test_pmse_logr_statistics(real, synth, seed):
+    """Check that the theoretic null-pMSE statistics are calculated
+    correctly."""
 
     synth = _reduce_synthetic(synth, seed)
-    ncols = len(real.columns)
-    total_rows = len(real) + len(synth)
-    synth_prop = len(synth) / total_rows
+    combined, indicator = propensity._combine_and_pop(real, synth)
 
-    expected = propensity.expected_p_MSE(real, synth)
+    nrows, ncols = combined.shape
+    npreds = ncols * (ncols + 1) / 2
 
-    assert isinstance(expected, float)
+    synth_prop = indicator.mean()
+
+    loc, scale = propensity._pmse_logr_statistics(combined, indicator)
+
+    assert isinstance(loc, float)
+    assert isinstance(scale, float)
+
+    assert scale > 0
 
     if synth_prop > 0.5:
-        assert expected <= synth_prop**2
+        assert loc <= synth_prop**2
     else:
-        assert expected <= synth_prop**2 - 2 * synth_prop + 1
+        assert loc <= synth_prop**2 - 2 * synth_prop + 1
+
+    assert np.isclose(loc, (npreds - 1) * (1 - synth_prop) ** 2 / nrows)
 
     assert np.isclose(
-        expected * total_rows / ((ncols * (ncols + 1) / 2) - 1),
-        synth_prop * (1 - synth_prop) ** 2,
-    )
-
-
-@given(st.integers(0, 100))
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_stdev_p_MSE(real, synth, seed):
-    """Check that the std. dev. of pMSE is calculated correctly."""
-
-    synth = _reduce_synthetic(synth, seed)
-    ncols = len(real.columns)
-    total_rows = len(real) + len(synth)
-    synth_prop = len(synth) / total_rows
-
-    stddev = propensity.stdev_p_MSE(real, synth)
-
-    assert isinstance(stddev, float)
-    assert np.isclose(
-        stddev * total_rows / (2 * ((ncols * (ncols + 1) / 2) - 1)) ** 0.5,
-        synth_prop * (1 - synth_prop) ** 2,
+        scale,
+        synth_prop * np.sqrt(2 * (npreds - 1)) * (1 - synth_prop) ** 2 / nrows,
     )
 
 
 @given(st.integers(0, 100))
 @settings(
-    suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
 )
-def test_perm_expected_sd_p_MSE(real, synth, seed):
-    """Check that the permutation-based expectation and std. dev. can
-    be calculated for a pair of datasets."""
+def test_pmse_cart_statistics(real, synth, seed):
+    """Check that the permutation-based null statistics can be estimated
+    correctly."""
 
-    rng = np.random.default_rng(seed)
-    nrows = int(len(synth) * rng.uniform(0, 0.75))
-    synth = synth.iloc[:nrows, :]
+    synth = _reduce_synthetic(synth, seed)
+    combined, indicator = propensity._combine_and_pop(real, synth)
+    synth_prop = indicator.mean()
 
-    synth_prop = len(synth) / (len(real) + len(synth))
-
-    expected, stddev = propensity.perm_expected_sd_p_MSE(
-        real, synth, num_perms=10
+    loc, scale = propensity._pmse_cart_statistics(
+        combined, indicator, num_perms=10, random_state=seed
     )
-    assert isinstance(expected, float)
-    assert isinstance(stddev, float)
 
-    assert stddev >= 0
+    assert isinstance(loc, float)
+    assert isinstance(scale, float)
+
+    assert scale > 0
 
     if synth_prop > 0.5:
-        assert expected <= synth_prop**2
+        assert loc <= synth_prop**2
     else:
-        assert expected <= synth_prop**2 - 2 * synth_prop + 1
+        assert loc <= synth_prop**2 - 2 * synth_prop + 1
 
 
-@given(
-    st.sampled_from(("CART", "LogisticRegression")),
-    blood_type_feats,
-    st.integers(0, 100),
-)
+@given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
 @settings(
     deadline=None,
-    max_examples=30,
+    max_examples=10,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
-def test_p_MSE_ratio(real, synth, method, feats, seed):
+def test_pmse_ratio(real, synth, method, seed):
     """Check that the pMSE-ratio can be calculated correctly."""
 
-    rng = np.random.default_rng(seed)
-    nrows = int(len(synth) * rng.uniform(0, 0.5))
-    synth = synth.iloc[:nrows, :]
+    combined, indicator = propensity._combine_and_pop(real, synth)
 
-    ratio = propensity.p_MSE_ratio(real, synth, method, feats)
+    ratio = propensity.pmse_ratio(
+        combined, indicator, method, num_perms=10, random_state=seed
+    )
 
     assert isinstance(ratio, float)
     assert ratio > 0
 
-    if method == "LogisticRegression":
-        assert ratio >= 1
 
-
-@given(
-    st.sampled_from(("CART", "LogisticRegression")),
-    blood_type_feats,
-    st.integers(0, 100),
-)
+@given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
 @settings(
     deadline=None,
     max_examples=30,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
-def test_standardised_p_MSE(real, synth, method, feats, seed):
-    """Check that the standardised pMSE can be calculated correctly."""
+def test_pmse_standardised(real, synth, method, seed):
+    """Check that the standardised pMSE can be calculated."""
 
-    rng = np.random.default_rng(seed)
-    nrows = int(len(synth) * rng.uniform(0, 0.5))
-    synth = synth.iloc[:nrows, :]
+    synth = _reduce_synthetic(synth, seed)
+    combined, indicator = propensity._combine_and_pop(real, synth)
 
-    standardised = propensity.standardised_p_MSE(real, synth, method, feats)
+    standard = propensity.pmse_standardised(
+        combined, indicator, method, num_perms=10, random_state=seed
+    )
 
-    assert isinstance(standardised, float)
+    assert isinstance(standard, float)
 
 
-@given(st.sampled_from(("CART", "LogisticRegression")), blood_type_feats)
+@given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
 @settings(
     deadline=None,
     max_examples=30,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
-def test_propensity_metrics(real, synth, method, feats):
+def test_propensity_metrics(real, synth, method, seed):
     """Check that the propensity metric wrapper function returns its
     named tuple. Further tests for the individual metrics are above."""
 
-    result = propensity.propensity_metrics(real, synth, method, feats)
+    synth = _reduce_synthetic(synth, seed)
+    result = propensity.propensity_metrics(
+        real, synth, method=method, random_state=seed
+    )
 
     assert repr(result).startswith("PropensityResult")
     assert result._fields == (
@@ -193,3 +205,14 @@ def test_propensity_metrics(real, synth, method, feats):
         "ratio_p_MSE",
     )
     assert all(isinstance(val, float) for val in result)
+
+
+@given(st.text(string.ascii_letters, min_size=1))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_propensity_metrics_error(real, synth, method):
+    """Check that a ValueError is raised if the propensity model is not
+    one of 'cart' or 'logr'."""
+
+    match = f"Propensity method must be 'cart' or 'logr' not {method}."
+    with pytest.raises(ValueError, match=match):
+        _ = propensity.propensity_metrics(real, synth, method)

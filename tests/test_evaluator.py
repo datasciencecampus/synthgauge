@@ -313,7 +313,10 @@ def test_evaluate_custom_metric(evaluator, func):
 @settings(
     deadline=None,
     max_examples=15,
-    suppress_health_check=[HealthCheck.function_scoped_fixture],
+    suppress_health_check=[
+        HealthCheck.function_scoped_fixture,
+        HealthCheck.data_too_large,
+    ],
 )
 def test_plot_histograms(real, synth, size):
     """Check that the histograms method produces a figure. Full tests

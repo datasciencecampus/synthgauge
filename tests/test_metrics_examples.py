@@ -5,6 +5,7 @@ Note: many of these tests are just checking the output hasn't changed from when
 the tests were written. In some cases more work can be done to check that the
 outputs are sensible.
 """
+import numpy as np
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 
@@ -39,26 +40,26 @@ def test_wrappers(evaluator):
     evaluator.add_metric("wilcoxon", feature="weight")
     results = evaluator.evaluate()
     assert results["jensen_shannon_distance"] == pytest.approx(
-        0.0166117691741195
+        0.137119562785772
     )
     assert results["jensen_shannon_divergence"] == pytest.approx(
-        0.01942803292479766
+        0.016975399683905556
     )
-    assert results["kolmogorov_smirnov"].statistic == pytest.approx(0.088)
+    assert results["kolmogorov_smirnov"].statistic == pytest.approx(0.075)
     assert results["kolmogorov_smirnov"].pvalue == pytest.approx(
-        0.0008613642727365059
+        0.007195361443046065
     )
-    assert results["kullback_leibler"] == pytest.approx(0.0944474889121178)
-    assert results["mann_whitney"].statistic == pytest.approx(491047.0)
-    assert results["mann_whitney"].pvalue == pytest.approx(0.48780212969583725)
-    assert results["wasserstein"] == pytest.approx(1.8290000000000002)
-    assert results["wilcoxon"].statistic == pytest.approx(203551.0)
-    assert results["wilcoxon"].pvalue == pytest.approx(0.2546321509324163)
+    assert np.isinf(results["kullback_leibler"])
+    assert results["mann_whitney"].statistic == pytest.approx(500400.0)
+    assert results["mann_whitney"].pvalue == pytest.approx(0.9752996559986855)
+    assert results["wasserstein"] == pytest.approx(1.509)
+    assert results["wilcoxon"].statistic == pytest.approx(216830.0)
+    assert results["wilcoxon"].pvalue == pytest.approx(0.8121496973678162)
     assert results["kruskal_wallis"].statistic == pytest.approx(
-        0.4814244074541294
+        0.0009610612500442349
     )
     assert results["kruskal_wallis"].pvalue == pytest.approx(
-        0.48777782605216824
+        0.9752687518318524
     )
 
 
@@ -74,12 +75,12 @@ def test_classification_metric(evaluator):
     result = evaluator.evaluate()
     assert result[
         "classification_comparison"
-    ].precision_difference == pytest.approx(0.1959776822276822)
+    ].precision_difference == pytest.approx(0.15517528223410582)
     assert result[
         "classification_comparison"
-    ].recall_difference == pytest.approx(0.1530778893694964)
+    ].recall_difference == pytest.approx(0.13277485906646613)
     assert result["classification_comparison"].f1_difference == pytest.approx(
-        0.17732379554135785
+        0.17027964540942908
     )
 
 
@@ -88,7 +89,7 @@ def test_cluster_metric(evaluator):
     evaluator.add_metric("multi_clustered_MSD", random_state=24)
     evaluator.evaluate()
     assert evaluator.metric_results == pytest.approx(
-        {"multi_clustered_MSD": 0.00291989251686431}
+        {"multi_clustered_MSD": 0.004462729520817462}
     )
 
 
@@ -102,9 +103,9 @@ def test_correlation_metrics(evaluator):
     evaluator.evaluate()
     assert evaluator.metric_results == pytest.approx(
         {
-            "correlation_MSD": 0.008427408567868748,
-            "cramers_v_MSE": 0.005525979344857528,
-            "correlation_ratio_MSE": 0.03648278105113976,
+            "correlation_MSD": 0.007424314497449256,
+            "cramers_v_MSE": 0.002962646353570354,
+            "correlation_ratio_MSE": 0.032584068389499725,
         }
     )
 
@@ -114,36 +115,41 @@ def test_propensity_metric_logistic(evaluator):
     evaluator.add_metric(
         "propensity_metrics",
         metric_alias="propensity_logrg",
-        method="LogisticRegression",
-        random_state=50,
-        max_iter=10000,
+        method="logr",
+        max_iter=1e4,
         solver="sag",
+        random_state=0,
     )
     results = evaluator.evaluate()
     assert results["propensity_logrg"].observed_p_MSE == pytest.approx(
-        0.014081072437202892
+        0.019468541336881976
     )
     assert results["propensity_logrg"].standardised_p_MSE == pytest.approx(
-        32.460330979335154
+        15.918310234965006
     )
     assert results["propensity_logrg"].ratio_p_MSE == pytest.approx(
-        11.264857949762312
+        2.396128164539284
     )
 
 
 def test_propensity_metric_CART(evaluator):
     """Check Propensity metric using CART model."""
     evaluator.add_metric(
-        "propensity_metrics", method="CART", random_state=50, num_perms=1000
+        "propensity_metrics",
+        method="cart",
+        num_perms=1000,
+        random_state=0,
     )
     results = evaluator.evaluate()
     assert results["propensity_metrics"].observed_p_MSE == pytest.approx(
-        0.24841666666666665
+        0.24658333333333332
     )
-    assert results["propensity_metrics"].standardised_p_MSE < 3.0
-    assert results["propensity_metrics"].standardised_p_MSE > 2.7
-    assert results["propensity_metrics"].ratio_p_MSE > 1.007
-    assert results["propensity_metrics"].ratio_p_MSE < 1.008
+    assert results["propensity_metrics"].standardised_p_MSE == pytest.approx(
+        0.3251330271604647
+    )
+    assert results["propensity_metrics"].ratio_p_MSE == pytest.approx(
+        1.0008733541738686
+    )
 
 
 def test_TCAP(evaluator):
@@ -154,7 +160,7 @@ def test_TCAP(evaluator):
         target="blood_type",
     )
     evaluator.evaluate()
-    assert evaluator.metric_results == pytest.approx({"TCAP": 0.007})
+    assert evaluator.metric_results == pytest.approx({"TCAP": 0.009})
 
 
 def test_NN_dist(evaluator):
