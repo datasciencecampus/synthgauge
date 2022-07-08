@@ -16,35 +16,34 @@ def df_combine(
 ):
     """Combine separate dataframes of real and synthetic data.
 
-    The dataframes are concatenated along axis=0 and a source column is
-    added to distinguish the real data from the sythetic data.
-
-    Optionally, specific features can be selected.
+    The dataframes are concatenated along the first axis (rows) and a
+    source column is added to distinguish the real data from the
+    synthetic data. Optionally, specific features can be selected.
 
     Parameters
     ----------
     real: pandas.DataFrame
-        DataFrame containing the real, unsythesised data.
+        Dataframe containing the real data.
     synth: pandas.DataFrame
-        DataFrame containing the synthesised data.
+        Dataframe containing the synthetic data.
     feats: str or list of str, optional
         Features to combine. By default all common features are used.
     source_col_name: str, optional
-        Name of the source column. This is added to the combined DataFrame
+        Name of the source column. This is added to the combined dataset
         and filled with the `source_val_real` and `source_val_synth`
         values to signify the real and synthetic data respectively.
-        Defaults to "source".
+        Defaults to `"source"`.
     source_val_real: any, optional
-        Value to use in `source_col_name` column to signify the real data.
-        Any value accepted by pandas.DataFrame. Defaults to "real".
+        Value to use in `source_col_name` column to signify the real
+        data. Defaults to `"real"`.
     source_val_synth: any, optional
-        Value to use in `source_col_name` column to signify the sythetic
-        data. Any value accepted by pandas.DataFrame. Defaults to "synth".
+        Value to use in `source_col_name` column to signify the
+        synthetic data. Defaults to `"synth"`.
 
     Returns
     -------
-    pandas.DataFrame
-        The result of the concatenation of the input DataFrame objects.
+    combined: pandas.DataFrame
+        The combined dataframe.
     """
 
     feats = feats or real.columns.intersection(synth.columns)
@@ -57,9 +56,9 @@ def df_combine(
     synth = synth[feats].copy()
     synth[source_col_name] = source_val_synth
 
-    data = pd.concat([real, synth])
+    combined = pd.concat([real, synth])
 
-    return data
+    return combined
 
 
 def df_separate(
@@ -78,26 +77,26 @@ def df_separate(
     Parameters
     ----------
     data: pandas.DataFrame
-        DataFrame to split into real and synthetic components.
+        Dataframe to split into real and synthetic components.
     source_col_name: str
         Name of the column used to signify real versus synthetic data.
     feats: str or list of str, optional
         Features to separate. By default all features are used.
     source_val_real: any, optional
-        Value in `source_col_name` column signifying the real data. Any
-        value accepted by pandas.DataFrame. Defaults to "real".
+        Value in `source_col_name` column signifying the real data.
+        Defaults to `"real"`.
     source_val_synth: any, optional
         Value in `source_col_name` column signifying the synthetic data.
-        Any value accepted by pandas.DataFrame. Defaults to "synth".
+        Defaults to "synth".
     drop_source_col: bool, optional
-        If True, the default, the `source_col_name` column will be dropped
-        from the output DataFrames.
+        If `True` (default), the `source_col_name` column will be
+        dropped from the outputs.
 
     Returns
     -------
     real, synth: pandas.DataFrame, pandas.DataFrame
-        Two DataFrame objects containing the real data and synthetic
-        data respectively.
+        Dataframes containing the real data and synthetic data,
+        respectively.
     """
 
     if isinstance(feats, str):
@@ -123,29 +122,27 @@ def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
     """Launder feature names and optionally filter.
 
     To provide clear distinction between the real and synthetic
-    features, each dataframe is updated to append suffixes to the feature
-    names.
-
-    Optionally, specific features can be selected.
+    features, each dataframe is updated to append suffixes to the
+    feature names. Optionally, specific features can be selected.
 
     Parameters
     ----------
     real: pandas.DataFrame
-        DataFrame containing the real, unsythesised data
+        Dataframe containing the real data.
     synth: pandas.DataFrame
-        DataFrame containing the synthesised data
+        Dataframe containing the synthetic data.
     feats: str or list of str, optional
         Features to launder. By default all common features are used.
     suffix_real: str, optional
-        Suffix to append to columns in `real`. Default is "real".
+        Suffix to append to columns in `real`. Default is `"real"`.
     suffix_synth: str, optional
-        Suffix to append to columns in `synth`. Default is "synth".
+        Suffix to append to columns in `synth`. Default is `"synth"`.
 
     Returns
     -------
-    pandas.DataFrame, pandas.DataFrame
-        Two DataFrame objects containing the real data and synthetic
-        data respectively.
+    real, synth: pandas.DataFrame, pandas.DataFrame
+        Laundered dataframes containing the real data and synthetic
+        data, respectively.
     """
 
     feats = feats or real.columns.intersection(synth.columns)
@@ -166,51 +163,49 @@ def cat_encode(
 ):
     """Convert object features to categories.
 
-    Generates a new version of the input datframe with the
-    specified features categorically encoded with integer labels.
-    Optionally, the features can be returned as the 'category' type
-    with no encoding.
+    Generates a new version of the input dataframe with the specified
+    features categorically encoded with integer labels. Optionally, the
+    features can be returned as `category` data type with no encoding.
 
-    Before performing the conversion a check is made to identify any
-    speficied features that are not 'object' type and therefore less
-    suited to categorical encoding. A warning is raised for these features
-    and they will be ignored from subsequent encoding steps unless
-    `force` is `True`.
+    Before performing the conversion, a check is made to identify any
+    speficied features that are not `object`-type and thus less suited
+    to categorical encoding. A warning is raised for these features and
+    they will be ignored from subsequent encoding steps unless `force`
+    is set to `True`.
 
     Parameters
     ----------
     df: pandas.DataFrame
         Input dataframe to be converted.
     feats: str or list of str, optional
-        Feature(s) in `df` to convert to category. By default all object
-        columns are selected.
+        Feature(s) in `df` to convert to categorical. By default all
+        `object`-type columns are selected.
     return_all: bool, default=False
-        If True all features in `df` will be returned with only those
-        specified in `feats` converted. Otherwise only the converted
-        features are returned. This is the default.
+        If `True`, all features in `df` will be returned regardless of
+        whether they were converted. If `False` (default), only the
+        converted features are returned.
     convert_only: bool, default=False
-        If True the features will only be converted to the 'category'
-        type and NOT encoded.
-    force: bool, optional
-        If true, all specified features will be encoded regardless of
-        data type.
-
+        If `True`, the features will only be converted to the `category`
+        data type without being integer-encoded.
+    force: bool, default=False
+        If `True`, all features in `feats` will be encoded regardless of
+        their data type.
 
     Returns
     -------
-    pandas.DataFrame
-        DataFrame with converted features
+    out_df: pandas.DataFrame
+        DataFrame with (at least) the converted features.
     dict or NoneType
         A dictionary mapping each encoded feature to its categories. If
-        convert_only=True NoneType is returned.
+        `convert_only=True`, returns as `None`.
 
     Warns
     -----
     UserWarning
-        A warning is given if any of the specified features for
-        conversion are not an 'object' type.
-
+        A warning is given if any of the features in `feats` are not of
+        an `object` data type.
     """
+
     all_obj = df.select_dtypes(include=["object", "category"]).columns
     feats = feats or all_obj
     if isinstance(feats, str):
@@ -220,11 +215,10 @@ def cat_encode(
     non_obj = list(set(feats).difference(all_obj))
     if len(non_obj) > 0:
         warnings.warn(
-            "Selected features include non-object types:"
-            f"{non_obj} Is this intended? If so, rerun and "
-            "specify `force_encode=True`. Otherwise they will "
-            "be dropped or, if `return_all==True`, passed "
-            "through unchanged."
+            f"Selected features include non-object types: {non_obj}\n"
+            "Is this intended? If so, rerun with `force=True`. "
+            "Otherwise, they will be dropped, unless "
+            "`return_all=True`, where they will pass through unchanged."
         )
 
     cat_dict = {} if not convert_only else None
@@ -252,33 +246,32 @@ def cat_encode(
 def feature_density_diff(real, synth, feature, bins=10):
     """Computes the difference between real and synth feature densities.
 
-    For the specified feature the density is computed across `bins` in both
-    the `real` and `synth` data sets. The per-bin difference is computed and
-    returned along with the bin edges that were used.
+    For the specified feature the density is computed across `bins` in
+    both the real and synthetic data. The per-bin difference is computed
+    and returned along with the bin edges that were used.
 
-    Prior to calculating the densities all values are converted to numeric
-    via `utils.cat_encode`.
+    Prior to calculating the densities. all values are converted to
+    numeric via `synthgauge.utils.cat_encode`.
 
     Parameters
     ----------
     real: pandas.DataFrame
-        DataFrame containing the real data.
+        Dataframe containing the real data.
     synth: pandas.DataFrame
-        DataFrame containing the sythetic data.
+        Dataframe containing the synthetic data.
     feature: str
         The feature that will be used to compute the density.
-    bins: str or int, optional
+    bins: str or int, default=10
         Bins to use for computing the density. This value is passed
         to `numpy.histogram_bin_edges` so can be any value accepted by
-        that function. The default setting of 10 uses 10 bins.
+        that function. The default setting uses 10 bins.
 
     Returns
     -------
-    hist_diff: np.ndarry
+    hist_diff: numpy.ndarray
         The difference in feature density for each of the bins.
-    bin_edges: np.ndarray
+    bin_edges: numpy.ndarray
         The edges of the bins.
-
     """
 
     combined = df_combine(real, synth, feats=feature)
