@@ -316,7 +316,7 @@ def test_plot_qq(real, synth, feature, n_quantiles):
 
     assert ax.get_xlabel() == "real data quantiles"
     assert ax.get_ylabel() == "synth data quantiles"
-    assert ax.get_title() == f'Q-Q Plot for "{feature}"'
+    assert ax.get_title() == f"Q-Q Plot for {feature}"
 
     scatter = ax.collections[0]._offsets.data
     line = ax.lines[0]._xy
@@ -331,9 +331,6 @@ def test_plot_qq(real, synth, feature, n_quantiles):
         points = scatter[:, j]
         assert np.min(points) == data[feature].min()
         assert np.max(points) == data[feature].max()
-
-        if n_quantiles is None or n_quantiles == len(data):
-            assert np.array_equal(points, data[feature].sort_values())
 
     expected_line_ends = [
         min(real[feature].min(), synth[feature].min()),
@@ -364,8 +361,8 @@ def test_plot_qq_error_with_categorical_feature(real, synth, feature):
     non-numeric feature."""
 
     with pytest.raises(
-        ValueError,
-        match="^The feature to plot must be numeric not of type: category$",
+        TypeError,
+        match="^The feature must be numeric not of type: category$",
     ):
         _ = plot.plot_qq(real, synth, feature)
 
