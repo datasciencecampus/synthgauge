@@ -11,16 +11,16 @@ from .utils import datasets
 
 
 @given(datasets(column_spec={col: "object" for col in ("a", "b", "c")}))
-def test_get_WEAP(datasets):
+def test_get_weap_scores(datasets):
     """Check that a WEAP score can be calculated for each row in a synthetic
     dataset."""
 
     _, synth = datasets
     assume(not synth.empty)
 
-    key, target = ["a", "b"], ["c"]
+    *key, target = ["a", "b", "c"]
 
-    weaps = privacy.get_WEAP(synth, key, target)
+    weaps = privacy._get_weap_scores(synth, key, target)
 
     assert isinstance(weaps, pd.Series)
     assert pd.api.types.is_numeric_dtype(weaps)
@@ -37,14 +37,14 @@ def test_TCAP(datasets):
 
     *key, target = ["a", "b", "c"]
 
-    tcap = privacy.TCAP(real, synth, key, target)
+    score = privacy.TCAP(real, synth, key, target)
 
-    assert isinstance(tcap, float)
+    assert isinstance(score, float)
 
     if real.equals(synth):
-        assert tcap == 1
+        assert score == 1
     else:
-        assert tcap >= 0 and tcap < 1
+        assert score >= 0 and score < 1
 
 
 @given(datasets(column_spec={col: "object" for col in ("a", "b", "c")}))
@@ -75,14 +75,15 @@ def test_TCAP_no_reduced_synthetic_data(datasets):
         available_dtypes=("float",),
     ),
     st.floats(min_value=0),
+    st.integers(1, 5),
 )
-def test_find_outliers(datasets, threshold):
+def test_find_outliers(datasets, threshold, neighbours):
     """Check that the local outlier detection mechanism works."""
 
     data, _ = datasets
     assume(not data.empty and len(data) > 5)
 
-    outliers = privacy.find_outliers(data, threshold)
+    outliers = privacy._find_outliers(data, threshold, neighbours)
 
     assert isinstance(outliers, np.ndarray)
     assert outliers.shape == (len(data),)
@@ -112,7 +113,7 @@ def test_min_NN_dist(datasets):
 
     distance = privacy.min_NN_dist(real, synth)
 
-    assert isinstance(distance, int)
+    assert isinstance(distance, float)
 
     real_unique_rows = {tuple(row) for _, row in real.iterrows()}
     synth_unique_rows = {tuple(row) for _, row in synth.iterrows()}
