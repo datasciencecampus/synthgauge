@@ -12,7 +12,7 @@ from sklearn.tree import DecisionTreeClassifier
 from ..utils import df_combine
 
 
-def _combine_and_pop(real, synth):
+def _combine_encode_and_pop(real, synth):
     """Get the combined, encoded real and synthetic data, and their
     origins.
 
@@ -435,7 +435,7 @@ def propensity_metrics(
         )
 
     feats = feats or list(set(real.columns).intersection(synth.columns))
-    combined, indicator = _combine_and_pop(real[feats], synth[feats])
+    combined, indicator = _combine_encode_and_pop(real[feats], synth[feats])
 
     if method == "logr":
         loc, scale = _pmse_logr_statistics(combined, indicator)

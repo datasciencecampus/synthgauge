@@ -5,8 +5,8 @@ from itertools import product
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
-from pandas import DataFrame, concat, crosstab, cut
 from pandas.core.dtypes.common import (
     is_categorical_dtype,
     is_numeric_dtype,
@@ -319,7 +319,7 @@ def plot_correlation(
         size = np.sqrt(results.size).astype(int)
         results = results.reshape((size, size))
 
-        return DataFrame(results, index=df.columns, columns=df.columns)
+        return pd.DataFrame(results, index=df.columns, columns=df.columns)
 
     if isinstance(feats, str):
         feats = [feats]
@@ -458,25 +458,25 @@ def plot_crosstab(
     # Collect x and y values
     real_x, real_y = real[x], real[y]
     synth_x, synth_y = synth[x], synth[y]
-    all_x = concat((real_x, synth_x))
-    all_y = concat((real_y, synth_y))
+    all_x = pd.concat((real_x, synth_x))
+    all_y = pd.concat((real_y, synth_y))
 
     # Discretise numeric features
     try:
         if is_numeric_dtype(all_x):
             x_bins = np.histogram_bin_edges(all_x.dropna(), x_bins)
-            real_x = cut(real_x, x_bins)
-            synth_x = cut(synth_x, x_bins)
+            real_x = pd.cut(real_x, x_bins)
+            synth_x = pd.cut(synth_x, x_bins)
 
         if is_numeric_dtype(all_y):
             y_bins = np.histogram_bin_edges(all_y.dropna(), y_bins)
-            real_y = cut(real_y, y_bins)
-            synth_y = cut(synth_y, y_bins)
+            real_y = pd.cut(real_y, y_bins)
+            synth_y = pd.cut(synth_y, y_bins)
     except TypeError:
         raise TypeError("`x_bins` and `y_bins` must not be None")
 
-    freq_real = crosstab(real_x, real_y, dropna=False)
-    freq_synth = crosstab(synth_x, synth_y, dropna=False)
+    freq_real = pd.crosstab(real_x, real_y, dropna=False)
+    freq_synth = pd.crosstab(synth_x, synth_y, dropna=False)
 
     fig, axes = plt.subplots(1, 2, figsize=figsize, constrained_layout=True)
 
@@ -583,7 +583,7 @@ def plot_feat_density_diff(
     differences for each bin.
 
     Where multiple feature are provided, the density differences are
-    concatenated into a flattened array and a histogram plotted. The
+    pd.concatenated into a flattened array and a histogram plotted. The
     histogram represents the distribution of differences in densities
     across all features and bins.
 
