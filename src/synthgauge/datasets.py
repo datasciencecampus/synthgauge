@@ -1,4 +1,4 @@
-""" Functions for creating toy datasets. """
+"""Functions for creating toy datasets."""
 
 import numpy as np
 import pandas as pd
@@ -60,15 +60,14 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
     noise : float
         Standard deviation of the Gaussian noise added to the data.
         Default is zero (no noise) and must be non-negative.
-    proportion_nan: float, [0, 1]
-        Proportion of dataset to replace with missing values. Default is
-        zero, i.e. complete data.
+    proportion_nan : float, default 0
+        Proportion of dataset to replace with missing values.
     random_seed : int
-        The seed used for any PRNGs. Used for reproducibility.
+        Seed used by all random samplers. Used for reproducibility.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
 
     Notes
     -----
