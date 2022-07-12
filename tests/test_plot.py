@@ -257,26 +257,6 @@ def test_plot_crosstab(real, synth, params):
 
 
 @given(
-    columns=st.lists(
-        st.sampled_from(("age", "height", "weight")),
-        unique=True,
-        min_size=2,
-        max_size=2,
-    )
-)
-@plot_settings
-def test_plot_crosstab_error(real, synth, columns):
-    """Check that a TypeError is thrown when neither binning method is
-    specified for a crosstab plot of two numeric columns."""
-
-    with pytest.raises(
-        TypeError, match="^`x_bins` and `y_bins` must not be None$"
-    ):
-        x, y = columns
-        _ = plot.plot_crosstab(real, synth, x, y, x_bins=None, y_bins=None)
-
-
-@given(
     params=joint_params(),
     cmap=st.sampled_from(("viridis", "ch:s=.25,rot=-.25", "light:coral")),
 )
