@@ -30,8 +30,8 @@ def test_get_bin_counts(datasets, bins):
         assert counts.sum() == len(data)
 
         if bins is None:
-            assert counts.shape == (len(values) - 1,)
-        if isinstance(bins, int):
+            assert counts.shape == (len(values),)
+        else:
             assert counts.shape == (bins,)
 
 

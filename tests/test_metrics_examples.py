@@ -39,7 +39,7 @@ def test_wrappers(evaluator):
     evaluator.add_metric("wilcoxon", feature="weight")
     results = evaluator.evaluate()
     assert results["jensen_shannon_distance"] == pytest.approx(
-        0.12163299183162701
+        0.137119562785772
     )
     assert results["jensen_shannon_divergence"] == pytest.approx(
         0.016975399683905556

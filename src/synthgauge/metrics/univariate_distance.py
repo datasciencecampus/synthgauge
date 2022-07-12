@@ -1,4 +1,4 @@
-""" Univariate utility metrics. """
+"""Univariate utility metrics."""
 
 import numpy as np
 import pandas as pd
@@ -19,10 +19,10 @@ def _get_bin_counts(real, synth, feature, bins):
     feature : str
         Feature to be processed into bin counts. Must be continuous.
     bins : int or str or None
-        The binning method to use. Integers are number of bins. Strings
-        are any method accepted by `numpy.histogram_bin_edges`. If
-        `None`, the feature is assumed to be ordinal and bin edges are
-        placed at every observed value in either dataset.
+        The binning method to use. If `int`, is the number of bins. If
+        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
+        If `None`, the feature is assumed to be categorical and counts
+        are taken for each value in either dataset.
 
     Returns
     -------
@@ -34,14 +34,13 @@ def _get_bin_counts(real, synth, feature, bins):
     combined = np.concatenate((real, synth))
 
     if bins is None:
-        # edges at each observed value
-        edges = np.unique(combined)
+        values = np.unique(combined)
+        real_counts = np.array([sum(real == val) for val in values])
+        synth_counts = np.array([sum(synth == val) for val in values])
     else:
-        # assign bin edges based on combined data
         edges = np.histogram_bin_edges(combined, bins=bins)
-
-    real_counts, _ = np.histogram(real, edges)
-    synth_counts, _ = np.histogram(synth, edges)
+        real_counts, _ = np.histogram(real, edges)
+        synth_counts, _ = np.histogram(synth, edges)
 
     return real_counts, synth_counts
 
@@ -55,21 +54,19 @@ def kolmogorov_smirnov(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
-        Name of the feature to compare. Must be a continuous variable.
-    **kwargs : dict
+        Name of the feature to compare. This must be continuous.
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.ks_2samp`.
 
     Returns
     -------
-    statistic : float
-        Kolmogorov-Smirnov test statistic
+    statistic, pvalue : float
+        Kolmogorov-Smirnov test statistic.
     pvalue : float
-        Two-tailed p-value
+        Two-tailed p-value.
 
     See Also
     --------
@@ -92,9 +89,9 @@ def kolmogorov_smirnov(real, synth, feature, **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-    ...                          columns = ['feat1', 'feat2', 'feat3'])
+    ...                     columns = ['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-    ...                           columns = ['feat1', 'feat2', 'feat3'])
+    ...                      columns = ['feat1', 'feat2', 'feat3'])
 
     The first feature appears to come from the same distribution in both
     datasets.
@@ -122,18 +119,16 @@ def wasserstein(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.wasserstein_distance`.
 
     Returns
     -------
-    distance : float
+    float
         The computed distance between the distributions.
 
     See Also
@@ -166,9 +161,9 @@ def wasserstein(real, synth, feature, **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-    ...                          columns = ['feat1', 'feat2', 'feat3'])
+    ...                     columns = ['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-    ...                           columns = ['feat1', 'feat2', 'feat3'])
+    ...                      columns = ['feat1', 'feat2', 'feat3'])
 
     The first feature appears to be more similar than the second across
     datasets.
@@ -193,17 +188,16 @@ def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    bins : int or str, optional, default="auto"
-        Number of bins to use when discretising data, if `None` data
-        will be treated as categorical. If a string, it must be a method
-        accepted by `numpy.histogram_bin_edges`.
-    **kwargs : dict
+    bins : int or str or None, default "auto"
+        The binning method to use. If `int`, is the number of bins. If
+        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
+        If `None`, the feature is assumed to be categorical and counts
+        are taken for each value in either dataset.
+    **kwargs : dict, optional
         Keyword arguments for `scipy.spatial.distance.jensenshannon`.
 
     Returns
@@ -259,7 +253,7 @@ def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
 
 
 def feature_density_diff_mae(real, synth, feats=None, bins=10):
-    """Mean Absolute Error of feature densities.
+    """Mean absolute error of feature densities.
 
     For each feature the difference between the density across the bins
     within `real` and `synth` is calculated. Finally the MAE across all
@@ -269,22 +263,21 @@ def feature_density_diff_mae(real, synth, feats=None, bins=10):
 
     Parameters
     ----------
-    real: pandas.DataFrame
+    real : pandas.DataFrame
         DataFrame containing the real data.
-    synth: pandas.DataFrame
+    synth : pandas.DataFrame
         DataFrame containing the sythetic data.
-    feats: str or list of str, optional.
-        The features that will be used to compute the densities. By
-        default all features in `real` will be used.
-    bins: str or int, optional
-        Bins to use for computing the density. This value is passed
-        to `numpy.histogram_bin_edges` so can be any value accepted by
-        that function. The default setting of 10 uses 10 bins.
+    feats : str or list of str or None, default None
+        The feature(s) that will be used to compute the densities. If
+        `None` (default), all features in `real` will be used.
+    bins : str or int, default 10
+        Binning method for discretising the data. Can be anything
+        accepted by `numpy.histogram_bin_edges`. Default uses 10 bins.
 
     Returns
     -------
-    float:
-        Mean Absolute Error of feature densities.
+    float
+        Mean absolute error of feature densities.
     """
 
     if isinstance(feats, (list, pd.Index)):
@@ -309,23 +302,22 @@ def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    bins : int or str, optional, default="auto"
-        Number of bins to use when discretising data, if `None` data
-        will be treated as categorical. If a string, it must be a method
-        accepted by `numpy.histogram_bin_edges`.
-    **kwargs : dict
+    bins : int or str or None, default "auto"
+        The binning method to use. If `int`, is the number of bins. If
+        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
+        If `None`, the feature is assumed to be categorical and counts
+        are taken for each value in either dataset.
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.entropy`.
 
     Returns
     -------
-    D : float
-        The calculated divergence.
+    float
+        The computed divergence between the distributions.
 
     See Also
     --------
@@ -354,9 +346,9 @@ def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-                                 columns=['feat1', 'feat2', 'feat3'])
+    ...                     columns=['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-                                  columns=['feat1', 'feat2', 'feat3'])
+    ...                      columns=['feat1', 'feat2', 'feat3'])
 
     The first feature appears to be more similar than the second across
     datasets.
@@ -387,22 +379,21 @@ def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    bins : int or str, optional, default="auto"
-        Number of bins to use when discretising data, if `None` data
-        will be treated as categorical. If a string, it must be a method
-        accepted by `numpy.histogram_bin_edges`.
-    **kwargs : dict
+    bins : int or str or None, default "auto"
+        The binning method to use. If `int`, is the number of bins. If
+        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
+        If `None`, the feature is assumed to be categorical and counts
+        are taken for each value in either dataset.
+    **kwargs : dict, optional
         Keyword arguments for `scipy.spatial.distance.jensenshannon`.
 
     Returns
     -------
-    divergence : float
+    float
         The computed divergence between the distributions.
 
     See Also
@@ -435,9 +426,9 @@ def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-                                 columns=['feat1', 'feat2', 'feat3'])
+    ...                     columns=['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-                                  columns=['feat1', 'feat2', 'feat3'])
+    ...                      columns=['feat1', 'feat2', 'feat3'])
 
     The first feature appears to be more similar than the second across
     datasets.
@@ -455,19 +446,17 @@ def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
 def mann_whitney(real, synth, feature, **kwargs):
     """Mann-Whitney U test.
 
-    The Mann-Whitney U test compares two sets of data by examining how
+    The Mann-Whitney test compares two sets of data by examining how
     well-mixed they are when pooled. This is acheived by ranking the
     pooled data. A low p-value suggests the data are not similar.
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.mannwhitneyu`.
 
     Returns
@@ -498,9 +487,9 @@ def mann_whitney(real, synth, feature, **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-    ...                          columns=['feat1', 'feat2', 'feat3'])
+    ...                     columns=['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-    ...                            columns=['feat1', 'feat2', 'feat3'])
+    ...                      columns=['feat1', 'feat2', 'feat3'])
 
     If we were to choose our p-value threshold as 0.05, we would reach
     the conclusion that the distributions of the first feature are
@@ -526,13 +515,11 @@ def wilcoxon(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.wilcoxon`.
 
     Returns
@@ -564,9 +551,9 @@ def wilcoxon(real, synth, feature, **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-    ...                          columns=['feat1', 'feat2', 'feat3'])
+    ...                     columns=['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-    ...                            columns=['feat1', 'feat2', 'feat3'])
+    ...                      columns=['feat1', 'feat2', 'feat3'])
 
     If we were to choose our p-value threshold as 0.05, we would reach
     the conclusion that the distributions of the first feature are
@@ -591,13 +578,11 @@ def kruskal_wallis(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments for `scipy.stats.kruskal`.
 
     Returns
@@ -628,9 +613,9 @@ def kruskal_wallis(real, synth, feature, **kwargs):
     --------
     >>> import pandas as pd
     >>> real = pd.DataFrame(get_real(500),
-    ...                          columns=['feat1', 'feat2', 'feat3'])
+    ...                     columns=['feat1', 'feat2', 'feat3'])
     >>> synth = pd.DataFrame(get_synth(500),
-    ...                            columns=['feat1', 'feat2', 'feat3'])
+    ...                      columns=['feat1', 'feat2', 'feat3'])
 
     If we were to choose our p-value threshold as 0.05, we would reach
     the conclusion that the distributions of the first feature are
