@@ -1,4 +1,4 @@
-""" Privacy metrics. """
+"""Privacy metrics."""
 
 import numpy as np
 import pandas as pd
@@ -59,10 +59,8 @@ def TCAP(real, synth, key, target):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     key : list of str
         List of features in `synth` to use as the key.
     target : str
@@ -70,20 +68,21 @@ def TCAP(real, synth, key, target):
 
     Returns
     -------
-    TCAP : float
-        The average TCAP across the dataset.
+    float
+        The average TCAP score across the dataset.
 
     Notes
     -----
     This metric provides an estimate of how well an intruder could infer
-    attributes of groups in the real dataset by studying the synthetic. The
-    choices for `key` and `target` will vary depending on the dataset in
-    question but we would suggest the `key` features are those that could be
-    readily available to an outsider and the `target` feature is one we
-    wouldn't want them finding out, such as a protected characteristic.
+    attributes of groups in the real dataset by studying the synthetic.
+    The choices for `key` and `target` will vary depending on the
+    dataset in question but we would suggest the `key` features are
+    those that could be readily available to an outsider and the
+    `target` feature is one we wouldn't want them finding out, such as a
+    protected characteristic.
 
-    This method only works with categorical data, so binning of continuous data
-    may be required.
+    This method only works with categorical data, so binning of
+    continuous data may be required.
 
     Full details may be found in:
 
@@ -161,26 +160,25 @@ def min_NN_dist(
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    feats: str or list of str, optional
-        Features to use when calculating distance. By default all
-        features are used.
-    real_outliers_only : bool, default=True
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feats : str or list of str or None, default None
+        Feature(s) in `real` and `synth` to use when calculating
+        distance. If `None` (default), all features in both datasets are
+        used.
+    real_outliers_only : bool, default True
         Boolean indicating whether to filter out the real data inliers
         (default) or not.
-    outlier_factor_threshold : float, default=2
-        Float influencing classification of outliers. Increase to
-        include fewer real points in nearest-neighbour calculations.
-    n_neighbours : int, default=5
+    outlier_factor_threshold : int or float, default 2
+        Outlier decision threshold. Increase to include fewer points
+        from `real` in nearest-neighbour calculations.
+    n_neighbours : int, default 5
         Number of neighbours to consider when identifying local
         outliers.
 
     Returns
     -------
-    min_dist : float
+    float
         Minimum Manhattan distance between `real` and `synth` data.
 
     Notes
@@ -233,21 +231,19 @@ def sample_overlap_score(
 
     Parameters
     ----------
-    real: pandas.DataFrame
-        DataFrame containing the real data.
-    synth: pandas.DataFrame
-        DataFrame containing the synthetic data.
-    feats: str or list of str, optional
-        The features used to match records. By default, all features in
-        `real` are used.
-    sample_size: float or int, default=0.2
+    real, synth : pandas.DataFrame
+        DataFrames containing the real and synthetic data.
+    feats : str or list of str or None, default None
+        The features used to match records. If `None` (default), all
+        features in `real` are used.
+    sample_size : float or int, default 0.2
         The ratio (if `sample_size` between 0 and 1) or count
-        (`sample_size` > 1) of records to sample. Default is 0.2 or 20%.
-    runs: int, default=5
+        (`sample_size` > 1) of records to sample. Default is 0.2 (20%).
+    runs : int, default 5
         The number of sampling runs to use when computing the score.
-    seed: int, optional
+    seed : int, optional
         Random number seed used for sampling.
-    score_type: str, {"unique" | "sample"}
+    score_type : {"unique", "sample"}, default "unique"
         Method used for calculating the overlap score. If "unique"
         (default), the score is the percentage of unique records in the
         real sample that have a match within the synthetic data. If
@@ -257,7 +253,7 @@ def sample_overlap_score(
     Returns
     -------
     overlap_score : float
-        Overlap score between `real` and `synth`
+        Estimated overlap score between `real` and `synth`.
     """
 
     if isinstance(feats, (list, pd.Index)):

@@ -1,4 +1,4 @@
-""" Classification utility metrics using `scikit-learn` classifiers. """
+"""Utility metrics using `scikit-learn`-style classifiers."""
 
 import inspect
 from collections import namedtuple
@@ -17,15 +17,14 @@ def _make_preprocessor(data, key):
 
     Parameters
     ----------
-    data: pandas.DataFrame
-        The dataset containing at the least the columns to be passed to
-        the pipeline.
-    key: list of str
+    data : pandas.DataFrame
+        The dataset containing at the least the columns in `key`.
+    key : list of str
         A list of columns in `data` to be separated by data type.
 
     Returns
     -------
-    preprocessor: sklearn.pipeline.Pipeline
+    preprocessor : sklearn.pipeline.Pipeline
         The pre-processing pipeline.
     """
 
@@ -50,20 +49,19 @@ def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
 
     Parameters
     ----------
-    classifier: scikit-learn estimator
-        The `scikit-learn` class to be used as the classifier.
-    random_state: int
+    classifier : scikit-learn estimator
+        The `scikit-learn`-style class to be used as the classifier.
+    random_state : int
         The random seed to use for reproducibility. Only used if
         `random_state` is a parameter of `classifier`.
-    preprocessor: sklearn.pipeline.Pipeline
-        The pre-processing pipeline. Typically created via
-        `_make_preprocessor()`
-    **kwargs: dict
-        Keyword arguments to pass to `classifier`.
+    preprocessor : sklearn.pipeline.Pipeline
+        The pre-processing pipeline.
+    **kwargs : dict, optinal
+        Keyword arguments for `classifier`.
 
     Returns
     -------
-    pipeline: sklearn.pipeline.Pipeline
+    pipeline : sklearn.pipeline.Pipeline
         A complete classification pipeline.
     """
 
@@ -87,13 +85,13 @@ def _get_scores(test, pred):
 
     Parameters
     ----------
-    test, pred: array_like, 1D
-        The test set and predicted labels, respectively, used to
-        calculate the scores. Must be of equal lengths.
+    test, pred : array_like
+        Labels from the test set and prediction, respectively, used to
+        calculate the scores.
 
     Returns
     -------
-    scores: list
+    scores : list
         The precision, recall and f1 score given the test set and
         predicted labels.
     """
@@ -125,10 +123,8 @@ def classification_comparison(
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
     key : list of str
         List of column names to use as the input in the classification.
     target : str
@@ -138,11 +134,11 @@ def classification_comparison(
     random_state : int, optional
         Random seed for shuffling during the train-test split, and for
         the classification algorithm itself.
-    test_prop : float or int, default=0.2
+    test_prop : float or int, default 0.2
         If `float`, should be between 0.0 and 1.0 and represent the
         proportion of the dataset to include in the test split. If
         `int`, represents the absolute number of test samples.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments passed to the classifier.
 
     Returns

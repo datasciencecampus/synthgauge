@@ -1,4 +1,4 @@
-""" The core class for evaluating datasets. """
+"""The core class for evaluating datasets."""
 
 import pickle
 import warnings
@@ -18,17 +18,14 @@ from .utils import df_combine, launder
 
 
 class Evaluator:
-    """
-    The central class in `synthgauge`, used to hold and evaluate data
+    """The central class in `synthgauge`, used to hold and evaluate data
     via metrics and visualisation.
 
     Parameters
     ----------
-    real: pandas.DataFrame
-        Dataframe containing the real data.
-    synth: pandas.DataFrame
-        Dataframe containing the synthetic data.
-    handle_nans: str
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    handle_nans : str, default "drop"
         Whether to drop missing values. If yes, use "drop" (default).
 
     Returns
@@ -69,7 +66,8 @@ class Evaluator:
         """Summarise numeric features.
 
         This function uses `pandas.DataFrame.describe` to calculate
-        summary statistics for each numeric real and synthetic feature.
+        summary statistics for each numeric feature in `self.real_data`
+        and `self.synth_data`.
 
         Returns
         -------
@@ -91,8 +89,8 @@ class Evaluator:
         """Summarise categorical features.
 
         This function uses `pandas.DataFrame.describe` to calculate
-        summary statistics for each object-type real and synthetic
-        feature.
+        summary statistics for each object-type feature in
+        `self.real_data` and `self.synth_data`.
 
         Returns
         -------
@@ -130,17 +128,16 @@ class Evaluator:
 
         Parameters
         ----------
-        metric_name: str
+        metric_name : str
             Name of the metric. Must match one of the functions in
             `synthgauge.metrics`.
-        metric_alias: str, optional
+        metric_alias : str, optional
             Alias to be given to this use of the metric. Allows the same
             metric to be used multiple times with different parameters
             within the same evaluator instance.
-
         **metric_kwargs : dict, optional
-            Extra arguments to the metric. Refer to each metric's
-            documentation for details.
+            Keyword arguments for the metric. Refer to the associated
+            metric documentation for details.
         """
 
         try:
@@ -166,13 +163,13 @@ class Evaluator:
 
         Parameters
         ----------
-        metric_name: str
+        metric_name : str
             Name of the metric. This is what will appear in the results
             table.
-        metric_func: function
+        metric_func : function
             Function to be called during the evaluation step. The first
             two arguments will be `self.real` and `self.synth`.
-        **metric_kwargs : dict, optional
+        **kwargs : dict, optional
             Extra arguments to be passed to `metric_func` during
             evaluation.
         """
@@ -191,7 +188,7 @@ class Evaluator:
 
         Parameters
         ----------
-        other: Evaluator
+        other : Evaluator
             The other evaluator from which the metrics dictionary will
             be copied.
         """
@@ -205,7 +202,7 @@ class Evaluator:
 
         Parameters
         ----------
-        filename:
+        filename : str
             Path to pickle file to save the metrics.
         """
 
@@ -219,9 +216,9 @@ class Evaluator:
 
         Parameters
         ----------
-        filename: str
+        filename : str
             Path to metrics pickle file.
-        overwrite: bool, optional
+        overwrite : bool, default False
             If `True`, all current metrics will be replaced with the
             loaded metrics. Default is `False`, which will update the
             current metric dictionary with the loaded metrics.
@@ -261,9 +258,9 @@ class Evaluator:
 
         Parameters
         ----------
-        metric: str
-            Name or alias of the metric to remove from the metrics
-            catalogue.
+        metric : str
+            Name (or alias if specified) of the metric to remove from
+            the metrics catalogue.
         """
 
         try:
@@ -274,16 +271,16 @@ class Evaluator:
     def evaluate(self, as_df=False):
         """Compute metrics for real and synth data.
 
-        Runs through the metrics in `self.__metrics` and executes each
-        with its corresponding arguments. The results are returned as
-        either a dictionary or dataframe.
+        Run through the metrics dictionary and execute each with its
+        corresponding arguments. The results are returned as either a
+        dictionary or dataframe.
 
         Results are also silently stored as a dictionary in
         `self.metric_results`.
 
         Parameters
         ----------
-        as_df: bool, optional
+        as_df : bool, default False
             If `True`, the results will be returned as a
             `pandas.DataFrame`, otherwise a dictionary is returned.
             Default is `False`.
@@ -353,14 +350,12 @@ class Evaluator:
 
         Parameters
         ----------
-        data: {"real" | "synth" | "combined"}
+        data: {"real", "synth", "combined"}
             Dataframe to pass to plotting function. Either `"real"` to
             pass `self.real_data`, `"synth"` to pass `self.synth_data`
             or `"combined"` to pass `self.combined_data`.
-        x : str
-            Column to plot along x-axis.
-        y : str
-            Column to plot along y-axis.
+        x, y : str
+            Columns to plot along the x and y axes.
         """
 
         return plot_histogram3d(
@@ -417,10 +412,10 @@ class Evaluator:
 
         Parameters
         ----------
-        feature: str
+        feature : str
             Feature to plot.
-        **kwargs: dict, optional
-            Keyword arguments to pass to plot.plot_qq.
+        **kwargs : dict, optional
+            Keyword arguments to pass to `synthgauge.plot.plot_qq`.
         """
 
         return plot_qq(

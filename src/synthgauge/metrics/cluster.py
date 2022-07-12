@@ -1,4 +1,4 @@
-""" Utility metrics derived from centroid-based clustering. """
+"""Utility metrics derived from centroid-based clustering."""
 
 import numpy as np
 import pandas as pd
@@ -16,17 +16,17 @@ def _get_cluster_labels(combined, method, k, random_state):
     ----------
     combined: pandas.DataFrame
         Dataframe containing the real and synthetic data.
-    method: str, {"kmeans" | "kprototypes"}
+    method: {"kmeans", "kprototypes"}
         Which clustering method to use.
     k: int
         Number of clusters to fit.
     random_state: int, optional
-        Random seed for ensuring reproducible clusters.
+        Random seed for fitting clusters.
 
     Returns
     -------
-    labels: array_like
-        Integer labels indicating cluster assignment for each point in
+    labels: np.ndarray
+        Integer labels indicating cluster membership for each point in
         `combined`.
     """
 
@@ -60,13 +60,13 @@ def _get_cluster_proportions(labels, indicator):
 
     Parameters
     ----------
-    labels, indicator: array_like, 1D
+    labels, indicator: array_like
         Arrays detailing cluster membership (`labels`) and which points
-        are real or synthetic (`indicator`). Must be of equal length.
+        are real or synthetic (`indicator`).
 
     Returns
     -------
-    proportions: numpy.ndarray, 1D
+    proportions: numpy.ndarray
         Array with synthetic data proportion of each cluster.
     """
 
@@ -94,7 +94,7 @@ def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
     synthetic_indicator : array_like
         Integer-boolean array indicating which of the rows in `combined`
         are synthetic (1), and which are real (0).
-    method : str, {"kmeans" | "kprototypes"}
+    method : {"kmeans", "kprototypes"}
         Clustering method to use. Only k-means and k-prototypes
         are implemented. If using k-means, only numeric columns in
         `combined` are considered, while k-prototypes allows for
@@ -107,7 +107,7 @@ def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
 
     Returns
     -------
-    MSD_p : float
+    float
         Mean-squared difference between the within-cluster proportions
         of synthetic data and the overall proportion of synthetic data.
 
@@ -154,14 +154,12 @@ def multi_clustered_MSD(
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    feats: str or list of str, optional
-        Feature(s) to use in the clustering. By default, all features in
-        `real` and `synth` are used.
-    method : str, {"kmeans" | "kprototypes"}
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feats : str or list of str or None, default None
+        Feature(s) to use in the clustering. If `None` (default), all
+        features in `real` and `synth` are used.
+    method : {"kmeans", "kprototypes"}, default "kmeans"
         Clustering method to use. Only k-means and k-prototypes
         are implemented. If using k-means (default), only numeric
         columns are considered, while k-prototypes allows for mixed-type
@@ -170,12 +168,11 @@ def multi_clustered_MSD(
         Minimum and maximum number of clusters to use. Defaults are 10
         and 40, respectively.
     random_state : int, optional
-        The random seed used to fit the clustering algorithm, providing
-        reproducible results.
+        The random seed used to fit the clustering algorithm.
 
     Returns
     -------
-    min_cMSD : float
+    float
         The minimum observed clustered MSD.
     """
     # combine data

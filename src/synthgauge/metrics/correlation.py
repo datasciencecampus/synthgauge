@@ -1,4 +1,4 @@
-""" Correlation-based utility metrics. """
+"""Correlation-based utility metrics."""
 
 import warnings
 from itertools import combinations, product
@@ -25,18 +25,16 @@ def correlation_MSD(real, synth, feats=None):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    feats: str or list of str, optional
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feats : str or list of str or None, default None
         Numeric features to use. Non-numeric features will be filtered
-        out. By default all numeric features are used.
+        out. If `None` (default), all numeric features are used.
 
     Returns
     -------
-    MSD_c : float
-        Pearson correlation mean squared difference.
+    float
+        Mean-squared difference of Pearson correlation coefficients.
 
     See Also
     --------
@@ -78,16 +76,12 @@ def cramers_v(var1, var2):
 
     Parameters
     ----------
-    var1 : pandas.Series
-        Series object containing the values for one of the variables to
-        be used in the comparison.
-    var2 : pandas.Series
-        Series object containing the values for the other variable to be
-        used in the comparison.
+    var1, var2 : pandas.Series
+        Series objects containing the variables to be compared.
 
     Returns
     -------
-    v : float
+    float
         The association between the two variables.
 
     Notes
@@ -116,13 +110,11 @@ def cramers_v_MSE(real, synth, feats=None):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    feats: str or list of str, optional
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feats : str or list of str or None, default None
         Feature(s) in `real` and `synth` to include in comparison.
-        By default all object and categorical columns are selected.
+        If `None` (default), uses all object and categorical columns.
 
     Warns
     -----
@@ -131,7 +123,7 @@ def cramers_v_MSE(real, synth, feats=None):
 
     Returns
     -------
-    v_MSE : float
+    float
         Mean squared error between `real` and `synth` Cramer's V scores
         across feature pairs.
 
@@ -171,7 +163,7 @@ def cramers_v_MSE(real, synth, feats=None):
 
 
 def correlation_ratio(categorical, continuous):
-    """Correlation ratio.
+    """Categorical-continuous correlation ratio.
 
     Calculates the correlation ratio for categorical-continuous
     association. Describes the possibility of deducing the corresponding
@@ -188,12 +180,11 @@ def correlation_ratio(categorical, continuous):
     Parameters
     ----------
     categorical, continuous : pandas.Series
-        Sequences of categorical and continuous measurements,
-        respectively.
+        Sequences of categorical and continuous measurements.
 
     Returns
     -------
-    corr_ratio : float in [0,1]
+    float
         The categorical-continuous association ratio.
 
     Notes
@@ -231,22 +222,20 @@ def correlation_ratio_MSE(
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    categorical_feats: list of str, optional
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    categorical_feats : list of str or None, default None
         Categorical features in `real` and `synth` to include in
-        comparison. By default, all object and categorical columns are
-        selected.
-    numerical_feats: list of str, optional
+        comparison. If `None` (default), uses all object and categorical
+        columns.
+    numerical_feats : list of str or None, default None
         Numerical features in `real` and `synth` to include in
-        comparison. By default, all columns not selected by
-        `categorical_feats` are used.
+        comparison. If `None` (default), uses all columns not selected
+        by `categorical_feats`.
 
     Returns
     -------
-    corr_ratio_MSE : float
+    float
         Mean squared error between `real` and `synth` in correlation
         ratio scores across all categorical-continuous feature pairs.
     """
