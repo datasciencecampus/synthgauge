@@ -63,9 +63,7 @@ def test_get_cluster_proportions(labels):
     indicator = np.array([0] * 100 + [1] * 100)
     n_clusters = max(labels) + 1
 
-    proportions = cluster._get_cluster_proportions(
-        labels, indicator, n_clusters
-    )
+    proportions = cluster._get_cluster_proportions(labels, indicator)
 
     assert isinstance(proportions, np.ndarray)
     assert proportions.shape == (n_clusters,)

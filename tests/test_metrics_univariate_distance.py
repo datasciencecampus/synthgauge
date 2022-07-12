@@ -10,6 +10,31 @@ from synthgauge.metrics import univariate_distance as univariate
 from .utils import datasets
 
 
+@given(
+    datasets(column_spec={"a": "int"}, min_value=0, max_value=1000),
+    st.one_of(st.none(), st.integers(1, 10)),
+)
+def test_get_bin_counts(datasets, bins):
+    """Check that a continuous variable can be binned correctly."""
+
+    real, synth = datasets
+    assume(not (real.empty or synth.empty) and len(real.drop_duplicates()) > 1)
+
+    values = set({*real["a"].values, *synth["a"].values})
+
+    rcounts, scounts = univariate._get_bin_counts(real, synth, "a", bins)
+
+    for data, counts in zip((real, synth), (rcounts, scounts)):
+
+        assert isinstance(counts, np.ndarray)
+        assert counts.sum() == len(data)
+
+        if bins is None:
+            assert counts.shape == (len(values),)
+        else:
+            assert counts.shape == (bins,)
+
+
 @given(datasets(column_spec={"a": "float"}))
 def test_kolmogorov_smirnov(datasets):
     """Check that the Kolmogorov-Smirnov test can be run correctly."""

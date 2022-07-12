@@ -1,4 +1,4 @@
-""" Generic ``scikit-learn``-style classification utility metrics. """
+"""Utility metrics using `scikit-learn`-style classifiers."""
 
 import inspect
 from collections import namedtuple
@@ -13,7 +13,20 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 def _make_preprocessor(data, key):
     """Make a pre-processing pipe for transforming numeric and
-    categorical columns."""
+    categorical columns.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        The dataset containing at the least the columns in `key`.
+    key : list of str
+        A list of columns in `data` to be separated by data type.
+
+    Returns
+    -------
+    preprocessor : sklearn.pipeline.Pipeline
+        The pre-processing pipeline.
+    """
 
     numeric_columns = data[key].select_dtypes(include="number").columns
     categorical_columns = data[key].select_dtypes(exclude="number").columns
@@ -32,7 +45,25 @@ def _make_preprocessor(data, key):
 
 
 def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
-    """Create the pipeline of data pre-processing and classification."""
+    """Create the pipeline of data pre-processing and classification.
+
+    Parameters
+    ----------
+    classifier : scikit-learn estimator
+        The `scikit-learn`-style class to be used as the classifier.
+    random_state : int
+        The random seed to use for reproducibility. Only used if
+        `random_state` is a parameter of `classifier`.
+    preprocessor : sklearn.pipeline.Pipeline
+        The pre-processing pipeline.
+    **kwargs : dict, optinal
+        Keyword arguments for `classifier`.
+
+    Returns
+    -------
+    pipeline : sklearn.pipeline.Pipeline
+        A complete classification pipeline.
+    """
 
     classifier_params = inspect.signature(classifier).parameters
     if classifier_params.get("random_state", None):
@@ -50,7 +81,20 @@ def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
 
 def _get_scores(test, pred):
     """Calculate the precision, recall and f1 scores for a set of
-    predicted values."""
+    predicted values.
+
+    Parameters
+    ----------
+    test, pred : array_like
+        Labels from the test set and prediction, respectively, used to
+        calculate the scores.
+
+    Returns
+    -------
+    scores : list
+        The precision, recall and f1 score given the test set and
+        predicted labels.
+    """
 
     scores = [
         score_func(test, pred, average="macro")
@@ -70,56 +114,54 @@ def classification_comparison(
     test_prop=0.2,
     **kwargs
 ):
-    """Classification utility metric
+    """Classification utility metric.
 
-    This metric fits two classification models to `real` and `synth`
-    respectively, and then tests them both against withheld `real` data. We
-    obtain utility scores by subtracting the precision, recall and f1 scores
-    of the predictions obtained by the synth model from those obtained by the
-    real model.
+    This metric fits two (identical) classification models to `real` and
+    `synth`, and then tests them both against withheld `real` data. We
+    obtain utility scores by subtracting the precision, recall and f1
+    scores of the "synthetic" model predictions from the "real" model's.
 
     Parameters
     ----------
-    real : pandas dataframe
-        Dataframe containing the real data.
-    synth : pandas dataframe
-        Dataframe containing the synthetic data.
-    key : list of strings
-        list of column names to use as the input in the classification.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    key : list of str
+        List of column names to use as the input in the classification.
     target : str
-        column to use as target in the classification.
+        Column to use as target in the classification.
     sklearn_classifier : scikit-learn estimator
-        classifier with fit and predict methods.
-    random_state : int, RandomState instance or None, default=42
-        Controls the shuffling steps during the train-test split and the
-        classification algorithm itself. Pass an int for reproducible output
-        across multiple function calls.
-    test_prop : float or int, default=0.2
-        If float, should be between 0.0 and 1.0 and represent the proportion
-        of the dataset to include in the test split. If int, represents the
-        absolute number of test samples.
+        Classifier with `fit` and `predict` methods.
+    random_state : int, optional
+        Random seed for shuffling during the train-test split, and for
+        the classification algorithm itself.
+    test_prop : float or int, default 0.2
+        If `float`, should be between 0.0 and 1.0 and represent the
+        proportion of the dataset to include in the test split. If
+        `int`, represents the absolute number of test samples.
+    **kwargs : dict, optional
+        Keyword arguments passed to the classifier.
 
     Returns
     -------
-    ClassificationResult : namedtuple
-        precision_difference : float
-            precision of model trained on real data subtracted by precision of
-            model trained on synthetic data.
-        recall_difference : float
-            recall of model trained on real data subtracted by recall of
-            model trained on synthetic data.
-        f1_difference : float
-            f1 score of model trained on real data subtracted by f1 score of
-            model trained on synthetic data.
+    precision_difference : float
+        Precision of the real model subtracted by that of the
+        synthetic model.
+    recall_difference : float
+        Recall of the real model subtracted by that of the synthetic
+        model.
+    f1_difference : float
+        f1 score of the real model subtracted by that of the
+        synthetic model.
 
     Notes
     -----
-    Some preprocessing is carried out before the models are trained. Numeric
-    features are scaled and categorical features are one-hot-encoded.
+    Some preprocessing is carried out before the models are trained.
+    Numeric features are scaled and categorical features are
+    one-hot-encoded.
 
-    A score of zero tells us the synthetic data is just as good as the real at
-    training classifier models. Increases in these scores indicate poorer
-    utility.
+    A score of zero tells us the synthetic data is just as good as the
+    real at training the given classification model. Increases in these
+    scores indicate poorer utility.
     """
 
     real_X_train, real_X_test, real_y_train, real_y_test = train_test_split(

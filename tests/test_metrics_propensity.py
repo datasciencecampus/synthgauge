@@ -24,14 +24,14 @@ def _reduce_synthetic(synth, seed):
 
 
 @given(datasets())
-def test_combined_and_pop(datasets):
-    """Check that two datasets can be concatenated and their origins
-    preserved."""
+def test_combine_encode_and_pop(datasets):
+    """Check that two datasets can be concatenated, encoded and their
+    origins preserved."""
 
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     assert isinstance(combined, pd.DataFrame)
     assert isinstance(indicator, np.ndarray)
@@ -49,7 +49,7 @@ def test_combined_and_pop(datasets):
 def test_get_propensity_scores(real, synth, method, seed):
     """Check that a set of propensity scores can be obtained."""
 
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     scores = propensity._get_propensity_scores(
         combined, indicator, method, random_state=seed
@@ -70,7 +70,7 @@ def test_pmse(real, synth, method, seed):
     that the bounds on pMSE can be verified."""
 
     synth = _reduce_synthetic(synth, seed)
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
     synth_prop = np.mean(indicator)
 
     pmse = propensity.pmse(combined, indicator, method, random_state=seed)
@@ -91,7 +91,7 @@ def test_pmse_logr_statistics(real, synth, seed):
     correctly."""
 
     synth = _reduce_synthetic(synth, seed)
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     nrows, ncols = combined.shape
     npreds = ncols * (ncols + 1) / 2
@@ -127,7 +127,7 @@ def test_pmse_cart_statistics(real, synth, seed):
     correctly."""
 
     synth = _reduce_synthetic(synth, seed)
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
     synth_prop = indicator.mean()
 
     loc, scale = propensity._pmse_cart_statistics(
@@ -154,7 +154,7 @@ def test_pmse_cart_statistics(real, synth, seed):
 def test_pmse_ratio(real, synth, method, seed):
     """Check that the pMSE-ratio can be calculated correctly."""
 
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     ratio = propensity.pmse_ratio(
         combined, indicator, method, num_perms=10, random_state=seed
@@ -174,7 +174,7 @@ def test_pmse_standardised(real, synth, method, seed):
     """Check that the standardised pMSE can be calculated."""
 
     synth = _reduce_synthetic(synth, seed)
-    combined, indicator = propensity._combine_and_pop(real, synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     standard = propensity.pmse_standardised(
         combined, indicator, method, num_perms=10, random_state=seed

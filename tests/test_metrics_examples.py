@@ -1,9 +1,9 @@
 """
 Tests for metrics.
 
-Note: many of these tests are just checking the output hasn't changed from when
-the tests were written. In some cases more work can be done to check that the
-outputs are sensible.
+Note: many of these tests are just checking the output hasn't changed
+from when the tests were written. Property-based tests for each type of
+metric can be found in files matching `tests/test_metrics_*.py`
 """
 import numpy as np
 import pytest
@@ -23,9 +23,8 @@ def evaluator():
 
 
 def test_wrappers(evaluator):
-    """Checks all scipy wrapper metrics. Futureproofs against breaking
-    scipy changes.
-    """
+    """Checks all the implemented wrapper metrics."""
+
     evaluator.add_metric(
         "jensen_shannon_distance", feature="hair_colour", bins=None
     )

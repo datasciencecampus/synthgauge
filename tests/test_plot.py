@@ -257,26 +257,6 @@ def test_plot_crosstab(real, synth, params):
 
 
 @given(
-    columns=st.lists(
-        st.sampled_from(("age", "height", "weight")),
-        unique=True,
-        min_size=2,
-        max_size=2,
-    )
-)
-@plot_settings
-def test_plot_crosstab_error(real, synth, columns):
-    """Check that a TypeError is thrown when neither binning method is
-    specified for a crosstab plot of two numeric columns."""
-
-    with pytest.raises(
-        TypeError, match="^`x_bins` and `y_bins` must not be None$"
-    ):
-        x, y = columns
-        _ = plot.plot_crosstab(real, synth, x, y, x_bins=None, y_bins=None)
-
-
-@given(
     params=joint_params(),
     cmap=st.sampled_from(("viridis", "ch:s=.25,rot=-.25", "light:coral")),
 )
@@ -316,7 +296,7 @@ def test_plot_qq(real, synth, feature, n_quantiles):
 
     assert ax.get_xlabel() == "real data quantiles"
     assert ax.get_ylabel() == "synth data quantiles"
-    assert ax.get_title() == f'Q-Q Plot for "{feature}"'
+    assert ax.get_title() == f"Q-Q Plot for {feature}"
 
     scatter = ax.collections[0]._offsets.data
     line = ax.lines[0]._xy
@@ -331,9 +311,6 @@ def test_plot_qq(real, synth, feature, n_quantiles):
         points = scatter[:, j]
         assert np.min(points) == data[feature].min()
         assert np.max(points) == data[feature].max()
-
-        if n_quantiles is None or n_quantiles == len(data):
-            assert np.array_equal(points, data[feature].sort_values())
 
     expected_line_ends = [
         min(real[feature].min(), synth[feature].min()),
@@ -364,8 +341,8 @@ def test_plot_qq_error_with_categorical_feature(real, synth, feature):
     non-numeric feature."""
 
     with pytest.raises(
-        ValueError,
-        match="^The feature to plot must be numeric not of type: category$",
+        TypeError,
+        match="^The feature must be numeric not of type: category$",
     ):
         _ = plot.plot_qq(real, synth, feature)
 

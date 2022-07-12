@@ -1,4 +1,4 @@
-""" Functions for creating toy datasets. """
+"""Functions for creating toy datasets."""
 
 import numpy as np
 import pandas as pd
@@ -11,9 +11,9 @@ def _adjust_data_elements(X, y, noise, nan_prop, seed):
 
     Parameters
     ----------
-    X : np.ndarray
+    X : numpy.ndarray
         The data array to be adjusted.
-    y : np.ndarray
+    y : numpy.ndarray
         A set of labels for classifying the rows of `data`.
     noise : float
         The amount of noise to inject into the data. Specifically,
@@ -58,17 +58,16 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
     Parameters
     ----------
     noise : float
-        Standard deviation of the Gaussian noise to add to the data.
-        Default is one and must be non-negative.
-    proportion_nan: float [0, 1]
-        Proportion of dataset to replace with missing values. Default is
-        zero, i.e. complete data.
+        Standard deviation of the Gaussian noise added to the data.
+        Default is zero (no noise) and must be non-negative.
+    proportion_nan : float, default 0
+        Proportion of dataset to replace with missing values.
     random_seed : int
-        The seed used for any PRNGs. Used for reproducibility.
+        Seed used by all random samplers. Used for reproducibility.
 
     Returns
     -------
-    pd.DataFrame
+    pandas.DataFrame
 
     Notes
     -----

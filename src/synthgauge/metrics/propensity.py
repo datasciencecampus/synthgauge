@@ -1,4 +1,4 @@
-""" Propensity-based utility metrics. """
+"""Propensity-based utility metrics."""
 
 from collections import namedtuple
 
@@ -12,16 +12,14 @@ from sklearn.tree import DecisionTreeClassifier
 from ..utils import df_combine
 
 
-def _combine_and_pop(real, synth):
+def _combine_encode_and_pop(real, synth):
     """Get the combined, encoded real and synthetic data, and their
     origins.
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
 
     Returns
     -------
@@ -39,7 +37,24 @@ def _combine_and_pop(real, synth):
 
 
 def _get_propensity_scores(data, labels, method, **kwargs):
-    """Fit a propensity model to the data and extract its scores."""
+    """Fit a propensity model to the data and extract its scores.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Dataframe to fit propensity model to.
+    labels : numpy.ndarray
+        Indicator for which data are real (0) or synthetic (1).
+    method : {"cart", "logr"}
+        Which propensity model to use.
+    **kwargs : dict, optional
+        Keyword arguments passed to propensity model.
+
+    Returns
+    -------
+    scores : numpy.ndarray
+        Propensity score for each point in `data`.
+    """
 
     if method == "logr":
         model = LogisticRegression
@@ -62,18 +77,18 @@ def pmse(combined, indicator, method, **kwargs):
     ----------
     combined : pandas.DataFrame
         The combined set of real and synthetic data.
-    indicator : np.ndarray
+    indicator : numpy.ndarray
         An indicator for which data are real (0) or synthetic (1).
-    method : str, {"cart" | "logr"}
-        Which propensity model to use. Must be either CART ("cart") or
-        logistic regression with first-order interactions ("logr").
-    **kwargs : dict
-        Keyword arguments passed to classifier.
+    method : {"cart", "logr"}
+        Which propensity model to use. Must be either CART (`"cart"`) or
+        logistic regression with first-order interactions (`"logr"`).
+    **kwargs : dict, optional
+        Keyword arguments passed to propensity model.
 
     Returns
     -------
-    pmse : float
-        Propensity score mean-squared error
+    float
+        Propensity score mean-squared error.
 
     See Also
     --------
@@ -87,21 +102,20 @@ def pmse(combined, indicator, method, **kwargs):
     propensity scores as a measure of utility.
 
     This returns zero if the distributions are identical, and is bounded
-    above by 1-c if they are nothing alike, where c is the proportion of
-    synthetic data. This method is therefore good for comparing multiple
-    synthetic datasets. However, as this is not a test, there is no
-    threshold distance below which we can claim the distributions are
-    statistically the same.
+    above by :math:`1 - c` if they are nothing alike, where :math:`c` is
+    the proportion of the data that is synthetic. This method is
+    therefore good for comparing multiple synthetic datasets. However,
+    as this is not a test, there is no threshold distance below which we
+    can claim the distributions are statistically the same.
 
     This function assumes that some preprocessing has been carried out
     so that the data is ready to be passed to the classification
     function. Encoding of categorical data is performed, but, for
-    example, scaling is not. Without this erroneous results may be
+    example, scaling is not. Without this, erroneous results may be
     returned. The logistic regression can fail to converge if many
     variables are considered. Anecdotally, this doesn't seem to
     drastically impact the propensity scores, although this should be
-    investigated formally. `**kwargs` are passed to the classification
-    model so it can be tuned.
+    investigated formally.
 
     Using a CART model as a classifier is recommended in the literature
     however we also support the use of logistic regression. For further
@@ -115,24 +129,23 @@ def pmse(combined, indicator, method, **kwargs):
 
 
 def _pmse_logr_statistics(combined, indicator):
-    """Calculate the location and scale statistics of pMSE in the null
-    case where the real and synthetic datasets are formed from identical
-    processes.
+    """Calculate the location and scale of pMSE in the null case where
+    the real and synthetic datasets are formed from identical processes.
 
     Parameters
     ----------
 
     combined : pandas.DataFrame
         Dataframe containing the combined real and synthetic data.
-    indicator : np.ndarray
+    indicator : numpy.ndarray
         Indicator for whether data are real (0) or synthetic (1).
 
     Returns
     -------
     loc : float
-        The location statistic (expectation)
+        Expectation of pMSE in the null case.
     scale : float
-        The scale statistic (standard deviation)
+        Standard deviation of pMSE in the null case.
 
     Notes
     -----
@@ -143,13 +156,13 @@ def _pmse_logr_statistics(combined, indicator):
 
     .. math::
 
-        E(pMSE) = (k - 1)(1 - c)^2 / N
+        E(pMSE) = \\frac{(k - 1)(1 - c)^2}{N}
 
     and its standard deviation is:
 
     .. math::
 
-        sd(pMSE) = c \\sqrt{2(k - 1)} (1 - c)^2 / N
+        sd(pMSE) = \\frac{c \\sqrt{2(k - 1)} (1 - c)^2}{N}
 
     where :math:`k` is the number of predictors used in the model,
     :math:`c` is the proportion of synthetic data, and :math:`N` is the
@@ -182,9 +195,9 @@ def _pmse_logr_statistics(combined, indicator):
 
 
 def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
-    """Estimate the location and scale statistics of pMSE in the null
-    case by repeating pMSE calculations on permuations of the indicator
-    column using a CART model.
+    """Estimate the location and scale of pMSE in the null case by
+    repeating pMSE calculations on permuations of the indicator column
+    using a CART model.
 
     The set of calculations are then summarised using the mean or
     standard deviation, respectively.
@@ -193,13 +206,20 @@ def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
     ----------
     combined : pandas.DataFrame
         Dataframe containing the combined real and synthetic data.
-    indicator : np.ndarray
+    indicator : numpy.ndarray
         Indicator for whether data are real (0) or synthetic (1).
     num_perms : int
         The number of permutations to consider.
-    **kwargs : dict
+    **kwargs : dict, optional
         Keyword arguments passed to
         `sklearn.tree.DecisionTreeClassifer`.
+
+    Returns
+    -------
+    loc : float
+        Estimated expectation of pMSE in the null case.
+    scale : float
+        Estimated standard deviation of pMSE in the null case.
 
     Notes
     -----
@@ -239,27 +259,27 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
 
     .. math::
 
-        ratio(pMSE) = pMSE / E(pMSE)
+        ratio(pMSE) = \\frac{pMSE}{E(pMSE)}
 
     Parameters
     ----------
     combined : pandas.DataFrame
         Dataframe containing the combined real and synthetic data.
-    indicator : np.ndarray
+    indicator : numpy.ndarray
         Indicator for whether data are real (0) or synthetic (1).
-    method : str, {"cart" | "logr"}
+    method : {"cart", "logr"}
         Which propensity model to use. Must be either CART (`"cart"`) or
         logistic regression with first-order interactions (`"logr"`).
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
-        with a CART model.
-    **kwargs : dict
+        statistics with a CART model.
+    **kwargs : dict, optional
         Keyword arguments passed to the propensity model classifier.
 
     Returns
     -------
-    ratio : float
-        Propensity score mean-squared error ratio (observed to null).
+    float
+        The observed-to-null pMSE ratio.
 
     Notes
     -----
@@ -275,7 +295,7 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
 
     Note that the `random_state` keyword argument is used to
     (independently) create the permutations and to fit the model when
-    `model='cart'`. Without specifying this, the results will not be
+    using a CART model. Without specifying this, the results will not be
     reproducible.
     """
 
@@ -305,20 +325,20 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
     ----------
     combined : pandas.DataFrame
         Dataframe containing the combined real and synthetic data.
-    indicator : np.ndarray
+    indicator : numpy.ndarray
         Indicator for whether data are real (0) or synthetic (1).
-    method : str, {"cart" | "logr"}
+    method : {"cart", "logr"}
         Which propensity model to use. Must be either CART (`"cart"`) or
         logistic regression with first-order interactions (`"logr"`).
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
-        with a CART model.
-    **kwargs : dict
+        statistics with a CART model.
+    **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
     Returns
     -------
-    standard : float
+    float
         The null-standardised pMSE.
 
     Notes
@@ -335,7 +355,7 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
 
     Note that the `random_state` keyword argument is used to
     (independently) create the permutations and to fit the model when
-    `model='cart'`. Without specifying this, the results will not be
+    using a CART model. Without specifying this, the results will not be
     reproducible.
     """
 
@@ -375,21 +395,18 @@ def propensity_metrics(
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
-    synth : pandas.DataFrame
-        Dataframe containing the synthetic data.
-    method : str, {"cart" | "logr"}
-        Which propensity model to use. Must be either CART (`"cart"`,
-        the default) or logistic regression with first-order
-        interactions (`"logr"`).
-    feats : list of str, optional
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    method : {"cart", "logr"}, default "cart"
+        Which propensity model to use. Must be either CART (`"cart"`) or
+        logistic regression with first-order interactions (`"logr"`).
+    feats : list of str or None, default None
         List of features in the dataset to be used in the propensity
-        model. By default, all features are used.
-    num_perms : int
+        model. If `None` (default), all features are used.
+    num_perms : int, default 20
         Number of permutations to consider when estimating the null case
-        with a CART model.
-    **kwargs : dict
+        statistics with a CART model.
+    **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
     Returns
@@ -422,7 +439,7 @@ def propensity_metrics(
 
     Note that the `random_state` keyword argument is used to
     (independently) create the permutations and to fit the model when
-    `model='cart'`. Without specifying this, the results will not be
+    using a CART model. Without specifying this, the results will not be
     reproducible.
 
     Details on these metrics can be found at:
@@ -435,7 +452,7 @@ def propensity_metrics(
         )
 
     feats = feats or list(set(real.columns).intersection(synth.columns))
-    combined, indicator = _combine_and_pop(real[feats], synth[feats])
+    combined, indicator = _combine_encode_and_pop(real[feats], synth[feats])
 
     if method == "logr":
         loc, scale = _pmse_logr_statistics(combined, indicator)

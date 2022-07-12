@@ -1,4 +1,4 @@
-""" The ``Evaluator`` class. """
+"""The core class for evaluating datasets."""
 
 import pickle
 import warnings
@@ -17,28 +17,24 @@ from .plot import (
 from .utils import df_combine, launder
 
 
-class Evaluator(object):
-    """
-    The central class in ``synthgauge`` used to hold and evaluate data via
-    metrics and visualisation.
+class Evaluator:
+    """The central class in `synthgauge`, used to hold and evaluate data
+    via metrics and visualisation.
 
     Parameters
     ----------
-    real: pandas.DataFrame
-        Dataframe containing the real data.
-    synth: pandas.DataFrame
-        Dataframe containing the synthetic data.
-    handle_nans: str
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    handle_nans : str, default "drop"
         Whether to drop missing values. If yes, use "drop" (default).
 
     Returns
     -------
     synthgauge.Evaluator
-        An ``Evaluator`` object ready for metric and visual evaluation.
+        An `Evaluator` object ready for metric and visual evaluation.
     """
 
     def __init__(self, real, synth, handle_nans="drop"):
-        """ """
         common_feats = real.columns.intersection(synth.columns)
         ignore_feats = real.columns.union(synth.columns).difference(
             common_feats
@@ -67,10 +63,11 @@ class Evaluator(object):
         self.synth_data = synth
 
     def describe_numeric(self):
-        """Summarise numerical features
+        """Summarise numeric features.
 
         This function uses `pandas.DataFrame.describe` to calculate
-        summary statistics for each numeric real and synthetic feature.
+        summary statistics for each numeric feature in `self.real_data`
+        and `self.synth_data`.
 
         Returns
         -------
@@ -89,11 +86,11 @@ class Evaluator(object):
         ).T.sort_index()
 
     def describe_categorical(self):
-        """Summarise categorical features
+        """Summarise categorical features.
 
         This function uses `pandas.DataFrame.describe` to calculate
-        summary statistics for each object-type real and synthetic
-        feature.
+        summary statistics for each object-type feature in
+        `self.real_data` and `self.synth_data`.
 
         Returns
         -------
@@ -116,32 +113,33 @@ class Evaluator(object):
         )
 
     def add_metric(self, metric_name, metric_alias=None, **metric_kwargs):
-        """Add a metric to the evaluator
+        """Add a metric to the evaluator.
 
-        Metrics and their arguments are recorded to be run at
-        a later time. This allows metric customisation but ensures
-        that the same metric configuration is applied consistently i.e.
-        once added the parameters do not require resupplying for each
-        execution of the metric. Supplying a metric alias allows the same
-        metric to be used multiple times with different parameters.
+        Metrics and their arguments are recorded to be run at a later
+        time. This allows metric customisation but ensures that the same
+        metric configuration is applied consistently, i.e. once added,
+        the parameters do not require resupplying for each execution of
+        the metric. Supplying a metric alias allows the same metric to
+        be used multiple times with different parameters.
 
-        Note that self.real_data and self.synth_data will be passed
-        automatically to metrics that expect these arguments. They should
-        not be declared in `metric_kwargs`.
+        Note that `self.real_data` and `self.synth_data` will be passed
+        automatically to metrics that expect these arguments. They
+        should not be declared in `metric_kwargs`.
 
         Parameters
         ----------
-        metric_name: str
-            Name of the metric. Must match function name in metrics.
-        metric_alias: str, optional
-            Alias to be given to this use of the metric. Allows the same metric
-            to be used multiple times with different parameters within the same
-            evaluator instance.
-
+        metric_name : str
+            Name of the metric. Must match one of the functions in
+            `synthgauge.metrics`.
+        metric_alias : str, optional
+            Alias to be given to this use of the metric. Allows the same
+            metric to be used multiple times with different parameters
+            within the same evaluator instance.
         **metric_kwargs : dict, optional
-            Extra arguments to `metric_name`: refer to each metric
-            documentation for a list of all possible arguments.
+            Keyword arguments for the metric. Refer to the associated
+            metric documentation for details.
         """
+
         try:
             getattr(metrics, metric_name)
             metric_kwargs["metric_name"] = metric_name
@@ -154,78 +152,78 @@ class Evaluator(object):
             )
 
     def add_custom_metric(self, metric_name, metric_func, **metric_kwargs):
-        """Add a custom metric to the Evaluator object.
+        """Add a custom metric to the evaluator.
 
-        To enhance customisability, this function allows users to add metrics
-        from outwith SynthGauge to the Evaluator.
-
-        A custom metric is a function that accepts the real and synthetic
-        dataframes as the first and second positional arguments respectively.
-        Any other parameters must be defined as keyword arguments. The metric
-        function can return a value of any desired type although scalar numeric
-        values are recommended, or namedtuples when there are multiple
-        outputs.
+        A custom metric uses any user-defined function that accepts the
+        real and synthetic dataframes as the first and second positional
+        arguments, respectively. Any other parameters must be defined as
+        keyword arguments. The metric function can return a value of any
+        desired type although scalar numeric values are recommended, or
+        `collections.namedtuples` when there are multiple outputs.
 
         Parameters
         ----------
-        metric_name: str
-            Name of the metric. This is what will appear in the results table.
-        metric_func: function
-            Function to be called during the evaluation step. The first two
-            arguments will be ``self.real`` and ``self.synth``.
-        **metric_kwargs : dict, optional
-            Extra arguments to be passed to `metric_func` during evaluation.
+        metric_name : str
+            Name of the metric. This is what will appear in the results
+            table.
+        metric_func : function
+            Function to be called during the evaluation step. The first
+            two arguments will be `self.real` and `self.synth`.
+        **kwargs : dict, optional
+            Extra arguments to be passed to `metric_func` during
+            evaluation.
         """
+
         metric_kwargs.update(
             {"metric_func": metric_func, "metric_name": metric_name}
         )
         self.__metrics.update({metric_name: metric_kwargs})
 
     def copy_metrics(self, other):
-        """Copy metrics from another Evaluator object
+        """Copy metrics from another evaluator.
 
-        To facilitate consistent comparisons of different synthetic datasets,
-        this function copies the metrics dictionary from another evaluator
-        object.
+        To facilitate consistent comparisons of different synthetic
+        datasets, this function copies the metrics dictionary from
+        another `Evaluator` instance.
 
         Parameters
         ----------
-        other: Evaluator
-            The other evaluator object from which the metrics dictionary will
+        other : Evaluator
+            The other evaluator from which the metrics dictionary will
             be copied.
         """
+
         if not isinstance(other, Evaluator):
             raise TypeError("`other` must be of class Evaluator")
         self.__metrics = deepcopy(other.metrics)
 
     def save_metrics(self, filename):
-        """Save metrics to disk
-
-        Save the Evaluator's current metrics to a pickle file.
+        """Save the current metrics dictionary to disk via `pickle`.
 
         Parameters
         ----------
-        filename:
+        filename : str
             Path to pickle file to save the metrics.
         """
+
         with open(filename, "wb") as f:
             pickle.dump(self.metrics, f)
 
     def load_metrics(self, filename, overwrite=False):
-        """Load metrics from disk
+        """Load metrics from disk.
 
-        Update or overwrite the Evaluator's current metrics from a pickle
-        file.
+        Update or overwrite the current metric dictionary from a pickle.
 
         Parameters
         ----------
-        filename: str
+        filename : str
             Path to metrics pickle file.
-        overwrite: bool, optional
-            If True, all current metrics will be replaced with the loaded
-            metrics. Default is False which will update the current metric
-            dictionary with the loaded metrics.
+        overwrite : bool, default False
+            If `True`, all current metrics will be replaced with the
+            loaded metrics. Default is `False`, which will update the
+            current metric dictionary with the loaded metrics.
         """
+
         with open(filename, "rb") as f:
             new_metrics = pickle.load(f)
 
@@ -245,58 +243,59 @@ class Evaluator(object):
 
     @property
     def metrics(self):
-        """Return __metrics"""
+        """Return __metrics."""
+
         return self.__metrics
 
     @property
     def combined_data(self):
-        """Return combined real and synthetic data"""
+        """Return combined real and synthetic data."""
+
         return df_combine(self.real_data, self.synth_data)
 
     def drop_metric(self, metric):
-        """Drops the metric from the evaluator
-
-        The metric `metric` will be removed from the metric
-        catalogue for the evaluator.
-
-        Note: To update the metric parameters see add_metric.
+        """Drops the named metric from the metrics dictionary.
 
         Parameters
         ----------
-        metric: str
-            Name or alias of the metric to remove from the metrics stored for
-            this evaluator instance.
+        metric : str
+            Name (or alias if specified) of the metric to remove from
+            the metrics catalogue.
         """
+
         try:
             del self.__metrics[metric]
         except KeyError:
             pass
 
     def evaluate(self, as_df=False):
-        """Compute metrics for real and synth data
+        """Compute metrics for real and synth data.
 
-        Runs through the given metrics in self.__metrics and executes
-        each with corresponding arguments. The results are returned as
-        either a dictionary or DataFrame.
+        Run through the metrics dictionary and execute each with its
+        corresponding arguments. The results are returned as either a
+        dictionary or dataframe.
 
-        Results are also silenty stored as a dictionary in
+        Results are also silently stored as a dictionary in
         `self.metric_results`.
 
         Parameters
         ----------
-        as_df: bool, optional
-            If True the results will be returned as a pandas DataFrame,
-            otherwise a dictionary is returned. Default is False.
+        as_df : bool, default False
+            If `True`, the results will be returned as a
+            `pandas.DataFrame`, otherwise a dictionary is returned.
+            Default is `False`.
 
         Returns
         -------
         pandas.DataFrame
-            If `as_df` is True a DataFrame is returned. The rows
-            represent metric names and the columns their values.
+            If `as_df` is `True`. Each row corresponds to a metric-value
+            pair. Metrics with multiple values have multiple rows.
         dict
-            If `as_df` is False (the default) a dictionary is returned.
-            The keys represent metric names and the values metric values.
+            If `as_df` is `False`. The keys are the metric names and
+            the values are the metric values (grouped). Metrics with
+            multiple values are assigned to a single key.
         """
+
         results = dict.fromkeys(self.__metrics.keys())
 
         metrics_copy = deepcopy(self.__metrics)
@@ -327,11 +326,13 @@ class Evaluator(object):
             return results
 
     def plot_histograms(self, figcols=2, figsize=None):
-        """Plot grid of feature distributions
+        """Plot grid of feature distributions.
 
-        Convenience wrapper for plot.plot_histograms. This function uses the
-        combined real and synthetic data sets and groups by 'source'.
+        Convenience wrapper for `synthgauge.plot.plot_histograms`. This
+        function uses the combined real and synthetic data sets and
+        groups by `'source'`.
         """
+
         return plot_histograms(
             self.combined_data,
             feats=self.feature_names,
@@ -343,16 +344,18 @@ class Evaluator(object):
     def plot_histogram3d(
         self, data, x, y, x_bins="auto", y_bins="auto", figsize=None
     ):
-        """Plot 3D histogram
+        """Plot 3D histogram.
 
-        Convenience wrapper for plot.plot_histogram3d.
+        Convenience wrapper for `synthgauge.plot.plot_histogram3d`.
 
         Parameters
         ----------
-        data: {"real"|"synth"|"combined"}:
-            Dataframe to pass to plotting function. Either "real" to pass
-            `E.real_data`, "synth" to pass E.synth_data or "combined" to
-            pass E.combined_data.
+        data: {"real", "synth", "combined"}
+            Dataframe to pass to plotting function. Either `"real"` to
+            pass `self.real_data`, `"synth"` to pass `self.synth_data`
+            or `"combined"` to pass `self.combined_data`.
+        x, y : str
+            Columns to plot along the x and y axes.
         """
 
         return plot_histogram3d(
@@ -367,12 +370,13 @@ class Evaluator(object):
     def plot_correlation(
         self, feats=None, method="pearson", figcols=2, figsize=None, **kwargs
     ):
-        """Plot correlation heatmaps
+        """Plot a grid of correlation heatmaps.
 
-        Plot correlation heatmaps for `self.real_data`, `self.synth_data`.
-        See plot.plot_correlation for details.
-
+        Convenience wrapper for `synthgauge.plot.plot_correlation`. Each
+        dataset (real and synthetic) has a plot, as well as one for the
+        differences in their correlations.
         """
+
         return plot_correlation(
             self.real_data,
             self.synth_data,
@@ -385,11 +389,13 @@ class Evaluator(object):
         )
 
     def plot_crosstab(self, x, y, figsize=None, **kwargs):
-        """Plot pairwise crosstabulation
+        """Plot pairwise cross-tabulation.
 
-        Convenience wrapper for plot.plot_crosstab. Automatically sets `real`
-        and `synth` parameters to the correspondin data in the Evaluator.
+        Convenience wrapper for `synthgauge.plot.plot_crosstab`.
+        Automatically sets `real` and `synth` parameters to the
+        corresponding data in `self`.
         """
+
         return plot_crosstab(
             self.real_data,
             self.synth_data,
@@ -400,17 +406,18 @@ class Evaluator(object):
         )
 
     def plot_qq(self, feature, n_quantiles=None, figsize=None):
-        """Plot Q-Q plot
+        """Plot quantile-quantile plot.
 
-        Plot Quantile-Quantile plot. See plot.plot_qq for details.
+        Convenience wrapper for `synthgauge.plot.plot_qq`.
 
         Parameters
         ----------
-        feature: str
+        feature : str
             Feature to plot.
-        **kwargs: dict, optional
-            Keyword arguments to pass to plot.plot_qq.
+        **kwargs : dict, optional
+            Keyword arguments to pass to `synthgauge.plot.plot_qq`.
         """
+
         return plot_qq(
             self.real_data, self.synth_data, feature, n_quantiles, figsize
         )
