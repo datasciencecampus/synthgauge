@@ -99,10 +99,11 @@ def test_find_outliers(datasets, threshold, neighbours):
         max_value=1000,
         allow_nan=False,
         available_dtypes=("float",),
-    )
+    ),
+    st.booleans(),
 )
 @settings(max_examples=50, suppress_health_check=[HealthCheck.filter_too_much])
-def test_min_NN_dist(datasets):
+def test_min_NN_dist(datasets, outliers_only):
     """Check that the minimum Nearest Neighbour distance can be
     calculated properly."""
 
@@ -111,13 +112,13 @@ def test_min_NN_dist(datasets):
         not (real.empty or synth.empty) and (len(real) > 5 and len(synth) > 5)
     )
 
-    distance = privacy.min_NN_dist(real, synth)
+    distance = privacy.min_NN_dist(real, synth, None, outliers_only)
 
     assert isinstance(distance, float)
 
     real_unique_rows = {tuple(row) for _, row in real.iterrows()}
     synth_unique_rows = {tuple(row) for _, row in synth.iterrows()}
-    if real_unique_rows.intersection(synth_unique_rows):
+    if real_unique_rows.intersection(synth_unique_rows) and not outliers_only:
         assert distance == 0
 
     assert distance >= 0
