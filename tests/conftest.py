@@ -1,8 +1,11 @@
 """Fixtures used by several tests."""
 
 import pytest
+from hypothesis import settings
 
 import synthgauge as sg
+
+settings.register_profile("ci", deadline=60000)
 
 
 @pytest.fixture
