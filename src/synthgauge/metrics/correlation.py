@@ -27,9 +27,9 @@ def correlation_MSD(real, synth, feats=None):
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
+    feats : list of str or None, default None
         Numeric features to use. Non-numeric features will be filtered
-        out. If `None` (default), all numeric features are used.
+        out. If `None` (default), all common numeric features are used.
 
     Returns
     -------
@@ -53,12 +53,8 @@ def correlation_MSD(real, synth, feats=None):
     claim the datasets are statistically the same.
     """
 
-    if isinstance(feats, (list, pd.Index)):
-        feats = feats
-    elif isinstance(feats, str):
-        feats = [feats]
-    else:
-        feats = feats or real.columns.to_list()
+    feats = feats or real.columns.intersection(synth.columns)
+
     # select only numeric variables
     real_numeric = real[feats].select_dtypes(np.number)
     synth_numeric = synth[feats].select_dtypes(np.number)
@@ -112,9 +108,9 @@ def cramers_v_MSE(real, synth, feats=None):
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
-        Feature(s) in `real` and `synth` to include in comparison.
-        If `None` (default), uses all object and categorical columns.
+    feats : list of str or None, default None
+        Features in `real` and `synth` to include in comparison.
+        If `None` (default), uses all common object-type columns.
 
     Warns
     -----
@@ -135,21 +131,21 @@ def cramers_v_MSE(real, synth, feats=None):
     used.
     """
     # check features are categorical if supplied
-    if isinstance(feats, str):
-        feats = [feats]
-    if feats is None:
-        feats = real.select_dtypes(include=["object", "category"]).columns
-    else:
-        non_cat = (
-            real[feats].select_dtypes(exclude=["object", "category"]).columns
+    feats = feats or real.select_dtypes(
+        include=("object", "category")
+    ).columns.intersection(synth.columns)
+
+    non_cat_cols = (
+        real[feats].select_dtypes(exclude=["object", "category"]).columns
+    )
+    if non_cat_cols.any():
+        warnings.warn(
+            f"Selected features include numeric types: {non_cat_cols}."
+            "\nIf these should not be included, rerun specifying "
+            "different features. Otherwise, they will be assumed to be "
+            "encoded categories."
         )
-        if len(non_cat) > 0:
-            warnings.warn(
-                "Selected features include numeric types:"
-                f"{non_cat} If these should not be included, rerun "
-                "specifying different features. Otherwise, they will"
-                " be assumed to be encoded categories."
-            )
+
     # find all possible feature combinations
     feat_combinations = list(combinations(feats, 2))
     real_cramers_v = []
@@ -226,12 +222,12 @@ def correlation_ratio_MSE(
         Dataframes containing the real and synthetic data.
     categorical_feats : list of str or None, default None
         Categorical features in `real` and `synth` to include in
-        comparison. If `None` (default), uses all object and categorical
+        comparison. If `None` (default), uses all common object-type
         columns.
     numerical_feats : list of str or None, default None
         Numerical features in `real` and `synth` to include in
-        comparison. If `None` (default), uses all columns not selected
-        by `categorical_feats`.
+        comparison. If `None` (default), uses all common columns not
+        selected by `categorical_feats`.
 
     Returns
     -------
@@ -240,19 +236,16 @@ def correlation_ratio_MSE(
         ratio scores across all categorical-continuous feature pairs.
     """
 
-    if categorical_feats is None:
-        categorical_feats = real.select_dtypes(
-            include=["object", "category"]
-        ).columns
-
-    if numerical_feats is None:
-        numerical_feats = list(set(real.columns).difference(categorical_feats))
+    common = real.columns.intersection(synth.columns)
+    categorical_feats = (
+        categorical_feats
+        or real[common].select_dtypes(include=("object", "category")).columns
+    )
+    numerical_feats = numerical_feats or common.difference(categorical_feats)
 
     real_corr_ratio = []
     synth_corr_ratio = []
-    for cat_feat, num_feat in list(
-        product(categorical_feats, numerical_feats)
-    ):
+    for cat_feat, num_feat in product(categorical_feats, numerical_feats):
         real_corr_ratio.append(
             correlation_ratio(real[cat_feat], real[num_feat])
         )

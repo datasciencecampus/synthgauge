@@ -156,9 +156,9 @@ def multi_clustered_MSD(
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
-        Feature(s) to use in the clustering. If `None` (default), all
-        features in `real` and `synth` are used.
+    feats : list of str or None, default None
+        Features to use in the clustering. If `None` (default), all
+        common features are used.
     method : {"kmeans", "kprototypes"}, default "kmeans"
         Clustering method to use. Only k-means and k-prototypes
         are implemented. If using k-means (default), only numeric

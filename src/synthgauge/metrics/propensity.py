@@ -402,7 +402,7 @@ def propensity_metrics(
         logistic regression with first-order interactions (`"logr"`).
     feats : list of str or None, default None
         List of features in the dataset to be used in the propensity
-        model. If `None` (default), all features are used.
+        model. If `None` (default), all common features are used.
     num_perms : int, default 20
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
@@ -451,7 +451,7 @@ def propensity_metrics(
             f"Propensity method must be 'cart' or 'logr' not {method}."
         )
 
-    feats = feats or list(set(real.columns).intersection(synth.columns))
+    feats = feats or real.columns.intersection(synth.columns)
     combined, indicator = _combine_encode_and_pop(real[feats], synth[feats])
 
     if method == "logr":

@@ -1,7 +1,6 @@
 """Univariate utility metrics."""
 
 import numpy as np
-import pandas as pd
 from scipy import stats
 from scipy.spatial.distance import jensenshannon
 
@@ -10,7 +9,7 @@ from ..utils import feature_density_diff
 
 def _get_bin_counts(real, synth, feature, bins):
     """Discretise real and synthetic features, and return the bin counts
-    for each.
+    for each. Used by the Kullback-Leibler and Jensen-Shannon functions.
 
     Parameters
     ----------
@@ -22,11 +21,11 @@ def _get_bin_counts(real, synth, feature, bins):
         The binning method to use. If `int`, is the number of bins. If
         `str`, must be a method accepted by `numpy.histogram_bin_edges`.
         If `None`, the feature is assumed to be categorical and counts
-        are taken for each value in either dataset.
+        are taken for every value that appears in either dataset.
 
     Returns
     -------
-    real_counts, synth_counts : array_like
+    real_counts, synth_counts : np.ndarray
         The bin counts for the real and synthetic data, respectively.
     """
 
@@ -43,253 +42,6 @@ def _get_bin_counts(real, synth, feature, bins):
         synth_counts, _ = np.histogram(synth, edges)
 
     return real_counts, synth_counts
-
-
-def kolmogorov_smirnov(real, synth, feature, **kwargs):
-    """Kolmogorov-Smirnov test.
-
-    The Kolmogorov-Smirnov test statistic is the maximum difference
-    between the cumulative distribution functions of the real and
-    synthetic features.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feature : str
-        Name of the feature to compare. This must be continuous.
-    **kwargs : dict, optional
-        Keyword arguments for `scipy.stats.ks_2samp`.
-
-    Returns
-    -------
-    statistic, pvalue : float
-        Kolmogorov-Smirnov test statistic.
-    pvalue : float
-        Two-tailed p-value.
-
-    See Also
-    --------
-    scipy.stats.ks_2samp
-
-    Notes
-    -----
-    This is a wrapper for `scipy.stats.ks_2samp`, which tests whether
-    two samples are drawn from the same distribution by calculating the
-    maximum difference between their cumulative distribution functions.
-
-    If the returned statistic is small or the p-value is high, then we
-    cannot reject the hypothesis that the distributions are the same.
-
-    This approach is only defined if the feature is continuous. The
-    documentation further suggests this method works best when one of
-    the samples has a size of only a few thousand.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> real = pd.DataFrame(get_real(500),
-    ...                     columns = ['feat1', 'feat2', 'feat3'])
-    >>> synth = pd.DataFrame(get_synth(500),
-    ...                      columns = ['feat1', 'feat2', 'feat3'])
-
-    The first feature appears to come from the same distribution in both
-    datasets.
-
-    >>> kolmogorov_smirnov(real, synth, 'feat1')
-    KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random
-
-    The second feature appears to come from different distributions in
-    the datasets.
-
-    >>> kolmogorov_smirnov(real, synth, 'feat2')
-    KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random
-    """
-
-    return stats.ks_2samp(real[feature], synth[feature], **kwargs)
-
-
-def wasserstein(real, synth, feature, **kwargs):
-    """The (first) Wasserstein distance.
-
-    Also known as the "Earth Mover's" distance, this metric can be
-    thought of as calculating the amount of "work" required to move from
-    the distribution of the synthetic data to the distribution of the
-    real data.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feature : str
-        Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict, optional
-        Keyword arguments for `scipy.stats.wasserstein_distance`.
-
-    Returns
-    -------
-    float
-        The computed distance between the distributions.
-
-    See Also
-    --------
-    scipy.stats.wasserstein_distance
-
-    Notes
-    -----
-    This is a wrapper for `scipy.stats.wasserstein_distance`.
-    Computationally, we can find the Wasserstein distance by calculating
-    the area between the cumulative distribution functions for the two
-    distributions.
-
-    If :math:`s` is the synthetic feature distribution, :math:`r` is the
-    real feature distribution, and :math:`R` and :math:`S` are their
-    respective cumulative distribution functions, then
-
-    .. math::
-
-        W(s, r) = \\int_{-\\infty}^{+\\infty} |S - R|
-
-    The distance is zero if the distributions are identical and
-    increases as they become less alike. This method is therefore good
-    for comparing multiple synthetic datasets, or features within a
-    dataset, to see which is closest to the real. However, as this is
-    not a test, there is no threshold distance below which we can claim
-    the distributions are statistically the same.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> real = pd.DataFrame(get_real(500),
-    ...                     columns = ['feat1', 'feat2', 'feat3'])
-    >>> synth = pd.DataFrame(get_synth(500),
-    ...                      columns = ['feat1', 'feat2', 'feat3'])
-
-    The first feature appears to be more similar than the second across
-    datasets.
-
-    >>> wasserstein(real, synth, 'feat1')
-    0.0688192355094602 # random
-    >>> wasserstein(real, synth, 'feat2')
-    0.8172329918412307 # random
-
-    """
-
-    return stats.wasserstein_distance(real[feature], synth[feature], **kwargs)
-
-
-def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
-    """Jensen-Shannon distance.
-
-    Describes the difference between two distributions in terms of
-    entropy. Calculated as the square root of the Jensen-Shannon
-    divergence, the Jensen-Shannon distance satisfies the mathematical
-    definition of a metric.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feature : str
-        Feature of the datasets to compare. This must be continuous.
-    bins : int or str or None, default "auto"
-        The binning method to use. If `int`, is the number of bins. If
-        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
-        If `None`, the feature is assumed to be categorical and counts
-        are taken for each value in either dataset.
-    **kwargs : dict, optional
-        Keyword arguments for `scipy.spatial.distance.jensenshannon`.
-
-    Returns
-    -------
-    distance : float
-        The computed distance between the distributions.
-
-    See Also
-    --------
-    synthgauge.metrics.univariate_distance.jensen_shannon_divergence
-    scipy.spatial.distance.jensenshannon
-
-    Notes
-    -----
-    This is a wrapper for `scipy.spatial.distance.jensenshannon`. Since
-    this function expects probability vectors, the data is first
-    discretised into evenly-spaced bins.
-
-    We can think of the Jensen-Shannon distance as the amount of
-    information, or entropy, encoded in the difference between the
-    `real` and `synth` distributions of the `feature`.
-
-    The distance is zero if the distributions are identical, and is
-    bounded above by one if they are nothing alike. This method is
-    therefore good for comparing multiple synthetic datasets, or
-    features within a dataset, to see which is closest to the real.
-    However, as this is not a test, there is no threshold distance below
-    which we can claim the distributions are statistically the same.
-
-    An optimal 'bins' value has not been suggested.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> real = pd.DataFrame(get_real(500),
-    ...                     columns=['feat1', 'feat2', 'feat3'])
-    >>> synth = pd.DataFrame(get_synth(500),
-    ...                      columns=['feat1', 'feat2', 'feat3'])
-
-    The first feature appears to be more similar than the second across
-    datasets.
-
-    >>> jensen_shannon_distance(real, synth, 'feat1', bins = 20)
-    0.11006632967333475 # random
-    >>> jensen_shannon_distance(real, synth, 'feat2', bins = 20)
-    0.43556476029981644 # random
-
-    """
-
-    real_counts, synth_counts = _get_bin_counts(real, synth, feature, bins)
-
-    return jensenshannon(real_counts, synth_counts, **kwargs)
-
-
-def feature_density_diff_mae(real, synth, feats=None, bins=10):
-    """Mean absolute error of feature densities.
-
-    For each feature the difference between the density across the bins
-    within `real` and `synth` is calculated. Finally the MAE across all
-    features and bins is calculated. A value close to 0 indicates that
-    a similar distribution for `feats` is observed between the real and
-    synthetic datasets.
-
-    Parameters
-    ----------
-    real : pandas.DataFrame
-        DataFrame containing the real data.
-    synth : pandas.DataFrame
-        DataFrame containing the sythetic data.
-    feats : str or list of str or None, default None
-        The feature(s) that will be used to compute the densities. If
-        `None` (default), all features in `real` will be used.
-    bins : str or int, default 10
-        Binning method for discretising the data. Can be anything
-        accepted by `numpy.histogram_bin_edges`. Default uses 10 bins.
-
-    Returns
-    -------
-    float
-        Mean absolute error of feature densities.
-    """
-
-    if isinstance(feats, (list, pd.Index)):
-        feats = feats
-    elif isinstance(feats, str):
-        feats = [feats]
-    else:
-        feats = real.columns
-
-    diffs = [feature_density_diff(real, synth, f, bins)[0] for f in feats]
-
-    return np.mean(np.abs(np.concatenate(diffs)))
 
 
 def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
@@ -443,6 +195,313 @@ def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
     return jensen_shannon_distance(real, synth, feature, bins, **kwargs) ** 2
 
 
+def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
+    """Jensen-Shannon distance.
+
+    Describes the difference between two distributions in terms of
+    entropy. Calculated as the square root of the Jensen-Shannon
+    divergence, the Jensen-Shannon distance satisfies the mathematical
+    definition of a metric.
+
+    Parameters
+    ----------
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feature : str
+        Feature of the datasets to compare. This must be continuous.
+    bins : int or str or None, default "auto"
+        The binning method to use. If `int`, is the number of bins. If
+        `str`, must be a method accepted by `numpy.histogram_bin_edges`.
+        If `None`, the feature is assumed to be categorical and counts
+        are taken for each value in either dataset.
+    **kwargs : dict, optional
+        Keyword arguments for `scipy.spatial.distance.jensenshannon`.
+
+    Returns
+    -------
+    distance : float
+        The computed distance between the distributions.
+
+    See Also
+    --------
+    synthgauge.metrics.univariate_distance.jensen_shannon_divergence
+    scipy.spatial.distance.jensenshannon
+
+    Notes
+    -----
+    This is a wrapper for `scipy.spatial.distance.jensenshannon`. Since
+    this function expects probability vectors, the data is first
+    discretised into evenly-spaced bins.
+
+    We can think of the Jensen-Shannon distance as the amount of
+    information, or entropy, encoded in the difference between the
+    `real` and `synth` distributions of the `feature`.
+
+    The distance is zero if the distributions are identical, and is
+    bounded above by one if they are nothing alike. This method is
+    therefore good for comparing multiple synthetic datasets, or
+    features within a dataset, to see which is closest to the real.
+    However, as this is not a test, there is no threshold distance below
+    which we can claim the distributions are statistically the same.
+
+    An optimal 'bins' value has not been suggested.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> real = pd.DataFrame(get_real(500),
+    ...                     columns=['feat1', 'feat2', 'feat3'])
+    >>> synth = pd.DataFrame(get_synth(500),
+    ...                      columns=['feat1', 'feat2', 'feat3'])
+
+    The first feature appears to be more similar than the second across
+    datasets.
+
+    >>> jensen_shannon_distance(real, synth, 'feat1', bins = 20)
+    0.11006632967333475 # random
+    >>> jensen_shannon_distance(real, synth, 'feat2', bins = 20)
+    0.43556476029981644 # random
+
+    """
+
+    real_counts, synth_counts = _get_bin_counts(real, synth, feature, bins)
+
+    return jensenshannon(real_counts, synth_counts, **kwargs)
+
+
+def wasserstein(real, synth, feature, **kwargs):
+    """The (first) Wasserstein distance.
+
+    Also known as the "Earth Mover's" distance, this metric can be
+    thought of as calculating the amount of "work" required to move from
+    the distribution of the synthetic data to the distribution of the
+    real data.
+
+    Parameters
+    ----------
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feature : str
+        Feature of the datasets to compare. This must be continuous.
+    **kwargs : dict, optional
+        Keyword arguments for `scipy.stats.wasserstein_distance`.
+
+    Returns
+    -------
+    float
+        The computed distance between the distributions.
+
+    See Also
+    --------
+    scipy.stats.wasserstein_distance
+
+    Notes
+    -----
+    This is a wrapper for `scipy.stats.wasserstein_distance`.
+    Computationally, we can find the Wasserstein distance by calculating
+    the area between the cumulative distribution functions for the two
+    distributions.
+
+    If :math:`s` is the synthetic feature distribution, :math:`r` is the
+    real feature distribution, and :math:`R` and :math:`S` are their
+    respective cumulative distribution functions, then
+
+    .. math::
+
+        W(s, r) = \\int_{-\\infty}^{+\\infty} |S - R|
+
+    The distance is zero if the distributions are identical and
+    increases as they become less alike. This method is therefore good
+    for comparing multiple synthetic datasets, or features within a
+    dataset, to see which is closest to the real. However, as this is
+    not a test, there is no threshold distance below which we can claim
+    the distributions are statistically the same.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> real = pd.DataFrame(get_real(500),
+    ...                     columns = ['feat1', 'feat2', 'feat3'])
+    >>> synth = pd.DataFrame(get_synth(500),
+    ...                      columns = ['feat1', 'feat2', 'feat3'])
+
+    The first feature appears to be more similar than the second across
+    datasets.
+
+    >>> wasserstein(real, synth, 'feat1')
+    0.0688192355094602 # random
+    >>> wasserstein(real, synth, 'feat2')
+    0.8172329918412307 # random
+
+    """
+
+    return stats.wasserstein_distance(real[feature], synth[feature], **kwargs)
+
+
+def feature_density_diff_mae(real, synth, feats=None, bins=10):
+    """Mean absolute error of feature densities.
+
+    For each feature the difference between the density across the bins
+    within `real` and `synth` is calculated. Finally the MAE across all
+    features and bins is calculated. A value close to 0 indicates that
+    the real and synthetic datasets have a similar set of feature
+    distributions.
+
+    Parameters
+    ----------
+    real : pandas.DataFrame
+        DataFrame containing the real data.
+    synth : pandas.DataFrame
+        DataFrame containing the sythetic data.
+    feats : list of str or None, default None
+        The features that will be used to compute the densities. If
+        `None` (default), all common features are used.
+    bins : str or int, default 10
+        Binning method for discretising the data. Can be anything
+        accepted by `numpy.histogram_bin_edges`. Default uses 10 bins.
+
+    Returns
+    -------
+    float
+        Mean absolute error of feature densities.
+    """
+
+    feats = feats or real.columns.intersection(synth.columns)
+    diffs = [
+        feature_density_diff(real, synth, feat, bins)[0] for feat in feats
+    ]
+
+    return np.mean(np.abs(np.concatenate(diffs)))
+
+
+def kolmogorov_smirnov(real, synth, feature, **kwargs):
+    """Kolmogorov-Smirnov test.
+
+    The Kolmogorov-Smirnov test statistic is the maximum difference
+    between the cumulative distribution functions of the real and
+    synthetic features.
+
+    Parameters
+    ----------
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feature : str
+        Name of the feature to compare. This must be continuous.
+    **kwargs : dict, optional
+        Keyword arguments for `scipy.stats.ks_2samp`.
+
+    Returns
+    -------
+    statistic, pvalue : float
+        Kolmogorov-Smirnov test statistic.
+    pvalue : float
+        Two-tailed p-value.
+
+    See Also
+    --------
+    scipy.stats.ks_2samp
+
+    Notes
+    -----
+    This is a wrapper for `scipy.stats.ks_2samp`, which tests whether
+    two samples are drawn from the same distribution by calculating the
+    maximum difference between their cumulative distribution functions.
+
+    If the returned statistic is small or the p-value is high, then we
+    cannot reject the hypothesis that the distributions are the same.
+
+    This approach is only defined if the feature is continuous. The
+    documentation further suggests this method works best when one of
+    the samples has a size of only a few thousand.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> real = pd.DataFrame(get_real(500),
+    ...                     columns = ['feat1', 'feat2', 'feat3'])
+    >>> synth = pd.DataFrame(get_synth(500),
+    ...                      columns = ['feat1', 'feat2', 'feat3'])
+
+    The first feature appears to come from the same distribution in both
+    datasets.
+
+    >>> kolmogorov_smirnov(real, synth, 'feat1')
+    KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random
+
+    The second feature appears to come from different distributions in
+    the datasets.
+
+    >>> kolmogorov_smirnov(real, synth, 'feat2')
+    KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random
+    """
+
+    return stats.ks_2samp(real[feature], synth[feature], **kwargs)
+
+
+def kruskal_wallis(real, synth, feature, **kwargs):
+    """Kruskal-Wallis H test.
+
+    The Kruskal-Wallis test seeks to determine whether two sets of data
+    originated from the same distribution. This is acheived by pooling
+    and ranking the datasets. A low p-value suggests the two sets
+    originate from different distributions and are not similar.
+
+    Parameters
+    ----------
+    real, synth : pandas.DataFrame
+        Dataframes containing the real and synthetic data.
+    feature : str
+        Feature of the datasets to compare. This must be continuous.
+    **kwargs : dict, optional
+        Keyword arguments for `scipy.stats.kruskal`.
+
+    Returns
+    -------
+    statistic : float
+        The Kruskal-Wallis H statistic.
+    pvalue : float
+        The p-value for the test.
+
+    See Also
+    --------
+    scipy.stats.kruskal
+
+    Notes
+    -----
+    This is a wrapper function for `scipy.stats.kruskal`.
+
+    The null hypothesis for this test is that the medians of the
+    distributions are equal. The alternative hypothesis is then that
+    they are different. This would suggest that the synthetic and real
+    data are not similarly distributed.
+
+    We notice, however, that failure to reject the null hypothesis only
+    suggests that the medians could be equal and says nothing else about
+    how the data are distributed.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> real = pd.DataFrame(get_real(500),
+    ...                     columns=['feat1', 'feat2', 'feat3'])
+    >>> synth = pd.DataFrame(get_synth(500),
+    ...                      columns=['feat1', 'feat2', 'feat3'])
+
+    If we were to choose our p-value threshold as 0.05, we would reach
+    the conclusion that the distributions of the first feature are
+    similar but the distributions of the second feature are not.
+
+    >>> kruskal_wallis(real, synth, 'feat1', bins = 20)
+    KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)
+    # random
+    >>> kruskal_wallis(real, synth, 'feat2', bins = 20)
+    KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)
+    # random
+    """
+
+    return stats.kruskal(real[feature], synth[feature], **kwargs)
+
+
 def mann_whitney(real, synth, feature, **kwargs):
     """Mann-Whitney U test.
 
@@ -566,70 +625,6 @@ def wilcoxon(real, synth, feature, **kwargs):
     """
 
     return stats.wilcoxon(real[feature], synth[feature], **kwargs)
-
-
-def kruskal_wallis(real, synth, feature, **kwargs):
-    """Kruskal-Wallis H test.
-
-    The Kruskal-Wallis test seeks to determine whether two sets of data
-    originated from the same distribution. This is acheived by pooling
-    and ranking the datasets. A low p-value suggests the two sets
-    originate from different distributions and are not similar.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feature : str
-        Feature of the datasets to compare. This must be continuous.
-    **kwargs : dict, optional
-        Keyword arguments for `scipy.stats.kruskal`.
-
-    Returns
-    -------
-    statistic : float
-        The Kruskal-Wallis H statistic.
-    pvalue : float
-        The p-value for the test.
-
-    See Also
-    --------
-    scipy.stats.kruskal
-
-    Notes
-    -----
-    This is a wrapper function for `scipy.stats.kruskal`.
-
-    The null hypothesis for this test is that the medians of the
-    distributions are equal. The alternative hypothesis is then that
-    they are different. This would suggest that the synthetic and real
-    data are not similarly distributed.
-
-    We notice, however, that failure to reject the null hypothesis only
-    suggests that the medians could be equal and says nothing else about
-    how the data are distributed.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> real = pd.DataFrame(get_real(500),
-    ...                     columns=['feat1', 'feat2', 'feat3'])
-    >>> synth = pd.DataFrame(get_synth(500),
-    ...                      columns=['feat1', 'feat2', 'feat3'])
-
-    If we were to choose our p-value threshold as 0.05, we would reach
-    the conclusion that the distributions of the first feature are
-    similar but the distributions of the second feature are not.
-
-    >>> kruskal_wallis(real, synth, 'feat1', bins = 20)
-    KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)
-    # random
-    >>> kruskal_wallis(real, synth, 'feat2', bins = 20)
-    KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)
-    # random
-    """
-
-    return stats.kruskal(real[feature], synth[feature], **kwargs)
 
 
 if __name__ == "__main__":

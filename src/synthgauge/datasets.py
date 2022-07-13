@@ -5,15 +5,15 @@ import pandas as pd
 from sklearn.datasets import make_classification
 
 
-def _adjust_data_elements(X, y, noise, nan_prop, seed):
+def _adjust_data_elements(data, labels, noise, nan_prop, seed):
     """Adjust the given data and put it into a dataframe.
     This function is not intended to be used directly by users.
 
     Parameters
     ----------
-    X : numpy.ndarray
+    data : numpy.ndarray
         The data array to be adjusted.
-    y : numpy.ndarray
+    labels : numpy.ndarray
         A set of labels for classifying the rows of `data`.
     noise : float
         The amount of noise to inject into the data. Specifically,
@@ -27,13 +27,13 @@ def _adjust_data_elements(X, y, noise, nan_prop, seed):
 
     Returns
     -------
-    data : pandas.DataFrame
+    pandas.DataFrame
         The adjusted, combined dataframe.
     """
 
     rng = np.random.default_rng(seed)
 
-    data = np.column_stack((X, y))
+    data = np.column_stack((data, labels))
 
     num_cols = data.shape[1]
     num_nans = int(data.size * nan_prop)

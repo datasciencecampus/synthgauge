@@ -33,9 +33,8 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     ----------
     df : pandas.DataFrame
         Dataframe containing the feature(s) to be plotted.
-    feats : str or list of str or None, default None
-        Feature(s) in `df` to plot. If `None` (default), all features
-        are used.
+    feats : list of str or None, default None
+        Features in to plot. If `None` (default), all features are used.
     groupby : str, optional
         Feature on which to group data.
     figcols : int, default 2
@@ -49,12 +48,7 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     matplotlib.figure.Figure
     """
 
-    if feats is None:
-        feats = list(df.columns)
-    elif isinstance(feats, str):
-        feats = [feats]
-    else:
-        feats = feats
+    feats = feats or df.columns
 
     n_rows = int(np.ceil(len(feats) / figcols))
     fig, axes = plt.subplots(n_rows, figcols, figsize=figsize)
@@ -269,9 +263,9 @@ def plot_correlation(
     ----------
     *dfs : pandas.DataFrame
         Any number of dataframes to plot.
-    feats : str or list of str or None, default None
-        Feature(s) to plot. Must be column(s) in all elements of `dfs`.
-        If `None` (default), all columns in each dataframe are used.
+    feats : list of str or None, default None
+        Features to plot. Must be present in all elements of `dfs`.
+        If `None` (default), uses features common to all dataframes.
     method : {"pearson", "spearman", "cramers_v"}, default "pearson"
         Correlation method. See `pandas.DataFrame.corr` for more details
         on `"pearson"` and `"spearman"`. When `"cramers_v"` is
@@ -314,21 +308,16 @@ def plot_correlation(
 
         return pd.DataFrame(results, index=df.columns, columns=df.columns)
 
-    if isinstance(feats, str):
-        feats = [feats]
+    feats = feats or list(set.intersection(*(set(df.columns) for df in dfs)))
 
-    corr_results = list()
-
+    corr_results = []
     for df in dfs:
-        # If no features specified use all columns
-        if feats is None:
-            feats = df.columns
 
-        if method.lower() in ["pearson", "spearman"]:
+        if method.lower() in ("pearson", "spearman"):
             data = df[feats].select_dtypes(include="number")
             if len(data.columns) == 0:
                 raise ValueError(
-                    "No numeric columns available for method: " f"{method}"
+                    f"No numeric columns available for method: {method}"
                 )
 
             corr_results.append(
@@ -337,11 +326,11 @@ def plot_correlation(
                 .dropna(axis=1, how="all")
             )
 
-        elif method.lower() == "cramers_v":
+        if method.lower() == "cramers_v":
             data = df[feats].select_dtypes(include=["object", "category"])
             if len(data.columns) == 0:
                 raise ValueError(
-                    "No categorical columns available for " f"method: {method}"
+                    f"No categorical columns available for method: {method}"
                 )
 
             corr_results.append(
@@ -377,7 +366,7 @@ def plot_correlation(
             vmin = None
             vmax = None
         else:
-            sp_title = f"DataFrame {ax_num+1} Correlation"
+            sp_title = f"DataFrame {ax_num + 1} Correlation"
 
         sns.heatmap(corr, ax=ax, vmin=vmin, vmax=vmax, **kwargs)
 
@@ -559,10 +548,10 @@ def plot_feat_density_diff(
     For each feature, the density difference between `real` and `synth`
     is calculated using `synthgauge.utils.feature_density_diff`.
 
-    If a single feature is provided, the plot shows the raw density
-    differences for each bin.
+    If a single feature is provided in `feats`, the plot shows the raw
+    density differences for each bin in that feature.
 
-    Where multiple feature are provided, the density differences are
+    Where multiple features are provided, the density differences are
     pd.concatenated into a flattened array and a histogram plotted. The
     histogram represents the distribution of differences in densities
     across all features and bins.
@@ -571,42 +560,40 @@ def plot_feat_density_diff(
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
-        The features that will be used to compute the densities. If
-        `None` (default), all common features will be used.
+    feats : list of str or None, default None
+        Features used to compute the densities. If `None` (default), all
+        common features are used.
     feat_bins : str or int, default 10
         Bins to use for computing the feature densities. This value is
         passed to `numpy.histogram_bin_edges` so can be any value
         accepted by that function. By default, uses 10 bins.
     diff_bins : str or int, default 10
-        Bins to use for computing the feature densities. This value is
-        passed to `numpy.histogram_bin_edges` so can be any value
-        accepted by that function. By default, uses 10 bins.
+        Bins to use when computing the multiple-feature difference
+        histogram. This value is passed to `numpy.histogram_bin_edges`
+        so can be any value accepted by that function. By default, uses
+        10 bins.
 
     Returns
     -------
     matplotlib.figure.Figure
     """
 
-    if feats is None:
-        feats = list(set(real.columns).intersection(synth.columns))
-    elif isinstance(feats, str):
-        feats = [feats]
-    else:
-        feats = feats
+    feats = feats or real.columns.intersection(synth.columns)
 
     if len(feats) == 1:
+        feature = feats[0]
         diff_hist, diff_edges = feature_density_diff(
-            real, synth, feats, feat_bins
+            real, synth, feature, feat_bins
         )
-        xlabel = f"{feats[0]} Binned"
+        xlabel = f"{feature} Binned"
         ylabel = "Density Difference"
-        title = f"Feature Density Difference for {feats[0]}"
+        title = f"Feature Density Difference for {feature}"
 
     else:
         # TODO: option to have different bins for each feature
         diffs = [
-            feature_density_diff(real, synth, f, feat_bins)[0] for f in feats
+            feature_density_diff(real, synth, feat, feat_bins)[0]
+            for feat in feats
         ]
 
         diff_hist, diff_edges = np.histogram(
