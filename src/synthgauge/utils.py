@@ -24,7 +24,7 @@ def df_combine(
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
+    feats : list of str or None, default None
         Features to combine. If `None` (default), all common features
         are used.
     source_col_name : str, default "source"
@@ -46,8 +46,6 @@ def df_combine(
     """
 
     feats = feats or real.columns.intersection(synth.columns)
-    if isinstance(feats, str):
-        feats = [feats]
 
     real = real[feats].copy()
     real[source_col_name] = source_val_real
@@ -79,7 +77,7 @@ def df_separate(
         Dataframe to split into real and synthetic components.
     source_col_name : str
         Name of the column used to signify real versus synthetic data.
-    feats : str or list of str or None, default None
+    feats : list of str or None, default None
         Features to separate. If `None` (default), uses all features.
     source_val_real : any, default "real"
         Value in `source_col_name` column signifying the real data.
@@ -97,17 +95,11 @@ def df_separate(
         Dataframes containing the real data and synthetic data.
     """
 
-    if isinstance(feats, str):
-        columns = [feats]
-    elif isinstance(feats, list):
-        columns = list(feats)
-    else:
-        columns = list(data.columns)
+    feats = list(feats) if feats is not None else list(data.columns)
+    feats.append(source_col_name)
 
-    columns = columns + [source_col_name]
-
-    real = data[data[source_col_name] == source_val_real][columns].copy()
-    synth = data[data[source_col_name] == source_val_synth][columns].copy()
+    real = data[data[source_col_name] == source_val_real][feats].copy()
+    synth = data[data[source_col_name] == source_val_synth][feats].copy()
 
     if drop_source_col:
         real.drop(columns=source_col_name, inplace=True, errors="ignore")
@@ -127,7 +119,7 @@ def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
+    feats : list of str or None, default None
         Features to launder. If `None` (default), all common features
         are used.
     suffix_real : str, default "real"
@@ -142,8 +134,6 @@ def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
     """
 
     feats = feats or real.columns.intersection(synth.columns)
-    if isinstance(feats, str):
-        feats = [feats]
 
     real = real[feats].copy()
     synth = synth[feats].copy()
@@ -173,9 +163,9 @@ def cat_encode(
     ----------
     df : pandas.DataFrame
         Input dataframe to be converted.
-    feats : str or list of str or None, default None
-        Feature(s) in `df` to convert to categorical. If `None`
-        (default), all object-type columns are selected.
+    feats : list of str or None, default None
+        Features in `df` to convert to categorical. If `None` (default),
+        all object-type columns are selected.
     return_all : bool, default False
         If `True`, all features in `df` will be returned regardless of
         whether they were converted. If `False` (default), only the
@@ -196,45 +186,38 @@ def cat_encode(
     Returns
     -------
     out_df : pandas.DataFrame
-        DataFrame with (at least) the converted features.
+        Dataframe with (at least) the converted features.
     cat_dict : dict or NoneType
         A dictionary mapping each encoded feature to its categories. If
-        `convert_only=True`, returns `None`.
+        `convert_only=True`, returns as `None`.
     """
 
-    all_obj = df.select_dtypes(include=["object", "category"]).columns
-    feats = feats or all_obj
-    if isinstance(feats, str):
-        feats = [feats]
+    all_cat_cols = df.select_dtypes(include=("object", "category")).columns
+    feats = pd.Index(feats) if feats is not None else all_cat_cols
 
     # Check for non-object type features
-    non_obj = list(set(feats).difference(all_obj))
-    if len(non_obj) > 0:
+    non_cat_cols = feats.difference(all_cat_cols)
+    if non_cat_cols.any():
         warnings.warn(
-            f"Selected features include non-object types: {non_obj}\n"
-            "Is this intended? If so, rerun with `force=True`. "
-            "Otherwise, they will be dropped, unless "
-            "`return_all=True`, where they will pass through unchanged."
+            "Selected features include non-object types: "
+            f"{non_cat_cols.to_list()}."
+            "\nIs this intended? If so, rerun with `force=True`. "
+            "If not, they will be dropped, unless `return_all=True`, "
+            "where they will pass through unchanged."
         )
 
     cat_dict = {} if not convert_only else None
 
-    if force:
-        enc_fts = feats
-    else:
-        enc_fts = list(set(feats).difference(non_obj))
+    feats_to_encode = feats if force else feats.difference(non_cat_cols)
+    out_df = df.copy() if return_all else df[feats_to_encode].copy()
 
-    if return_all:
-        out_df = df.copy()
-    else:
-        out_df = df[enc_fts].copy()
-
-    for ft in enc_fts:
-        out_df[ft] = out_df[ft].astype("category")
+    for feature in feats_to_encode:
+        out_df[feature] = out_df[feature].astype("category")
 
         if not convert_only:
-            cat_dict.update({ft: out_df[ft].cat.categories})
-            out_df[ft] = out_df[ft].cat.codes
+            feature_cat = out_df[feature].cat
+            cat_dict[feature] = feature_cat.categories
+            out_df[feature] = feature_cat.codes
 
     return out_df, cat_dict
 
@@ -268,8 +251,8 @@ def feature_density_diff(real, synth, feature, bins=10):
         The edges of the bins.
     """
 
-    combined = df_combine(real, synth, feats=feature)
-    encoded, _ = cat_encode(combined, feats=feature, return_all=True)
+    combined = df_combine(real, synth, feats=[feature])
+    encoded, _ = cat_encode(combined, feats=[feature], return_all=True)
     enc_real, enc_synth = df_separate(encoded, "source")
 
     bin_edges = np.histogram_bin_edges(encoded[feature], bins=bins)

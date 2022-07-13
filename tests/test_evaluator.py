@@ -28,7 +28,7 @@ def test_init(datasets):
 
     assert evaluator.real_data.equals(real)
     assert evaluator.synth_data.equals(synth)
-    assert evaluator.feature_names.equals(columns)
+    assert evaluator.feature_names == list(columns)
     assert evaluator.metrics == {}
     assert evaluator.metric_results == {}
     assert list(evaluator.combined_data.columns) == list(columns) + ["source"]
@@ -45,7 +45,7 @@ def test_init_uncommon_features(datasets):
     with pytest.warns(UserWarning, match="^Features xyz are not"):
         evaluator = sg.Evaluator(real, synth)
 
-    assert evaluator.feature_names.equals(synth.columns)
+    assert evaluator.feature_names == list(synth.columns)
 
 
 @given(datasets(), st.one_of(st.just("drop"), st.text()))
@@ -377,7 +377,9 @@ def test_plot_correlation(real, synth, method):
 
 @given(joint_params())
 @settings(
-    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+    deadline=None,
+    max_examples=15,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
 )
 def test_plot_crosstab(real, synth, params):
     """Check that the crosstab method produces a figure. Full tests of

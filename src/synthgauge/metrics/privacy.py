@@ -1,7 +1,6 @@
 """Privacy metrics."""
 
 import numpy as np
-import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
 
 from ..utils import cat_encode, df_combine, df_separate
@@ -162,10 +161,9 @@ def min_NN_dist(
     ----------
     real, synth : pandas.DataFrame
         Dataframes containing the real and synthetic data.
-    feats : str or list of str or None, default None
-        Feature(s) in `real` and `synth` to use when calculating
-        distance. If `None` (default), all features in both datasets are
-        used.
+    feats : list of str or None, default None
+        Features in `real` and `synth` to use when calculating
+        distance. If `None` (default), all common features are used.
     real_outliers_only : bool, default True
         Boolean indicating whether to filter out the real data inliers
         (default) or not.
@@ -233,9 +231,9 @@ def sample_overlap_score(
     ----------
     real, synth : pandas.DataFrame
         DataFrames containing the real and synthetic data.
-    feats : str or list of str or None, default None
+    feats : list of str or None, default None
         The features used to match records. If `None` (default), all
-        features in `real` are used.
+        common features are used.
     sample_size : float or int, default 0.2
         The ratio (if `sample_size` between 0 and 1) or count
         (`sample_size` > 1) of records to sample. Default is 0.2 (20%).
@@ -256,12 +254,7 @@ def sample_overlap_score(
         Estimated overlap score between `real` and `synth`.
     """
 
-    if isinstance(feats, (list, pd.Index)):
-        feats = feats
-    elif isinstance(feats, str):
-        feats = [feats]
-    else:
-        feats = real.columns.to_list()
+    feats = feats or real.columns.intersection(synth.columns).to_list()
 
     min_num_rows = min(real.shape[0], synth.shape[0])
     if 0 <= sample_size <= 1:

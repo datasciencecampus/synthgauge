@@ -150,10 +150,11 @@ def test_plot_correlation_methods(real, method):
     else:
         columns = list(real.select_dtypes(include="number").columns)
 
-    for col, xlab, ylab in zip(
-        columns, ax.get_xticklabels(), ax.get_yticklabels()
-    ):
-        assert {col, xlab.get_text(), ylab.get_text()} == {col}
+    xticklabels = [lab.get_text() for lab in ax.get_xticklabels()]
+    yticklabels = [lab.get_text() for lab in ax.get_yticklabels()]
+
+    assert set(columns) == set(xticklabels)
+    assert set(columns) == set(yticklabels)
 
 
 @given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
@@ -170,7 +171,7 @@ def test_plot_correlation_method_errors(real, method):
         column, match = "blood_type", "^No numeric columns"
 
     with pytest.raises(ValueError, match=match):
-        _ = plot.plot_correlation(real, feats=column, method=method)
+        _ = plot.plot_correlation(real, feats=[column], method=method)
 
 
 @given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
@@ -193,10 +194,12 @@ def test_plot_correlation_two_datasets(real, synth, method):
 
     for i, ax in enumerate((rax, sax)):
         assert ax.get_title() == f"DataFrame {i + 1} Correlation"
-        for col, xlab, ylab in zip(
-            columns, ax.get_xticklabels(), ax.get_yticklabels()
-        ):
-            assert {col, xlab.get_text(), ylab.get_text()} == {col}
+
+        xticklabels = [lab.get_text() for lab in ax.get_xticklabels()]
+        yticklabels = [lab.get_text() for lab in ax.get_yticklabels()]
+
+        assert set(columns) == set(xticklabels)
+        assert set(columns) == set(yticklabels)
 
 
 @given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
@@ -229,10 +232,11 @@ def test_plot_correlation_difference(real, synth, method):
         else:
             assert ax.get_title() == f"DataFrame {i + 1} Correlation"
 
-        for col, xlab, ylab in zip(
-            columns, ax.get_xticklabels(), ax.get_yticklabels()
-        ):
-            assert {col, xlab.get_text(), ylab.get_text()} == {col}
+        xticklabels = [lab.get_text() for lab in ax.get_xticklabels()]
+        yticklabels = [lab.get_text() for lab in ax.get_yticklabels()]
+
+        assert set(columns) == set(xticklabels)
+        assert set(columns) == set(yticklabels)
 
 
 @given(params=joint_params())

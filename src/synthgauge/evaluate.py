@@ -43,12 +43,12 @@ class Evaluator:
         if len(ignore_feats) > 0:
             msg = (
                 f"Features {', '.join(ignore_feats)} are not common to "
-                "`real` and `synth` and will be ignored in further analysis"
+                "`real` and `synth` and will be ignored in further analysis."
             )
 
             warnings.warn(msg)
 
-        self.feature_names = common_feats
+        self.feature_names = list(common_feats)
 
         # Metrics is private to apply some validation
         self.__metrics = dict()  # assign metrics and kwargs
