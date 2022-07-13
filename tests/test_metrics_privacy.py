@@ -126,18 +126,19 @@ def test_min_NN_dist(datasets, outliers_only):
 
 @given(
     datasets(column_spec={"a": "object", "b": "object"}),
-    st.one_of(st.none(), st.sampled_from(("a", ["a", "b"]))),
+    st.sampled_from((None, ["a", "b"])),
     st.one_of(st.floats(0, 1, allow_nan=False), st.integers(10, 100)),
+    st.integers(0, 100),
     st.sampled_from(("unique", "sample")),
 )
-def test_sample_overlap_score(datasets, feats, size, score):
+def test_sample_overlap_score(datasets, feats, size, seed, score):
     """Check that sample overlap scores can be obtained."""
 
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
     score = privacy.sample_overlap_score(
-        real, synth, feats, sample_size=size, score_type=score
+        real, synth, feats, sample_size=size, seed=seed, score_type=score
     )
 
     assert isinstance(score, float)

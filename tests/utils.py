@@ -18,7 +18,6 @@ available_columns = (
 
 blood_type_feats = st.one_of(
     st.none(),
-    st.sampled_from(available_columns),
     st.lists(
         st.sampled_from(available_columns), min_size=1, max_size=4, unique=True
     ),
@@ -28,14 +27,7 @@ blood_type_feats = st.one_of(
 def resolve_features(feats, data):
     """Resolve the specified features so they are always a list."""
 
-    if isinstance(feats, str):
-        columns = list([feats])
-    elif isinstance(feats, list):
-        columns = list(feats)
-    else:
-        columns = list(data.columns)
-
-    return columns
+    return feats or data.columns.to_list()
 
 
 @st.composite

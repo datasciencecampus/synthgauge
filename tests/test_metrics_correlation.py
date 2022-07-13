@@ -12,7 +12,7 @@ from .utils import datasets, resolve_features
 
 @given(
     datasets(min_columns=2, available_dtypes=("float",), allow_nan=False),
-    st.one_of(st.none(), st.sampled_from(("a", ["a", "b"]))),
+    st.sampled_from((None, ["a", "b"])),
 )
 def test_correlation_MSD(datasets, feats):
     """Check that the mean-squared difference in Pearson's correlation
@@ -52,7 +52,7 @@ def test_cramers_v(datasets):
 
 @given(
     datasets(2, 2, available_dtypes=("object", "bool")),
-    st.one_of(st.none(), st.sampled_from(("a", ["a", "b"]))),
+    st.sampled_from((None, ["a", "b"])),
 )
 def test_cramers_v_MSD(datasets, feats):
     """Check that the Cramer's V MSD can be calculated correctly."""
@@ -118,8 +118,8 @@ def test_correlation_ratio(datasets):
         max_value=1000,
         allow_nan=False,
     ),
-    st.one_of(st.none(), st.just(["a"])),
-    st.one_of(st.none(), st.just(["b"])),
+    st.sampled_from((None, ["a"])),
+    st.sampled_from((None, ["b"])),
 )
 def test_correlation_ratio_MSE(datasets, categorical, numeric):
     """Check that the categorical-continuous association mean-squared

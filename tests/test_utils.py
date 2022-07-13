@@ -11,7 +11,7 @@ from synthgauge import utils
 from .utils import datasets, resolve_features
 
 
-@given(datasets(), st.one_of(st.none(), st.sampled_from(("a", ["a"]))))
+@given(datasets(), st.sampled_from((None, ["a"])))
 def test_df_combine(datasets, feats):
     """Check that two datasets can be combined when features are named
     individually, given as a list or not specified."""
@@ -28,11 +28,7 @@ def test_df_combine(datasets, feats):
     assert list(combined.columns) == columns + ["source"]
 
 
-@given(
-    datasets(),
-    st.one_of(st.none(), st.sampled_from(("a", ["a"]))),
-    st.booleans(),
-)
+@given(datasets(), st.sampled_from((None, ["a"])), st.booleans())
 def test_df_separate(datasets, feats, drop):
     """Check that a dataset can be separated into two parts."""
 
@@ -64,10 +60,7 @@ def test_df_separate(datasets, feats, drop):
         assert original.equals(separate)
 
 
-@given(
-    datasets(allow_nan=False),
-    st.one_of(st.none(), st.sampled_from(("a", ["a"]))),
-)
+@given(datasets(allow_nan=False), st.sampled_from((None, ["a"])))
 def test_launder(datasets, feats):
     """Check that two datasets can have their features 'laundered'."""
 
@@ -93,10 +86,7 @@ def test_launder(datasets, feats):
             ]
 
 
-@given(
-    datasets(available_dtypes=("object",)),
-    st.one_of(st.none(), st.sampled_from(("a", ["a"]))),
-)
+@given(datasets(available_dtypes=["object"]), st.sampled_from((None, ["a"])))
 def test_cat_encode_categorical(datasets, feats):
     """Check that a dataset with object-only columns can be categorised
     and integer-encoded."""
@@ -182,7 +172,7 @@ def test_cat_encode_mixed(datasets, force):
         assert data[col].to_list() == [categories[code] for code in out[col]]
 
 
-@given(datasets(available_dtypes=("object",)))
+@given(datasets(available_dtypes=["object"]))
 def test_cat_encode_convert_only(datasets):
     """Check that a dataset can be categorised without being encoded."""
 
@@ -191,11 +181,11 @@ def test_cat_encode_convert_only(datasets):
 
     out, cats = utils.cat_encode(data, convert_only=True)
 
-    columns = list(data.columns)
+    columns = data.columns
 
     assert cats is None
     assert isinstance(out, pd.DataFrame)
-    assert set(data.columns) == set(out.columns)
+    assert set(columns) == set(out.columns)
     assert all(np.array_equal(data[col], (out[col].values)) for col in columns)
 
     for col in columns:
@@ -204,7 +194,7 @@ def test_cat_encode_convert_only(datasets):
         assert set(out[col].cat.categories) == set(data[col].unique())
 
 
-@given(datasets(available_dtypes=("object",)), st.integers(1, 10))
+@given(datasets(available_dtypes=["object"]), st.integers(1, 10))
 @settings(deadline=None)
 def test_feature_density_diff(datasets, bins):
     """Check that histogram-based density differences can be computed
