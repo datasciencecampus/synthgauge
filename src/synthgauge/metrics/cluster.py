@@ -192,7 +192,3 @@ def multi_clustered_MSD(
         )
 
     return min(cluster_MSDs)
-
-
-if __name__ == "__main__":
-    pass

@@ -267,7 +267,3 @@ def feature_density_diff(real, synth, feature, bins=10):
     hist_diff = synth_hist - real_hist
 
     return hist_diff, bin_edges
-
-
-if __name__ == "__main__":
-    pass

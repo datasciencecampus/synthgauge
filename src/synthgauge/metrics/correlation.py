@@ -254,7 +254,3 @@ def correlation_ratio_MSE(
         )
 
     return _mean_squared_error(real_corr_ratio, synth_corr_ratio)
-
-
-if __name__ == "__main__":
-    pass

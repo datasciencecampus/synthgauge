@@ -300,7 +300,3 @@ def sample_overlap_score(
         scores.append(score)
 
     return np.mean(scores)
-
-
-if __name__ == "__main__":
-    pass

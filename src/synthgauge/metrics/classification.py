@@ -205,7 +205,3 @@ def classification_comparison(
     )
 
     return ClassificationResult(*score_differences)
-
-
-if __name__ == "__main__":
-    pass

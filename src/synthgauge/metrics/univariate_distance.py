@@ -625,7 +625,3 @@ def wilcoxon(real, synth, feature, **kwargs):
     """
 
     return stats.wilcoxon(real[feature], synth[feature], **kwargs)
-
-
-if __name__ == "__main__":
-    pass

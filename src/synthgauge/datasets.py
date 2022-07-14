@@ -111,7 +111,3 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
     ).cat.as_unordered()
 
     return df
-
-
-if __name__ == "__main__":
-    pass
