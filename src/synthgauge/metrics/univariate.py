@@ -4,8 +4,6 @@ import numpy as np
 from scipy import stats
 from scipy.spatial.distance import jensenshannon
 
-from ..utils import feature_density_diff
-
 
 def _get_bin_counts(real, synth, feature, bins):
     """Discretise real and synthetic features, and return the bin counts
@@ -336,42 +334,6 @@ def wasserstein(real, synth, feature, **kwargs):
     """
 
     return stats.wasserstein_distance(real[feature], synth[feature], **kwargs)
-
-
-def feature_density_diff_mae(real, synth, feats=None, bins=10):
-    """Mean absolute error of feature densities.
-
-    For each feature the difference between the density across the bins
-    within `real` and `synth` is calculated. Finally the MAE across all
-    features and bins is calculated. A value close to 0 indicates that
-    the real and synthetic datasets have a similar set of feature
-    distributions.
-
-    Parameters
-    ----------
-    real : pandas.DataFrame
-        DataFrame containing the real data.
-    synth : pandas.DataFrame
-        DataFrame containing the sythetic data.
-    feats : list of str or None, default None
-        The features that will be used to compute the densities. If
-        `None` (default), all common features are used.
-    bins : str or int, default 10
-        Binning method for discretising the data. Can be anything
-        accepted by `numpy.histogram_bin_edges`. Default uses 10 bins.
-
-    Returns
-    -------
-    float
-        Mean absolute error of feature densities.
-    """
-
-    feats = feats or real.columns.intersection(synth.columns)
-    diffs = [
-        feature_density_diff(real, synth, feat, bins)[0] for feat in feats
-    ]
-
-    return np.mean(np.abs(np.concatenate(diffs)))
 
 
 def kolmogorov_smirnov(real, synth, feature, **kwargs):
