@@ -1,8 +1,8 @@
 """ A submodule for all utility and privacy metrics. """
 
 from .classification import classification_comparison
-from .cluster import multi_clustered_MSD
-from .correlation import correlation_MSD, correlation_ratio_MSE, cramers_v_MSE
+from .cluster import clustered_msd
+from .correlation import correlation_msd, correlation_ratio_msd
 from .privacy import TCAP, min_NN_dist, sample_overlap_score
 from .propensity import propensity_metrics
 from .univariate_distance import (
@@ -27,11 +27,10 @@ __all__ = [
     "kruskal_wallis",
     "mann_whitney",
     "wilcoxon",
-    "correlation_MSD",
-    "cramers_v_MSE",
-    "correlation_ratio_MSE",
+    "correlation_msd",
+    "correlation_ratio_msd",
     "propensity_metrics",
-    "multi_clustered_MSD",
+    "clustered_msd",
     "classification_comparison",
     "TCAP",
     "min_NN_dist",

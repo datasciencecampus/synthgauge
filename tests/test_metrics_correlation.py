@@ -1,35 +1,13 @@
 """Property-based tests for the correlation-based metrics."""
 
 import numpy as np
-import pytest
+import pandas as pd
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from synthgauge.metrics import correlation
 
 from .utils import datasets, resolve_features
-
-
-@given(
-    datasets(min_columns=2, available_dtypes=("float",), allow_nan=False),
-    st.sampled_from((None, ["a", "b"])),
-)
-def test_correlation_MSD(datasets, feats):
-    """Check that the mean-squared difference in Pearson's correlation
-    can be found correctly."""
-
-    real, synth = datasets
-    assume(not (real.empty or synth.empty))
-
-    columns = resolve_features(feats, real)
-    msd = correlation.correlation_MSD(real, synth, feats)
-
-    assert isinstance(msd, float)
-    assert (
-        np.isnan(msd)
-        or (msd >= 0 and msd <= len(columns))
-        or np.isclose(msd, len(columns))
-    )
 
 
 @given(datasets(2, 2, available_dtypes=("object", "bool")))
@@ -40,7 +18,7 @@ def test_cramers_v(datasets):
     data, _ = datasets
     assume(not data.empty)
 
-    cramers = correlation.cramers_v(data["a"], data["b"])
+    cramers = correlation._cramers_v(data["a"], data["b"])
 
     assert isinstance(cramers, float)
     assert (
@@ -50,18 +28,40 @@ def test_cramers_v(datasets):
     )
 
 
+@given(datasets(2, 5, available_dtypes=["object"]))
+def test_pairwise_cramers_v(datasets):
+    """Check that the pairwise Cramer's V metric can be computed for an
+    all-object dataframe."""
+
+    data, _ = datasets
+    assume(not data.empty and (data.nunique() > 1).all())
+
+    cramers = correlation._pairwise_cramers_v(data)
+    values = cramers.values
+
+    assert isinstance(cramers, pd.DataFrame)
+    assert cramers.index.equals(data.columns)
+    assert cramers.columns.equals(data.columns)
+    assert np.isclose(values.diagonal(), 1).all()
+    assert values.sum() < values.size or np.isclose(
+        values.sum(), values.size
+    )  # test [0, 1] while avoiding floating-point errors
+
+
 @given(
-    datasets(2, 2, available_dtypes=("object", "bool")),
+    datasets(2, available_dtypes=("float",), allow_nan=False),
+    st.sampled_from(("pearson", "spearman")),
     st.sampled_from((None, ["a", "b"])),
 )
-def test_cramers_v_MSD(datasets, feats):
-    """Check that the Cramer's V MSD can be calculated correctly."""
+def test_correlation_msd_numeric(datasets, method, feats):
+    """Check that the mean-squared difference in correlation can be
+    found correctly for either Pearson's or Spearman's method."""
 
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
     columns = resolve_features(feats, real)
-    msd = correlation.cramers_v_MSE(real, synth, feats)
+    msd = correlation.correlation_msd(real, synth, method, feats)
 
     assert isinstance(msd, float)
     assert (
@@ -72,20 +72,24 @@ def test_cramers_v_MSD(datasets, feats):
 
 
 @given(
-    datasets(
-        min_value=0, max_value=100, column_spec={"a": "int", "b": "object"}
-    )
+    datasets(2, available_dtypes=("object", "bool")),
+    st.sampled_from((None, ["a", "b"])),
 )
-def test_cramers_v_MSD_warning(datasets):
-    """Check that a warning is sent if numeric columns are passed."""
+def test_correlation_msd_cramers_v(datasets, feats):
+    """Check that the Cramer's V MSD can be calculated correctly."""
 
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    with pytest.warns(
-        UserWarning, match="Selected features include numeric types"
-    ):
-        _ = correlation.cramers_v_MSE(real, synth, feats=["a", "b"])
+    columns = resolve_features(feats, real)
+    msd = correlation.correlation_msd(real, synth, "cramers_v", feats)
+
+    assert isinstance(msd, float)
+    assert (
+        np.isnan(msd)
+        or (msd >= 0 and msd <= len(columns))
+        or np.isclose(msd, len(columns))
+    )
 
 
 @given(
@@ -103,7 +107,7 @@ def test_correlation_ratio(datasets):
     data, _ = datasets
     assume(not data.empty)
 
-    ratio = correlation.correlation_ratio(data["a"], data["b"])
+    ratio = correlation._correlation_ratio(data["a"], data["b"])
 
     assert isinstance(ratio, float)
     assert (
@@ -128,7 +132,7 @@ def test_correlation_ratio_MSE(datasets, categorical, numeric):
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    msd = correlation.correlation_ratio_MSE(real, synth, categorical, numeric)
+    msd = correlation.correlation_ratio_msd(real, synth, categorical, numeric)
 
     assert isinstance(msd, float)
     assert np.isnan(msd) or (msd >= 0 and msd <= 1) or np.isclose(msd, 1)
