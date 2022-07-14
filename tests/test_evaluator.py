@@ -129,7 +129,7 @@ def test_add_metric_implemented(evaluator, metric, alias, kwargs):
     key = metric if alias is None else alias
 
     assert isinstance(evaluator.metrics, dict)
-    assert evaluator.metrics == {key: {"metric_name": metric, **kwargs}}
+    assert evaluator.metrics == {key: {"name": metric, **kwargs}}
 
 
 @given(evaluators(), st.text(alphabet=string.ascii_letters, min_size=1))
@@ -148,7 +148,7 @@ def test_add_custom_metric(evaluator, name, func):
     evaluator.add_custom_metric(name, func)
 
     assert evaluator.metrics == {
-        name: {"metric_name": name, "metric_func": func}
+        name: {"name": name, "func": func}
     }
 
 
@@ -189,14 +189,14 @@ def test_save_and_load_metrics_valid(tmp_path, evaluator, metric, overwrite):
     new_metric_name = "xyz"
     new_metrics = {
         new_metric_name: {
-            "metric_func": lambda x: 0,
-            "metric_name": new_metric_name,
+            "func": lambda x: 0,
+            "name": new_metric_name,
         }
     }
 
     evaluator = sg.Evaluator(evaluator.real_data, evaluator.synth_data)
     evaluator.add_custom_metric(
-        new_metric_name, new_metrics[new_metric_name]["metric_func"]
+        new_metric_name, new_metrics[new_metric_name]["func"]
     )
 
     evaluator.load_metrics(path, overwrite)
@@ -215,7 +215,7 @@ def test_load_metrics_invalid(tmp_path, evaluator, invalid_metric):
     """Check that loading any non-implemented metrics raises a ValueError."""
 
     path = tmp_path / "metrics.pkl"
-    metrics = {invalid_metric: {"metric_name": invalid_metric}}
+    metrics = {invalid_metric: {"name": invalid_metric}}
     with open(path, "wb") as f:
         pickle.dump(metrics, f)
 
@@ -265,7 +265,7 @@ def test_evaluate_implemented_metric(evaluator, metric, use_alias, as_df):
     )
 
     alias = metric if use_alias else None
-    evaluator.add_metric(metric, metric_alias=alias, feature="a")
+    evaluator.add_metric(metric, alias, feature="a")
 
     results = evaluator.evaluate(as_df)
 

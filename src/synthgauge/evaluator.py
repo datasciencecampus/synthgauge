@@ -6,15 +6,7 @@ from copy import deepcopy
 
 import pandas as pd
 
-from . import metrics
-from .plot import (
-    plot_correlation,
-    plot_crosstab,
-    plot_histogram3d,
-    plot_histograms,
-    plot_qq,
-)
-from .utils import df_combine, launder
+from . import metrics, plot, utils
 
 
 class Evaluator:
@@ -75,7 +67,7 @@ class Evaluator:
             Descriptive statistics for each numeric feature.
         """
 
-        real, synth = launder(self.real_data, self.synth_data)
+        real, synth = utils.launder(self.real_data, self.synth_data)
 
         return pd.concat(
             [
@@ -98,7 +90,7 @@ class Evaluator:
             Descriptive statistics for each object-type feature.
         """
 
-        real, synth = launder(self.real_data, self.synth_data)
+        real, synth = utils.launder(self.real_data, self.synth_data)
 
         return (
             pd.concat(
@@ -112,7 +104,7 @@ class Evaluator:
             .rename(columns={"top": "most_frequent"})
         )
 
-    def add_metric(self, metric_name, metric_alias=None, **metric_kwargs):
+    def add_metric(self, name, alias=None, **kwargs):
         """Add a metric to the evaluator.
 
         Metrics and their arguments are recorded to be run at a later
@@ -128,30 +120,30 @@ class Evaluator:
 
         Parameters
         ----------
-        metric_name : str
+        name : str
             Name of the metric. Must match one of the functions in
             `synthgauge.metrics`.
-        metric_alias : str, optional
-            Alias to be given to this use of the metric. Allows the same
-            metric to be used multiple times with different parameters
-            within the same evaluator instance.
-        **metric_kwargs : dict, optional
+        alias : str, optional
+            Alias to be given to this use of the metric in the results
+            table. Allows the same metric to be used multiple times with
+            different parameters. If not specified, `name` is used.
+        **kwargs : dict, optional
             Keyword arguments for the metric. Refer to the associated
             metric documentation for details.
         """
 
         try:
-            getattr(metrics, metric_name)
-            metric_kwargs["metric_name"] = metric_name
-            alias = metric_name if metric_alias is None else metric_alias
-            self.__metrics.update({alias: metric_kwargs})
+            getattr(metrics, name)
+            kwargs["name"] = name
+            alias = name if alias is None else alias
+            self.__metrics.update({alias: kwargs})
 
         except AttributeError:
             raise NotImplementedError(
-                f"Metric '{metric_name}' is not implemented"
+                f"Metric '{name}' is not implemented"
             )
 
-    def add_custom_metric(self, metric_name, metric_func, **metric_kwargs):
+    def add_custom_metric(self, alias, func, **kwargs):
         """Add a custom metric to the evaluator.
 
         A custom metric uses any user-defined function that accepts the
@@ -163,21 +155,18 @@ class Evaluator:
 
         Parameters
         ----------
-        metric_name : str
-            Name of the metric. This is what will appear in the results
-            table.
-        metric_func : function
-            Function to be called during the evaluation step. The first
-            two arguments will be `self.real` and `self.synth`.
+        alias : str
+            Alias for the metric to appear in the results table.
+        func : function
+            Top-level metric function to be called during the evaluation
+            step. The first two arguments of `func` must be `self.real`
+            and `self.synth`.
         **kwargs : dict, optional
-            Extra arguments to be passed to `metric_func` during
-            evaluation.
+            Keyword arguments to be passed to `func`.
         """
 
-        metric_kwargs.update(
-            {"metric_func": metric_func, "metric_name": metric_name}
-        )
-        self.__metrics.update({metric_name: metric_kwargs})
+        kwargs.update({"func": func, "name": alias})
+        self.__metrics.update({alias: kwargs})
 
     def copy_metrics(self, other):
         """Copy metrics from another evaluator.
@@ -195,6 +184,7 @@ class Evaluator:
 
         if not isinstance(other, Evaluator):
             raise TypeError("`other` must be of class Evaluator")
+
         self.__metrics = deepcopy(other.metrics)
 
     def save_metrics(self, filename):
@@ -229,7 +219,7 @@ class Evaluator:
 
         invalid_metrics = []
         for k, v in new_metrics.items():
-            if getattr(metrics, v["metric_name"], None) is None:
+            if getattr(metrics, v["name"], None) is None:
                 invalid_metrics.append(k)
 
         if len(invalid_metrics) > 0:
@@ -251,7 +241,7 @@ class Evaluator:
     def combined_data(self):
         """Return combined real and synthetic data."""
 
-        return df_combine(self.real_data, self.synth_data)
+        return utils.df_combine(self.real_data, self.synth_data)
 
     def drop_metric(self, metric):
         """Drops the named metric from the metrics dictionary.
@@ -259,8 +249,7 @@ class Evaluator:
         Parameters
         ----------
         metric : str
-            Name (or alias if specified) of the metric to remove from
-            the metrics catalogue.
+            Key (name or alias, if specified) of the metric to remove.
         """
 
         try:
@@ -300,11 +289,11 @@ class Evaluator:
 
         metrics_copy = deepcopy(self.__metrics)
         for metric, kwargs in metrics_copy.items():
-            metric_name = kwargs.pop("metric_name")
+            metric_name = kwargs.pop("name")
             if metric_name in metrics.__dict__.keys():
                 metric_func = getattr(metrics, metric_name)
             else:
-                metric_func = kwargs.pop("metric_func")
+                metric_func = kwargs.pop("func")
             results[metric] = metric_func(
                 self.real_data, self.synth_data, **kwargs
             )
@@ -333,7 +322,7 @@ class Evaluator:
         groups by `'source'`.
         """
 
-        return plot_histograms(
+        return plot.plot_histograms(
             self.combined_data,
             feats=self.feature_names,
             groupby="source",
@@ -358,7 +347,7 @@ class Evaluator:
             Columns to plot along the x and y axes.
         """
 
-        return plot_histogram3d(
+        return plot.plot_histogram3d(
             getattr(self, f"{data}_data"),
             x=x,
             y=y,
@@ -377,7 +366,7 @@ class Evaluator:
         differences in their correlations.
         """
 
-        return plot_correlation(
+        return plot.plot_correlation(
             self.real_data,
             self.synth_data,
             feats=feats,
@@ -396,7 +385,7 @@ class Evaluator:
         corresponding data in `self`.
         """
 
-        return plot_crosstab(
+        return plot.plot_crosstab(
             self.real_data,
             self.synth_data,
             x=x,
@@ -418,7 +407,7 @@ class Evaluator:
             Keyword arguments to pass to `synthgauge.plot.plot_qq`.
         """
 
-        return plot_qq(
+        return plot.plot_qq(
             self.real_data, self.synth_data, feature, n_quantiles, figsize
         )
 
