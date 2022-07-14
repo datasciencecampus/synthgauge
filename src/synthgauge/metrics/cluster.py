@@ -79,78 +79,30 @@ def _get_cluster_proportions(labels, indicator):
     return np.array(proportions)
 
 
-def clustered_MSD(combined, synthetic_indicator, method, k, random_state=None):
-    """Clustered mean-squared difference.
-
-    This metric performs a cluster analysis on the data and then
-    considers the proportion of synthetic data in each cluster. It
-    measures the mean squared difference between this and the overall
-    proportion across all clusters.
-
-    Parameters
-    ----------
-    combined : pandas.DataFrame
-        Dataframe containing the real and synthetic data.
-    synthetic_indicator : array_like
-        Integer-boolean array indicating which of the rows in `combined`
-        are synthetic (1), and which are real (0).
-    method : {"kmeans", "kprototypes"}
-        Clustering method to use. Only k-means and k-prototypes
-        are implemented. If using k-means, only numeric columns in
-        `combined` are considered, while k-prototypes allows for
-        mixed-type clustering.
-    k : int
-        Integer indicating how many clusters to fit to `combined`.
-    random_state : int, optional
-        The random seed used to fit the clustering algorithm, providing
-        reproducible results.
-
-    Returns
-    -------
-    float
-        Mean-squared difference between the within-cluster proportions
-        of synthetic data and the overall proportion of synthetic data.
-
-    See Also
-    --------
-    sklearn.cluster.KMeans
-    kmodes.kprototypes.KPrototypes
-
-    Notes
-    -----
-    There is no obvious criterion for selecting the number of clusters
-    `k`. One approach when comparing two different synthetic datasets
-    against each other could be to try several values of `k` with the
-    original data to examine the sensitivity of the choice of `k`, and
-    then go with the one that is most often the best choice.
-
-    Additionally, it is important to note that this metric says nothing
-    about how the data are distributed within clusters.
-    """
-
-    labels = _get_cluster_labels(combined, method, k, random_state)
-    proportions = _get_cluster_proportions(labels, synthetic_indicator)
-
-    # calculate error from ideal proportion
-    ideal_prop = np.mean(synthetic_indicator)
-    prop_square_error = np.square(proportions - ideal_prop)
-
-    return np.mean(prop_square_error)
-
-
-def multi_clustered_MSD(
+def clustered_msd(
     real,
     synth,
     feats=None,
     method="kmeans",
-    k_min=10,
-    k_max=40,
+    k_min=2,
+    k_max=10,
     random_state=None,
 ):
-    """Multiple clustered mean-squared difference (CMSD).
+    """(Multiple) clustered mean-squared difference (MSD).
 
-    This metric calculates `clustered_MSD` across a range of values for
-    `k`, the number of clusters, and returns the minimum value.
+    This metric clusters the real and synthetic data together, measuring
+    the synthetic utility according to its representation across the
+    fitted clusters. Since there is often no obvious choice for the
+    number of clusters, :math:`k`, we consider a range of values.
+
+    For each value of :math:`k`, the chosen clustering method is fit
+    and the proportion of synthetic data in each cluster is recorded.
+    The clustered MSD is then calculated as the mean-squared difference
+    between these proportions and the overall proportion of synthetic
+    data.
+
+    This collection of MSDs is summarised by taking its minimum to give
+    the metric value.
 
     Parameters
     ----------
@@ -174,24 +126,32 @@ def multi_clustered_MSD(
     -------
     float
         The minimum observed clustered MSD.
+
+    Notes
+    -----
+    This function can be used with a single value of `k` by setting
+    `k_min` and `k_max` both to `k`. For instance, if a sensible number
+    of clusters is known a priori.
+
+    This metric says nothing about how appropriate the clustering method
+    may be for the data at hand, nor how the data are distributed among
+    the clusters. Both methods considered here have rather strong
+    assumptions about the relative size and characteristics of the
+    clusters in the data. As such, exploratory analysis is advised to
+    determine whether such centroid-based clustering is well-suited.
     """
-    # combine data
-    combined = df_combine(
-        real, synth, feats=feats, source_val_real=0, source_val_synth=1
-    )
-    # remove source column
-    synth_bool = combined.pop("source")
 
-    cluster_MSDs = []
+    combined = df_combine(real, synth, feats, "source", 0, 1)
+    indicator = combined.pop("source")
+
+    msds = []
     for k in range(k_min, k_max + 1):
-        # print(k)
-        cluster_MSDs.append(
-            clustered_MSD(
-                combined, synth_bool, method, k, random_state=random_state
-            )
-        )
+        labels = _get_cluster_labels(combined, method, k, random_state)
+        proportions = _get_cluster_proportions(labels, indicator)
+        msd = np.mean(np.square(proportions - indicator.mean()))
+        msds.append(msd)
 
-    return min(cluster_MSDs)
+    return min(msds)
 
 
 if __name__ == "__main__":
