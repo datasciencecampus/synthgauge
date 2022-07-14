@@ -3,8 +3,8 @@
 # flake8: noqa
 import pkg_resources
 
-from . import datasets, evaluate, metrics, plot, utils
-from .evaluate import Evaluator
+from . import datasets, metrics, plot, utils
+from .evaluator import Evaluator
 
 try:
     __version__ = pkg_resources.get_distribution("synthgauge").version

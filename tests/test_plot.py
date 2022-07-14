@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 from seaborn.axisgrid import JointGrid
 
 from synthgauge import plot
 
-from .utils import blood_type_feats, joint_params, resolve_features
+from .utils import blood_type_feats, datasets, joint_params, resolve_features
 
 plot_settings = settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture],
@@ -54,6 +54,23 @@ def test_plot_histograms(real, feats):
             assert xmin < min(column) and xmax > max(column)
         else:
             assert (xmin, xmax) == (-0.5, column.nunique() - 0.5)
+
+
+@given(datasets(column_spec={"a": "float", "b": "object"}))
+def test_order_categorical(datasets):
+    """Check that a categorical feature can be ordered while leaving
+    non-categorical features alone."""
+
+    real, _ = datasets
+    assume(not real.empty)
+
+    real["b"] = real["b"].astype("category")
+
+    ordered_a = plot._order_categorical(real["a"])
+    ordered_b = plot._order_categorical(real["b"])
+
+    assert ordered_a is real["a"]
+    assert ordered_b.cat.as_unordered().equals(real["b"])
 
 
 @given(joint_params())

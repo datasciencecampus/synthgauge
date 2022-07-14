@@ -5,7 +5,7 @@ from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 from scipy import stats
 
-from synthgauge.metrics import univariate_distance as univariate
+from synthgauge.metrics import univariate
 
 from .utils import datasets
 
@@ -108,24 +108,6 @@ def test_jensen_shannon_divergence(datasets, bins):
         divergence
         == univariate.jensen_shannon_distance(real, synth, "a", bins) ** 2
     )
-
-
-@given(
-    datasets(available_dtypes=("object",), min_columns=2),
-    st.one_of(st.none(), st.sampled_from(("a", ["a", "b"]))),
-    st.integers(1, 10),
-)
-def test_feature_density_diff_mae(datasets, feats, bins):
-    """Check that the feature density difference mean absolute error
-    can be calculated correctly."""
-
-    real, synth = datasets
-    assume(not (real.empty or synth.empty))
-
-    mae = univariate.feature_density_diff_mae(real, synth, feats, bins)
-
-    assert isinstance(mae, float)
-    assert mae >= 0 and mae <= bins
 
 
 @given(

@@ -48,7 +48,7 @@ def _adjust_data_elements(data, labels, noise, nan_prop, seed):
     return data
 
 
-def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
+def make_blood_types_df(noise=0, nan_prop=0, seed=None):
     """Create a toy dataset about blood types and physical atrtibutes.
 
     This function is used to create data for the package's examples and
@@ -60,14 +60,15 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
     noise : float
         Standard deviation of the Gaussian noise added to the data.
         Default is zero (no noise) and must be non-negative.
-    proportion_nan : float, default 0
+    nan_prop : float, default 0
         Proportion of dataset to replace with missing values.
-    random_seed : int
+    seed : int, optional
         Seed used by all random samplers. Used for reproducibility.
 
     Returns
     -------
-    pandas.DataFrame
+    data : pandas.DataFrame
+        A toy "blood type" dataset.
 
     Notes
     -----
@@ -83,10 +84,10 @@ def make_blood_types_df(noise=0, proportion_nan=0, random_seed=None):
         n_classes=4,
         weights=[0.4, 0.3, 0.2, 0.1],
         flip_y=0.1,
-        random_state=random_seed,
+        random_state=seed,
     )
 
-    df = _adjust_data_elements(X, y, noise, proportion_nan, random_seed)
+    df = _adjust_data_elements(X, y, noise, nan_prop, seed)
 
     df.columns = [
         "age",

@@ -192,34 +192,3 @@ def test_cat_encode_convert_only(datasets):
         assert np.array_equal(data[col], out[col])
         assert isinstance(out[col].dtype, pd.CategoricalDtype)
         assert set(out[col].cat.categories) == set(data[col].unique())
-
-
-@given(datasets(available_dtypes=["object"]), st.integers(1, 10))
-@settings(deadline=None)
-def test_feature_density_diff(datasets, bins):
-    """Check that histogram-based density differences can be computed
-    correctly. For the ease of testing, we only look at object (str)
-    features and datasets with unique rows that are not identical."""
-
-    real, synth = datasets
-    assume(
-        not (
-            real.empty
-            or synth.empty
-            or real["a"].drop_duplicates().equals(synth["a"].drop_duplicates())
-        )
-    )
-
-    num_categories = pd.concat((real, synth))["a"].nunique()
-
-    diffs, edges = utils.feature_density_diff(
-        real, synth, feature="a", bins=bins
-    )
-
-    assert isinstance(diffs, np.ndarray)
-    assert len(diffs) == bins
-    limit = bins + 1e-10
-    assert all(diff >= -limit and diff <= limit for diff in diffs)
-
-    assert isinstance(edges, np.ndarray)
-    assert np.array_equal(edges, np.linspace(0, num_categories - 1, bins + 1))
