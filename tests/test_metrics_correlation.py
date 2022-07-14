@@ -7,7 +7,7 @@ from hypothesis import strategies as st
 
 from synthgauge.metrics import correlation
 
-from .utils import datasets, resolve_features
+from .utils import datasets
 
 
 @given(datasets(2, 2, available_dtypes=("object", "bool")))
@@ -60,15 +60,10 @@ def test_correlation_msd_numeric(datasets, method, feats):
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    columns = resolve_features(feats, real)
     msd = correlation.correlation_msd(real, synth, method, feats)
 
     assert isinstance(msd, float)
-    assert (
-        np.isnan(msd)
-        or (msd >= 0 and msd <= len(columns))
-        or np.isclose(msd, len(columns))
-    )
+    assert np.isnan(msd) or (msd >= 0 and msd < 4) or np.isclose(msd, 4)
 
 
 @given(
@@ -81,15 +76,10 @@ def test_correlation_msd_cramers_v(datasets, feats):
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    columns = resolve_features(feats, real)
     msd = correlation.correlation_msd(real, synth, "cramers_v", feats)
 
     assert isinstance(msd, float)
-    assert (
-        np.isnan(msd)
-        or (msd >= 0 and msd <= len(columns))
-        or np.isclose(msd, len(columns))
-    )
+    assert np.isnan(msd) or (msd >= 0 and msd < 1) or np.isclose(msd, 1)
 
 
 @given(
