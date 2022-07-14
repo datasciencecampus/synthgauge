@@ -146,26 +146,6 @@ def test_plot_histogram3d(real, params):
             assert vmin, vmax == (-0.5, column.nunique() - 0.5)
 
 
-@given(datasets(2, 5, available_dtypes=["object"]))
-def test_pairwise_cramers_v(datasets):
-    """Check that the pairwise Cramer's V metric can be computed for an
-    all-object dataframe."""
-
-    real, _ = datasets
-    assume(not real.empty and (real.nunique() > 1).all())
-
-    cramers = plot._pairwise_cramers_v(real)
-    values = cramers.values
-
-    assert isinstance(cramers, pd.DataFrame)
-    assert cramers.index.equals(real.columns)
-    assert cramers.columns.equals(real.columns)
-    assert np.isclose(values.diagonal(), 1).all()
-    assert values.sum() < values.size or np.isclose(
-        values.sum(), values.size
-    )  # test [0, 1] while avoiding floating-point errors
-
-
 @given(method=st.sampled_from(("pearson", "spearman", "cramers_v")))
 @plot_settings
 def test_plot_correlation_methods(real, method):

@@ -1,7 +1,5 @@
 """Functions for visually evaluating synthetic data."""
 
-from itertools import product
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 from pandas.core.dtypes.common import is_numeric_dtype
 
-from .metrics.correlation import cramers_v
+from .metrics.correlation import _pairwise_cramers_v
 from .utils import cat_encode, feature_density_diff
 
 sns.set_theme()
@@ -220,19 +218,6 @@ def plot_histogram3d(df, x, y, x_bins="auto", y_bins="auto", figsize=None):
         ax.set_yticklabels(cat_labels[y])
 
     return fig
-
-
-def _pairwise_cramers_v(df):
-    """Compute pairwise Cramer's V for the entire dataframe."""
-
-    results = np.array([])
-    for x, y in product(df.columns, repeat=2):
-        results = np.append(results, cramers_v(df[x], df[y]))
-
-    size = np.sqrt(results.size).astype(int)
-    results = results.reshape((size, size))
-
-    return pd.DataFrame(results, index=df.columns, columns=df.columns)
 
 
 def plot_correlation(
