@@ -408,7 +408,3 @@ class Evaluator:
         return plot.plot_qq(
             self.real_data, self.synth_data, feature, n_quantiles, figsize
         )
-
-
-if __name__ == "__main__":
-    pass

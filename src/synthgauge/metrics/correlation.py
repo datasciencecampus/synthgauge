@@ -212,7 +212,3 @@ def correlation_ratio_msd(real, synth, categorical=None, numeric=None):
         )
 
     return _mean_squared_difference(real_corr_ratio, synth_corr_ratio)
-
-
-if __name__ == "__main__":
-    pass

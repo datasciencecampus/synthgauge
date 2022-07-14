@@ -586,7 +586,3 @@ def plot_feat_density_diff(
     ax.set_title(title)
 
     return fig
-
-
-if __name__ == "__main__":
-    pass
