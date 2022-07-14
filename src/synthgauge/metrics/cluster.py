@@ -152,7 +152,3 @@ def clustered_msd(
         msds.append(msd)
 
     return min(msds)
-
-
-if __name__ == "__main__":
-    pass

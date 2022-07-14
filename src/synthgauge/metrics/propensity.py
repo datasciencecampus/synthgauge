@@ -471,7 +471,3 @@ def propensity_metrics(
     )
 
     return PropensityResult(observed, standard, ratio)
-
-
-if __name__ == "__main__":
-    pass

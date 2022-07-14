@@ -219,7 +219,3 @@ def cat_encode(
             out_df[feature] = feature_cat.codes
 
     return out_df, cat_dict
-
-
-if __name__ == "__main__":
-    pass
