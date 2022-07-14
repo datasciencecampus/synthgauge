@@ -7,11 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from pandas.core.dtypes.common import (
-    is_categorical_dtype,
-    is_numeric_dtype,
-    is_object_dtype,
-)
+from pandas.core.dtypes.common import is_numeric_dtype
 
 from .metrics.correlation import cramers_v
 from .utils import cat_encode, feature_density_diff
@@ -53,13 +49,9 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     n_rows = int(np.ceil(len(feats) / figcols))
     fig, axes = plt.subplots(n_rows, figcols, figsize=figsize)
 
-    for ft, ax in zip(feats, axes.ravel()):
-        if is_categorical_dtype(df[ft]) or is_object_dtype(df[ft]):
-            dist_func = sns.countplot
-        elif is_numeric_dtype(df[ft]):
-            dist_func = sns.histplot
-
-        dist_func(data=df, x=ft, ax=ax, hue=groupby)
+    for feat, ax in zip(feats, axes.ravel()):
+        plotter = sns.histplot if is_numeric_dtype(df[feat]) else sns.countplot
+        plotter(data=df, x=feat, ax=ax, hue=groupby)
 
     # Turn off axes with no data
     for ax in axes.ravel():
@@ -69,6 +61,23 @@ def plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None):
     fig.tight_layout()
 
     return fig
+
+
+def _order_categorical(feat):
+    """Order a feature only if it is categorical.
+
+    Parameters
+    ----------
+    feat : pd.Series
+        The feature to be ordered.
+
+    Returns
+    -------
+    pd.Series
+        The ordered feature.
+    """
+
+    return feat.cat.as_ordered() if hasattr(feat, "cat") else feat
 
 
 def plot_joint(
@@ -103,16 +112,10 @@ def plot_joint(
 
     grid = sns.JointGrid(height=figsize)
 
-    # If a feature is categorical it must be used "as_ordered" for plotting a
-    # histogram
-    def order(ft):
-        """Orders the given feature if it is categorical."""
-        return ft.cat.as_ordered() if hasattr(ft, "cat") else ft
-
     sns.histplot(
         data=df,
-        x=order(df[x]),
-        y=order(df[y]),
+        x=_order_categorical(df[x]),
+        y=_order_categorical(df[y]),
         hue=groupby,
         alpha=0.5,
         ax=grid.ax_joint,
@@ -120,35 +123,24 @@ def plot_joint(
 
     # For margins can use countplot or hist depending on data type.
     # No legends are shown for these marginal plots.
-    if is_categorical_dtype(df[x]) or is_object_dtype(df[x]):
-        ax = sns.countplot(data=df, x=x, hue=groupby, ax=grid.ax_marg_x)
-        lg = ax.get_legend()
-        if lg is not None:
-            lg.remove()
-    else:
-        sns.histplot(
-            data=df,
-            x=x,
-            hue=groupby,
-            bins=x_bins,
-            ax=grid.ax_marg_x,
-            legend=False,
-        )
+    for side, feat, bins in zip(("x", "y"), (x, y), (x_bins, y_bins)):
 
-    if is_categorical_dtype(df[y]) or is_object_dtype(df[y]):
-        ax = sns.countplot(data=df, y=y, hue=groupby, ax=grid.ax_marg_y)
-        lg = ax.get_legend()
-        if lg is not None:
-            lg.remove()
-    else:
-        sns.histplot(
-            data=df,
-            y=y,
-            hue=groupby,
-            bins=y_bins,
-            ax=grid.ax_marg_y,
-            legend=False,
-        )
+        plot_kwargs = {
+            side: feat,
+            "ax": getattr(grid, f"ax_marg_{side}"),
+            "hue": groupby,
+        }
+
+        if is_numeric_dtype(df[feat]):
+            plotter = sns.histplot
+            plot_kwargs["bins"] = bins
+        else:
+            plotter = sns.countplot
+
+        ax = plotter(data=df, **plot_kwargs)
+        legend = ax.get_legend()
+        if legend is not None:
+            legend.remove()
 
     return grid
 
@@ -181,25 +173,17 @@ def plot_histogram3d(df, x, y, x_bins="auto", y_bins="auto", figsize=None):
     """
 
     # Encode categorical data
-    cat_feats = [
-        ft_name
-        for ft_name, ft_series in df.iteritems()
-        if is_categorical_dtype(ft_series) or is_object_dtype(ft_series)
-    ]
+    cat_feats = df.select_dtypes(include=("object", "category")).columns
     cat_labels = dict()
 
-    if len(cat_feats) > 0:
+    if cat_feats.any():
         df, cat_labels = cat_encode(df, cat_feats, return_all=True)
 
     # Determine bins
     bins_xy = []
-    for ft, ft_bins in zip([x, y], [x_bins, y_bins]):
-        if ft in cat_feats:
-            # If categorical set bins to cardinality
-            bins_xy.append(np.histogram_bin_edges(df[ft], df[ft].nunique()))
-        else:
-            # otherwise compute bins as specified
-            bins_xy.append(np.histogram_bin_edges(df[ft], ft_bins))
+    for feat, bins in zip([x, y], [x_bins, y_bins]):
+        bins = df[feat].nunique() if feat in cat_feats else bins
+        bins_xy.append(np.histogram_bin_edges(df[feat], bins))
 
     # Create figure
     fig = plt.figure(figsize=figsize)
@@ -236,6 +220,19 @@ def plot_histogram3d(df, x, y, x_bins="auto", y_bins="auto", figsize=None):
         ax.set_yticklabels(cat_labels[y])
 
     return fig
+
+
+def _pairwise_cramers_v(df):
+    """Compute pairwise Cramer's V for the entire dataframe."""
+
+    results = np.array([])
+    for x, y in product(df.columns, repeat=2):
+        results = np.append(results, cramers_v(df[x], df[y]))
+
+    size = np.sqrt(results.size).astype(int)
+    results = results.reshape((size, size))
+
+    return pd.DataFrame(results, index=df.columns, columns=df.columns)
 
 
 def plot_correlation(
@@ -296,18 +293,6 @@ def plot_correlation(
     matplotlib.figure.Figure
     """
 
-    def method_cramers_v(df):
-        """Compute pairwise Cramer's V for the entire dataframe."""
-
-        results = np.array([])
-        for x, y in product(df.columns, repeat=2):
-            results = np.append(results, cramers_v(df[x], df[y]))
-
-        size = np.sqrt(results.size).astype(int)
-        results = results.reshape((size, size))
-
-        return pd.DataFrame(results, index=df.columns, columns=df.columns)
-
     feats = feats or list(set.intersection(*(set(df.columns) for df in dfs)))
 
     corr_results = []
@@ -334,7 +319,7 @@ def plot_correlation(
                 )
 
             corr_results.append(
-                method_cramers_v(data)
+                _pairwise_cramers_v(data)
                 .dropna(axis=0, how="all")
                 .dropna(axis=1, how="all")
             )
