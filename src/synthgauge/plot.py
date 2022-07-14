@@ -8,7 +8,8 @@ import seaborn as sns
 from pandas.core.dtypes.common import is_numeric_dtype
 
 from .metrics.correlation import _pairwise_cramers_v
-from .utils import cat_encode, feature_density_diff
+from .metrics.density import _feature_density_diff
+from .utils import cat_encode
 
 sns.set_theme()
 
@@ -516,7 +517,7 @@ def plot_feat_density_diff(
     """Plot real and synth feature density differences.
 
     For each feature, the density difference between `real` and `synth`
-    is calculated using `synthgauge.utils.feature_density_diff`.
+    is calculated using `synthgauge.utils._feature_density_diff`.
 
     If a single feature is provided in `feats`, the plot shows the raw
     density differences for each bin in that feature.
@@ -552,7 +553,7 @@ def plot_feat_density_diff(
 
     if len(feats) == 1:
         feature = feats[0]
-        diff_hist, diff_edges = feature_density_diff(
+        diff_hist, diff_edges = _feature_density_diff(
             real, synth, feature, feat_bins
         )
         xlabel = f"{feature} Binned"
@@ -562,7 +563,7 @@ def plot_feat_density_diff(
     else:
         # TODO: option to have different bins for each feature
         diffs = [
-            feature_density_diff(real, synth, feat, feat_bins)[0]
+            _feature_density_diff(real, synth, feat, feat_bins)[0]
             for feat in feats
         ]
 

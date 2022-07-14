@@ -2,7 +2,6 @@
 
 import warnings
 
-import numpy as np
 import pandas as pd
 
 
@@ -220,53 +219,6 @@ def cat_encode(
             out_df[feature] = feature_cat.codes
 
     return out_df, cat_dict
-
-
-def feature_density_diff(real, synth, feature, bins=10):
-    """Computes the difference between real and synth feature densities.
-
-    For the specified feature the density is computed across `bins` in
-    both the real and synthetic data. The per-bin difference is computed
-    and returned along with the bin edges that were used.
-
-    Prior to calculating the densities. all values are converted to
-    numeric via `synthgauge.utils.cat_encode`.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feature : str
-        The feature that will be used to compute the density.
-    bins : str or int, default 10
-        Bins to use for computing the density. This value is passed
-        to `numpy.histogram_bin_edges` so can be any value accepted by
-        that function. Default uses 10 bins.
-
-    Returns
-    -------
-    hist_diff : numpy.ndarray
-        The difference in feature density for each of the bins.
-    bin_edges : numpy.ndarray
-        The edges of the bins.
-    """
-
-    combined = df_combine(real, synth, feats=[feature])
-    encoded, _ = cat_encode(combined, feats=[feature], return_all=True)
-    enc_real, enc_synth = df_separate(encoded, "source")
-
-    bin_edges = np.histogram_bin_edges(encoded[feature], bins=bins)
-
-    real_hist, _ = np.histogram(
-        enc_real[feature], bins=bin_edges, density=True
-    )
-    synth_hist, _ = np.histogram(
-        enc_synth[feature], bins=bin_edges, density=True
-    )
-
-    hist_diff = synth_hist - real_hist
-
-    return hist_diff, bin_edges
 
 
 if __name__ == "__main__":
