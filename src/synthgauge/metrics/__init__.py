@@ -3,7 +3,7 @@
 from .classification import classification_comparison
 from .cluster import clustered_msd
 from .correlation import correlation_msd, correlation_ratio_msd
-from .privacy import TCAP, min_NN_dist, sample_overlap_score
+from .privacy import min_nearest_neighbour, sample_overlap_score, tcap_score
 from .propensity import propensity_metrics
 from .univariate_distance import (
     feature_density_diff_mae,
@@ -32,7 +32,7 @@ __all__ = [
     "propensity_metrics",
     "clustered_msd",
     "classification_comparison",
-    "TCAP",
-    "min_NN_dist",
+    "tcap_score",
+    "min_nearest_neighbour",
     "sample_overlap_score",
 ]
