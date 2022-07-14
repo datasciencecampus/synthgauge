@@ -139,9 +139,7 @@ class Evaluator:
             self.__metrics.update({alias: kwargs})
 
         except AttributeError:
-            raise NotImplementedError(
-                f"Metric '{name}' is not implemented"
-            )
+            raise NotImplementedError(f"Metric '{name}' is not implemented")
 
     def add_custom_metric(self, alias, func, **kwargs):
         """Add a custom metric to the evaluator.

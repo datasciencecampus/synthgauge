@@ -147,9 +147,7 @@ def test_add_custom_metric(evaluator, name, func):
 
     evaluator.add_custom_metric(name, func)
 
-    assert evaluator.metrics == {
-        name: {"name": name, "func": func}
-    }
+    assert evaluator.metrics == {name: {"name": name, "func": func}}
 
 
 @given(evaluators(), st.sampled_from(implemented_metrics))

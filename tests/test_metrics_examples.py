@@ -113,20 +113,20 @@ def test_propensity_metric_logistic(evaluator):
     """Check Propensity metric using Logistic Regression model."""
     evaluator.add_metric(
         "propensity_metrics",
-        metric_alias="propensity_logrg",
+        alias="propensity_logr",
         method="logr",
         max_iter=1e4,
         solver="sag",
         random_state=0,
     )
     results = evaluator.evaluate()
-    assert results["propensity_logrg"].observed_p_MSE == pytest.approx(
+    assert results["propensity_logr"].observed_p_MSE == pytest.approx(
         0.05493054447730439
     )
-    assert results["propensity_logrg"].standardised_p_MSE == pytest.approx(
+    assert results["propensity_logr"].standardised_p_MSE == pytest.approx(
         65.6818850109618
     )
-    assert results["propensity_logrg"].ratio_p_MSE == pytest.approx(
+    assert results["propensity_logr"].ratio_p_MSE == pytest.approx(
         6.7606823972066445
     )
 
@@ -135,18 +135,19 @@ def test_propensity_metric_CART(evaluator):
     """Check Propensity metric using CART model."""
     evaluator.add_metric(
         "propensity_metrics",
+        alias="propensity_cart",
         method="cart",
         num_perms=1000,
         random_state=0,
     )
     results = evaluator.evaluate()
-    assert results["propensity_metrics"].observed_p_MSE == pytest.approx(
+    assert results["propensity_cart"].observed_p_MSE == pytest.approx(
         0.24683333333333332
     )
-    assert results["propensity_metrics"].standardised_p_MSE == pytest.approx(
+    assert results["propensity_cart"].standardised_p_MSE == pytest.approx(
         0.32171687896285317
     )
-    assert results["propensity_metrics"].ratio_p_MSE == pytest.approx(
+    assert results["propensity_cart"].ratio_p_MSE == pytest.approx(
         1.0008369591991682
     )
 
