@@ -471,7 +471,7 @@ def propensity_metrics(
 
     PropensityResult = namedtuple(
         "PropensityResult",
-        ("observed_p_MSE", "standardised_p_MSE", "ratio_p_MSE"),
+        ("pmse", "pmse_standardised", "pmse_ratio"),
     )
 
     return PropensityResult(observed, standard, ratio)
