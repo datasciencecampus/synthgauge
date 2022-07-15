@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.datasets &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,12 +16,13 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="synthgauge.evaluate" href="../evaluate/index.html" />
-    <link rel="prev" title="synthgauge.metrics.univariate_distance" href="../metrics/univariate_distance/index.html" /> 
+    <link rel="next" title="synthgauge.evaluator" href="../evaluator/index.html" />
+    <link rel="prev" title="synthgauge.metrics.univariate" href="../metrics/univariate/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,7 +48,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../evaluate/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../evaluator/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluator</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plot/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.utils</span></code></a></li>
 </ul>
@@ -86,45 +87,78 @@
            <div itemprop="articleBody">
              
   <section id="module-synthgauge.datasets">
-<span id="synthgauge-datasets"></span><h1><a class="reference internal" href="#module-synthgauge.datasets" title="synthgauge.datasets"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a><a class="headerlink" href="#module-synthgauge.datasets" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-datasets"></span><h1><a class="reference internal" href="#module-synthgauge.datasets" title="synthgauge.datasets"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a><a class="headerlink" href="#module-synthgauge.datasets" title="Permalink to this heading"></a></h1>
+<p>Functions for creating toy datasets.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.datasets.make_blood_types_df" title="synthgauge.datasets.make_blood_types_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_blood_types_df</span></code></a>(noise=0, proportion_nan=0, random_seed=42)</p></td>
-<td><p>Create Dummy Data for examples</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.datasets._adjust_data_elements" title="synthgauge.datasets._adjust_data_elements"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_adjust_data_elements</span></code></a>(data, labels, noise, nan_prop, seed)</p></td>
+<td><p>Adjust the given data and put it into a dataframe.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.datasets.make_blood_types_df" title="synthgauge.datasets.make_blood_types_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_blood_types_df</span></code></a>(noise=0, nan_prop=0, seed=None)</p></td>
+<td><p>Create a toy dataset about blood types and physical atrtibutes.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.datasets.make_blood_types_df">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.datasets.</span></span><span class="sig-name descname"><span class="pre">make_blood_types_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proportion_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/datasets.html#make_blood_types_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.datasets.make_blood_types_df" title="Permalink to this definition"></a></dt>
-<dd><p>Create Dummy Data for examples</p>
-<p>This function creates dummy data for the synthgauge examples.</p>
+<dt class="sig sig-object py" id="synthgauge.datasets._adjust_data_elements">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.datasets.</span></span><span class="sig-name descname"><span class="pre">_adjust_data_elements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/datasets.html#_adjust_data_elements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.datasets._adjust_data_elements" title="Permalink to this definition"></a></dt>
+<dd><p>Adjust the given data and put it into a dataframe.
+This function is not intended to be used directly by users.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>noise</strong> (<em>int</em>) – Standard deviation of the Gaussian noise to add to the data, default
-zero.</p></li>
-<li><p><strong>proportion_nan</strong> (<em>float</em><em> [</em><em>0</em><em>,</em><em>1</em><em>]</em>) – Proportion of dataset to replace with nans.</p></li>
-<li><p><strong>random_seed</strong> (<em>int</em>) – Use for reproducibility.</p></li>
+<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – The data array to be adjusted.</p></li>
+<li><p><strong>labels</strong> (<em>numpy.ndarray</em>) – A set of labels for classifying the rows of <cite>data</cite>.</p></li>
+<li><p><strong>noise</strong> (<em>float</em>) – The amount of noise to inject into the data. Specifically,
+this controls the <cite>scale</cite> parameter of a zero-centred normal
+distribution.</p></li>
+<li><p><strong>nan_prop</strong> (<em>float</em>) – The proportion of elements to replace with missing values.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – A random seed used to choose missing element indices and sample
+noise.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>The adjusted, combined dataframe.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.DataFrame</p>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.datasets.make_blood_types_df">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.datasets.</span></span><span class="sig-name descname"><span class="pre">make_blood_types_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/datasets.html#make_blood_types_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.datasets.make_blood_types_df" title="Permalink to this definition"></a></dt>
+<dd><p>Create a toy dataset about blood types and physical atrtibutes.</p>
+<p>This function is used to create data for the package’s examples and
+its tests. Its outputs are not intended to imply or be used for any
+meaningful data analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>noise</strong> (<em>float</em>) – Standard deviation of the Gaussian noise added to the data.
+Default is zero (no noise) and must be non-negative.</p></li>
+<li><p><strong>nan_prop</strong> (<em>float</em><em>, </em><em>default 0</em>) – Proportion of dataset to replace with missing values.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Seed used by all random samplers. Used for reproducibility.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>data</strong> – A toy “blood type” dataset.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The amout of noise can be tuned to crudely simulate the creation of
+<p>The amount of noise can be tuned to crudely simulate the creation of
 synthetic data.</p>
 </dd></dl>
 
@@ -136,8 +170,8 @@ synthetic data.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../metrics/univariate_distance/index.html" class="btn btn-neutral float-left" title="synthgauge.metrics.univariate_distance" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../evaluate/index.html" class="btn btn-neutral float-right" title="synthgauge.evaluate" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../metrics/univariate/index.html" class="btn btn-neutral float-left" title="synthgauge.metrics.univariate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../evaluator/index.html" class="btn btn-neutral float-right" title="synthgauge.evaluator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

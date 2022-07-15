@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.metrics.cluster &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,7 +16,9 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,106 +86,121 @@
            <div itemprop="articleBody">
              
   <section id="module-synthgauge.metrics.cluster">
-<span id="synthgauge-metrics-cluster"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.cluster" title="synthgauge.metrics.cluster"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.cluster</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.cluster" title="Permalink to this headline"></a></h1>
-<p>clustering metric</p>
+<span id="synthgauge-metrics-cluster"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.cluster" title="synthgauge.metrics.cluster"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.cluster</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.cluster" title="Permalink to this heading"></a></h1>
+<p>Utility metrics derived from centroid-based clustering.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster.clustered_MSD" title="synthgauge.metrics.cluster.clustered_MSD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustered_MSD</span></code></a>(combined, synthetic_indicator, method, k, random_state=None)</p></td>
-<td><p>clustered mean-squared difference</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster._get_cluster_labels" title="synthgauge.metrics.cluster._get_cluster_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_cluster_labels</span></code></a>(combined, method, k, random_state)</p></td>
+<td><p>Apply the chosen clustering method to a dataset and return its</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster.multi_clustered_MSD" title="synthgauge.metrics.cluster.multi_clustered_MSD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multi_clustered_MSD</span></code></a>(real, synth, feats=None, method='kmeans', k_min=10, k_max=40, random_state=None)</p></td>
-<td><p>multiple clustered mean-squared difference</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster._get_cluster_proportions" title="synthgauge.metrics.cluster._get_cluster_proportions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_cluster_proportions</span></code></a>(labels, indicator)</p></td>
+<td><p>Calculate the proportion of each cluster that is synthetic.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster.clustered_msd" title="synthgauge.metrics.cluster.clustered_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustered_msd</span></code></a>(real, synth, feats=None, method='kmeans', k_min=2, k_max=10, random_state=None)</p></td>
+<td><p>(Multiple) clustered mean-squared difference (MSD).</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.cluster.clustered_MSD">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">clustered_MSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synthetic_indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#clustered_MSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster.clustered_MSD" title="Permalink to this definition"></a></dt>
-<dd><p>clustered mean-squared difference</p>
-<p>This metric performs a cluster analysis on the data and then considers the
-proportion of synthetic data in each cluster. It measures the difference
-between this and the overall proportion, squares, and then takes the mean
-across clusters.</p>
+<dt class="sig sig-object py" id="synthgauge.metrics.cluster._get_cluster_labels">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">_get_cluster_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#_get_cluster_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster._get_cluster_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Apply the chosen clustering method to a dataset and return its
+final labels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>combined</strong> (<em>2d numpy array</em>) – Array containing both the real and synthetic data. Rows are examples
-and columns are variables.</p></li>
-<li><p><strong>synthetic_indicator</strong> (<em>1d numpy array</em>) – Corresponding boolean array indicating which of the rows in <cite>combined</cite>
-are synthetic (1), and which are real (0).</p></li>
-<li><p><strong>method</strong> (<em>{'kmeans'</em><em>,</em><em>'kprototypes'}</em><em>, </em><em>default='kmeans'</em>) – Clustering method to use. See sklearn.cluster.KMeans and
-kmodes.kprototypes.KPrototypes for details.</p></li>
-<li><p><strong>k</strong> (<em>int</em>) – Integer indicating how many clusters to form during the analysis.</p></li>
-<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>RandomState instance</em><em> or </em><em>None</em><em>, </em><em>default: None</em>) – If int, random_state is the seed used by the random number generator;
-If RandomState instance, random_state is the random number generator;
-If None, the random number generator is the RandomState instance used
-by <cite>np.random</cite>.</p></li>
+<li><p><strong>combined</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real and synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;kmeans&quot;</em><em>, </em><em>&quot;kprototypes&quot;}</em>) – Which clustering method to use.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – Number of clusters to fit.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed for fitting clusters.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>MSD_p</strong> – Mean-squared difference between the within-cluster proportions of
-synthetic data and the overall proportion of synthetic data.</p>
+<dd class="field-even"><p><strong>labels</strong> – Integer labels indicating cluster membership for each point in
+<cite>combined</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.cluster._get_cluster_proportions">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">_get_cluster_proportions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#_get_cluster_proportions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster._get_cluster_proportions" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the proportion of each cluster that is synthetic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>array_like</em>) – Cluster membership array.</p></li>
+<li><p><strong>indicator</strong> (<em>array_like</em>) – Indicator of which data are real and which are synthetic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>proportions</strong> – Array with synthetic data proportion of each cluster.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.cluster.clustered_msd">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">clustered_msd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kmeans'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#clustered_msd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster.clustered_msd" title="Permalink to this definition"></a></dt>
+<dd><p>(Multiple) clustered mean-squared difference (MSD).</p>
+<p>This metric clusters the real and synthetic data together, measuring
+the synthetic utility according to its representation across the
+fitted clusters. Since there is often no obvious choice for the
+number of clusters, <span class="math notranslate nohighlight">\(k\)</span>, we consider a range of values.</p>
+<p>For each value of <span class="math notranslate nohighlight">\(k\)</span>, the chosen clustering method is fit
+and the proportion of synthetic data in each cluster is recorded.
+The clustered MSD is then calculated as the mean-squared difference
+between these proportions and the overall proportion of synthetic
+data.</p>
+<p>This collection of MSDs is summarised by taking its minimum to give
+the metric value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to use in the clustering. If <cite>None</cite> (default), all
+common features are used.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;kmeans&quot;</em><em>, </em><em>&quot;kprototypes&quot;}</em><em>, </em><em>default &quot;kmeans&quot;</em>) – Clustering method to use. Only k-means and k-prototypes
+are implemented. If using k-means (default), only numeric
+columns are considered, while k-prototypes allows for mixed-type
+clustering.</p></li>
+<li><p><strong>k_min</strong> (<em>int</em><em>, </em><em>default 2</em>) – Minimum number of clusters to use. Default of 2.</p></li>
+<li><p><strong>k_max</strong> (<em>int</em><em>, </em><em>default 10</em>) – Maximum number of clusters to use. Default of 10.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The random seed used to fit the clustering algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The minimum observed clustered MSD.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>There is no obvious criterion for selecting the number of clusters <cite>k</cite>. One
-approach when comparing two different synthetic datasets against eachother
-could be to try several values of <cite>k</cite> with the original data to examine the
-sensitivity of the choice of <cite>k</cite>, and then go with the one that is most
-often the best choice.</p>
-<p>Additionally, it is important to note that this metric says nothing about
-how the data are distributed within clusters.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.cluster.multi_clustered_MSD">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">multi_clustered_MSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kmeans'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#multi_clustered_MSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster.multi_clustered_MSD" title="Permalink to this definition"></a></dt>
-<dd><p>multiple clustered mean-squared difference</p>
-<p>This metric performs the <cite>clustered_MSD</cite> above multiple times.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Numeric features to use. Non-numeric features will be filtered out. By
-default all numeric features are used.</p></li>
-<li><p><strong>method</strong> (<em>{'kmeans'</em><em>,</em><em>'kprototypes'}</em><em>, </em><em>default='kmeans'</em>) – Clustering method to use. See sklearn.cluster.KMeans and
-kmodes.kprototypes.KPrototypes for details.</p></li>
-<li><p><strong>k_min</strong> (<em>int</em>) – Minimum number of clusters to perform cluster analysis with.</p></li>
-<li><p><strong>k_max</strong> (<em>int</em>) – Maximum number of clusters to perform cluster analysis with.</p></li>
-<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>RandomState instance</em><em> or </em><em>None</em><em>, </em><em>default: None</em>) – If int, random_state is the seed used by the random number generator;
-If RandomState instance, random_state is the random number generator;
-If None, the random number generator is the RandomState instance used
-by <cite>np.random</cite>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>cluster_MSDs</strong> – array containing MSDs from cluster analyses with different number of
-clusters</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>1d numpy array</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>Since there is no obvious way to select the number of clusters <cite>k</cite>, one
-approach when comparing two different synthetic datasets against eachother
-could be to try several values of <cite>k</cite> with the original data to examine the
-sensitivity of the choice of <cite>k</cite>, and then go with the one that is most
-often the best choice.</p>
-<p>Additionally, it is important to note that this metric says nothing about
-how the data are distributed within clusters.</p>
+<p>This function can be used with a single value of <cite>k</cite> by setting
+<cite>k_min</cite> and <cite>k_max</cite> both to <cite>k</cite>. For instance, if a sensible number
+of clusters is known a priori.</p>
+<p>This metric says nothing about how appropriate the clustering method
+may be for the data at hand, nor how the data are distributed among
+the clusters. Both methods considered here have rather strong
+assumptions about the relative size and characteristics of the
+clusters in the data. As such, exploratory analysis is advised to
+determine whether such centroid-based clustering is well-suited.</p>
 </dd></dl>
 
 </section>

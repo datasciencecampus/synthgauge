@@ -3,6 +3,11 @@
 
 .. py:module:: synthgauge.metrics.privacy
 
+.. autoapi-nested-parse::
+
+   Privacy metrics.
+
+
 
 Module Contents
 ---------------
@@ -13,158 +18,180 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.privacy.get_WEAP
-   synthgauge.metrics.privacy.TCAP
-   synthgauge.metrics.privacy.find_outliers
-   synthgauge.metrics.privacy.min_NN_dist
+   synthgauge.metrics.privacy._get_weap_scores
+   synthgauge.metrics.privacy.tcap_score
+   synthgauge.metrics.privacy._find_outliers
+   synthgauge.metrics.privacy.min_nearest_neighbour
+   synthgauge.metrics.privacy._get_sample
    synthgauge.metrics.privacy.sample_overlap_score
 
 
 
-.. py:function:: get_WEAP(synth, key, target)
+.. py:function:: _get_weap_scores(synth, key, target)
 
-   Get the Within Equivalence class Attribution Probabilities WEAP
+   Within Equivalence class Attribution Probabilities (WEAP).
 
    For each record in the synthetic dataset, this function returns the
-   proportion across the whole dataset that these `key` values are matched
-   with this `target` value.
+   proportion across the whole dataset that a set of `key` values are
+   matched with this `target` value.
 
    :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
+   :type synth: pandas.DataFrame
    :param key: List of features in `synth` to use as the key.
-   :type key: list
+   :type key: list of str
    :param target: Feature to use as the target.
-   :type target: str or list of str
+   :type target: str
 
-   :returns: A series object containing the WEAP scores for each record in `synth`.
+   :returns: A series object containing the WEAP scores for each record in
+             `synth`.
    :rtype: pandas.Series
 
    .. rubric:: Notes
 
-   This function is intended to only be used within `TCAP()` to determine
-   which synthetic records are most likely to pose an attribution risk.
+   This function is intended to only be used within `TCAP()` to
+   determine which synthetic records are most likely to pose an
+   attribution risk.
 
 
-.. py:function:: TCAP(real, synth, key, target)
+.. py:function:: tcap_score(real, synth, key, target)
 
-   Target Correct Attribution Probability TCAP
+   Target Correct Attribution Probability (TCAP) score.
 
-   This privacy metric calculates the average chance that the key-target
-   pairings in the `synth` dataset reveal the true key-target pairings in the
-   original, `real` dataset.
+   This privacy metric calculates the average chance that the
+   key-target pairings in a synthetic dataset reveal the true
+   key-target pairings in associated real dataset.
 
    :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
+   :type real: pandas.DataFrame
    :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
+   :type synth: pandas.DataFrame
    :param key: List of features in `synth` to use as the key.
-   :type key: list
+   :type key: list of str
    :param target: Feature to use as the target.
-   :type target: str or list of str
+   :type target: str
 
-   :returns: **TCAP** -- The average TCAP across the dataset.
+   :returns: The average TCAP score across the dataset.
    :rtype: float
 
    .. rubric:: Notes
 
    This metric provides an estimate of how well an intruder could infer
-   attributes of groups in the real dataset by studying the synthetic. The
-   choices for `key` and `target` will vary depending on the dataset in
-   question but we would suggest the `key` features are those that could be
-   readily available to an outsider and the `target` feature is one we
-   wouldn't want them finding out, such as a protected characteristic.
+   attributes of groups in the real dataset by studying the synthetic.
+   The choices for `key` and `target` will vary depending on the
+   dataset in question but we would suggest the `key` features are
+   those that could be readily available to an outsider and the
+   `target` feature is one we wouldn't want them finding out, such as a
+   protected characteristic.
 
-   This method only works with categorical data, so binning of continuous data
-   may be required.
+   This method only works with categorical data, so binning of
+   continuous data may be required.
+
+   Full details may be found in:
+
+   Taub and Elliott (2019). The Synthetic Data Challenge. The Hague,
+   The Netherlands: Joint UNECE/Eurostat Work Session on Statistical
+   Data Confidentiality, Session 3.
 
 
-.. py:function:: find_outliers(data, outlier_factor_threshold)
+.. py:function:: _find_outliers(data, threshold, n_neighbours)
 
-   Find Outliers
+   Identify local outliers using the nearest-neighbour principle.
 
-   This function returns whether each row in `data` can be considered an
-   outlier.
-
-   :param data:
-   :type data: pandas dataframe
-   :param outlier_factor_threshold: Float influencing classification of ouliers. Increasing this threshold
-                                    means that fewer points are considered outliers.
-   :type outlier_factor_threshold: float
+   :param data: Dataframe to be assessed for outliers.
+   :type data: pandas.DataFrame
+   :param threshold: Float influencing classification of outliers. Increasing this
+                     threshold means that fewer points are considered outliers.
+   :type threshold: float
+   :param n_neighbours: Number of neighbours to consider in outlier detection.
+   :type n_neighbours: int
 
    :returns: **outlier_bool** -- List indicating which rows of `data` are outliers.
    :rtype: list of bool
 
    .. rubric:: Notes
 
-   Most inliers will have an outlier factor of less than one, however there
-   are no clear rules that determine when a data point is an outlier. This
-   is likely to vary from dataset to dataset and, as such, we recommend
-   tuning `outlier_factor_threshold` to suit.
+   Most inliers will have an outlier factor of less than one, however
+   there are no clear rules that determine when a data point is an
+   outlier. This is likely to vary from dataset to dataset and, as
+   such, we recommend tuning `outlier_factor_threshold` to suit.
 
 
-.. py:function:: min_NN_dist(real, synth, feats=None, real_outliers_only=True, outlier_factor_threshold=2)
+.. py:function:: min_nearest_neighbour(real, synth, feats=None, outliers_only=True, threshold=2, n_neighbours=5)
 
-   Minimum Nearest Neighbour distance
+   Minimum nearest-neighbour distance.
 
-   This privacy metric returns the smallest distance between any point in
-   the `real` dataset and any point in the `synth` dataset. There is an
-   option to only consider the outliers in the real dataset as these perhaps
-   pose more of a privacy concern.
+   This privacy metric returns the smallest distance between any point
+   in the real dataset and any point in the synthetic dataset. There is
+   an option to only consider the outliers in the real dataset as these
+   perhaps pose more of a privacy concern.
 
    :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
+   :type real: pandas.DataFrame
    :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param feats: Features to use. By default all features are used.
-   :type feats: str or list of str, optional
-   :param real_outliers_only: Boolean indicating whether to filter out inliers (default) or not.
-   :type real_outliers_only: bool (default True)
-   :param outlier_factor_threshold: Float influencing classification of ouliers. Increase to include
-                                    fewer real points in nearest neighbour calculations.
-   :type outlier_factor_threshold: float (default 2)
+   :type synth: pandas.DataFrame
+   :param feats: Features in `real` and `synth` to use when calculating
+                 distance. If `None` (default), all common features are used.
+   :type feats: list of str or None, default None
+   :param outliers_only: Boolean indicating whether to filter out the real data inliers
+                         (default) or not.
+   :type outliers_only: bool, default True
+   :param threshold: Outlier decision threshold. Increase to include fewer points
+                     from `real` in nearest-neighbour calculations.
+   :type threshold: number, default 2
+   :param n_neighbours: Number of neighbours to consider when identifying local
+                        outliers.
+   :type n_neighbours: int, default 5
 
-   :returns: **min_dist** -- Minimum manhattan distance between `real` and `synth` data.
+   :returns: Minimum Manhattan distance between `real` and `synth` data.
    :rtype: float
 
    .. rubric:: Notes
 
-   This privacy metric provides an insight into whether the synthetic dataset
-   is too similar to the real dataset. It does this by calculating the
-   minimum distance between the real records and the synthetic records.
+   This privacy metric provides an insight into whether the synthetic
+   dataset is too similar to the real dataset. It does this by
+   calculating the minimum distance between the real records and the
+   synthetic records.
 
    This metric assumes that categorical data is ordinal during distance
    calculations, or that it has already been suitably one-hot-encoded.
 
 
-.. py:function:: sample_overlap_score(real, synth, feats=None, sample_size=0.2, runs=5, score_type='unique')
+.. py:function:: _get_sample(data, feats, n_samples, seed, label)
 
-   Return percentage of overlap between real and synth data.
+   Take a sample from the data and count the feature frequencies.
+
+
+.. py:function:: sample_overlap_score(real, synth, feats=None, sample_size=0.2, runs=5, seed=None, score_type='unique')
+
+   Return percentage of overlap between real and synth data based on
+   random sampling.
 
    Samples from both the real and synthetic datasets are compared for
    similarity. This similarity, or overlap score, is based on the
    exact matches of real data records within the synthetic data.
 
-   :param real: DataFrame containing the real data.
+   :param real: Dataframe containing the real data.
    :type real: pandas.DataFrame
-   :param synth: DataFrame containing the synthetic data.
+   :param synth: Dataframe containing the synthetic data.
    :type synth: pandas.DataFrame
-   :param feats: The features that will be used to match records. By
-                 default all features will be used.
-   :type feats: str or list of str, optional.
+   :param feats: The features used to match records. If `None` (default), all
+                 common features are used.
+   :type feats: list of str or None, default None
    :param sample_size: The ratio (if `sample_size` between 0 and 1) or count
-                       (`sample_size` > 1) of records to sample. Default is 0.2 or 20%.
-   :type sample_size: float or int, optional
-   :param runs: The number of times to compute the score. Total score is averaged
-                across runs.
-   :type runs: int, optional
-   :param score_type: Method used for calculating the overlap score. If "unique", the
-                      default, the score is the percentage of unique records in the real
-                      sample that have a match within the synth data. If "sample" the
-                      score is the percentage of all records within the real sample that
-                      have a match within the synth sample.
-   :type score_type: {"unique"|"sample"}
+                       (`sample_size` > 1) of records to sample. Default is 0.2 (20%).
+   :type sample_size: float or int, default 0.2
+   :param runs: The number of sampling runs to use when computing the score.
+   :type runs: int, default 5
+   :param seed: Random number seed used for sampling.
+   :type seed: int, optional
+   :param score_type: Method used for calculating the overlap score. If "unique"
+                      (default), the score is the percentage of unique records in the
+                      real sample that have a match within the synthetic data. If
+                      "sample", the score is the percentage of all records within the
+                      real sample that have a match within the synth sample.
+   :type score_type: {"unique", "sample"}, default "unique"
 
-   :returns: Overlap score between `real` and `synth`
+   :returns: **overlap_score** -- Estimated overlap score between `real` and `synth`.
    :rtype: float
 
 

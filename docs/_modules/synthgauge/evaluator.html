@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>synthgauge.evaluator &mdash; SynthGauge 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> SynthGauge
+            <img src="../../_static/favicon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SynthGauge</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>synthgauge.evaluator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for synthgauge.evaluator</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;The core class for evaluating datasets.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">plot</span><span class="p">,</span> <span class="n">utils</span>
+
+
+<div class="viewcode-block" id="Evaluator"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator">[docs]</a><span class="k">class</span> <span class="nc">Evaluator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The central class in `synthgauge`, used to hold and evaluate data</span>
+<span class="sd">    via metrics and visualisation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    handle_nans : str, default &quot;drop&quot;</span>
+<span class="sd">        Whether to drop missing values. If yes, use &quot;drop&quot; (default).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    synthgauge.Evaluator</span>
+<span class="sd">        An `Evaluator` object ready for metric and visual evaluation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">handle_nans</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">):</span>
+        <span class="n">common_feats</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">ignore_feats</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span>
+            <span class="n">common_feats</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ignore_feats</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Features </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ignore_feats</span><span class="p">)</span><span class="si">}</span><span class="s2"> are not common to &quot;</span>
+                <span class="s2">&quot;`real` and `synth` and will be ignored in further analysis.&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">common_feats</span><span class="p">)</span>
+
+        <span class="c1"># Metrics is private to apply some validation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># assign metrics and kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># store results</span>
+
+        <span class="c1"># Handle NaNs</span>
+        <span class="k">if</span> <span class="n">handle_nans</span> <span class="o">==</span> <span class="s2">&quot;drop&quot;</span><span class="p">:</span>
+            <span class="n">real</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">synth</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span> <span class="o">=</span> <span class="n">real</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span> <span class="o">=</span> <span class="n">synth</span>
+
+<div class="viewcode-block" id="Evaluator.describe_numeric"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.describe_numeric">[docs]</a>    <span class="k">def</span> <span class="nf">describe_numeric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summarise numeric features.</span>
+
+<span class="sd">        This function uses `pandas.DataFrame.describe` to calculate</span>
+<span class="sd">        summary statistics for each numeric feature in `self.real_data`</span>
+<span class="sd">        and `self.synth_data`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Descriptive statistics for each numeric feature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">real</span><span class="p">,</span> <span class="n">synth</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">launder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">real</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">),</span>
+                <span class="n">synth</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Evaluator.describe_categorical"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.describe_categorical">[docs]</a>    <span class="k">def</span> <span class="nf">describe_categorical</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Summarise categorical features.</span>
+
+<span class="sd">        This function uses `pandas.DataFrame.describe` to calculate</span>
+<span class="sd">        summary statistics for each object-type feature in</span>
+<span class="sd">        `self.real_data` and `self.synth_data`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Descriptive statistics for each object-type feature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">real</span><span class="p">,</span> <span class="n">synth</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">launder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">real</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">]),</span>
+                    <span class="n">synth</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">]),</span>
+                <span class="p">],</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;top&quot;</span><span class="p">:</span> <span class="s2">&quot;most_frequent&quot;</span><span class="p">})</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.add_metric"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.add_metric">[docs]</a>    <span class="k">def</span> <span class="nf">add_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a metric to the evaluator.</span>
+
+<span class="sd">        Metrics and their arguments are recorded to be run at a later</span>
+<span class="sd">        time. This allows metric customisation but ensures that the same</span>
+<span class="sd">        metric configuration is applied consistently, i.e. once added,</span>
+<span class="sd">        the parameters do not require resupplying for each execution of</span>
+<span class="sd">        the metric. Supplying a metric alias allows the same metric to</span>
+<span class="sd">        be used multiple times with different parameters.</span>
+
+<span class="sd">        Note that `self.real_data` and `self.synth_data` will be passed</span>
+<span class="sd">        automatically to metrics that expect these arguments. They</span>
+<span class="sd">        should not be declared in `metric_kwargs`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Name of the metric. Must match one of the functions in</span>
+<span class="sd">            `synthgauge.metrics`.</span>
+<span class="sd">        alias : str, optional</span>
+<span class="sd">            Alias to be given to this use of the metric in the results</span>
+<span class="sd">            table. Allows the same metric to be used multiple times with</span>
+<span class="sd">            different parameters. If not specified, `name` is used.</span>
+<span class="sd">        **kwargs : dict, optional</span>
+<span class="sd">            Keyword arguments for the metric. Refer to the associated</span>
+<span class="sd">            metric documentation for details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">alias</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">alias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">alias</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">alias</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">})</span>
+
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Metric &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is not implemented&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.add_custom_metric"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.add_custom_metric">[docs]</a>    <span class="k">def</span> <span class="nf">add_custom_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a custom metric to the evaluator.</span>
+
+<span class="sd">        A custom metric uses any user-defined function that accepts the</span>
+<span class="sd">        real and synthetic dataframes as the first and second positional</span>
+<span class="sd">        arguments, respectively. Any other parameters must be defined as</span>
+<span class="sd">        keyword arguments. The metric function can return a value of any</span>
+<span class="sd">        desired type although scalar numeric values are recommended, or</span>
+<span class="sd">        `collections.namedtuples` when there are multiple outputs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        alias : str</span>
+<span class="sd">            Alias for the metric to appear in the results table.</span>
+<span class="sd">        func : function</span>
+<span class="sd">            Top-level metric function to be called during the evaluation</span>
+<span class="sd">            step. The first two arguments of `func` must be `self.real`</span>
+<span class="sd">            and `self.synth`.</span>
+<span class="sd">        **kwargs : dict, optional</span>
+<span class="sd">            Keyword arguments to be passed to `func`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;func&quot;</span><span class="p">:</span> <span class="n">func</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">alias</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">alias</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="Evaluator.copy_metrics"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.copy_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">copy_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Copy metrics from another evaluator.</span>
+
+<span class="sd">        To facilitate consistent comparisons of different synthetic</span>
+<span class="sd">        datasets, this function copies the metrics dictionary from</span>
+<span class="sd">        another `Evaluator` instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : Evaluator</span>
+<span class="sd">            The other evaluator from which the metrics dictionary will</span>
+<span class="sd">            be copied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Evaluator</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;`other` must be of class Evaluator&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.save_metrics"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.save_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">save_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save the current metrics dictionary to disk via `pickle`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Path to pickle file to save the metrics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.load_metrics"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.load_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">load_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load metrics from disk.</span>
+
+<span class="sd">        Update or overwrite the current metric dictionary from a pickle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Path to metrics pickle file.</span>
+<span class="sd">        overwrite : bool, default False</span>
+<span class="sd">            If `True`, all current metrics will be replaced with the</span>
+<span class="sd">            loaded metrics. Default is `False`, which will update the</span>
+<span class="sd">            current metric dictionary with the loaded metrics.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">new_metrics</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="n">invalid_metrics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">new_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">invalid_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_metrics</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">invalid_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">invalid_metrics</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid metrics encountered in: </span><span class="si">{</span><span class="n">invalid_str</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span> <span class="o">=</span> <span class="n">new_metrics</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_metrics</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return __metrics.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">combined_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return combined real and synthetic data.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">df_combine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Evaluator.drop_metric"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.drop_metric">[docs]</a>    <span class="k">def</span> <span class="nf">drop_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Drops the named metric from the metrics dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        metric : str</span>
+<span class="sd">            Key (name or alias, if specified) of the metric to remove.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Evaluator.evaluate"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">as_df</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compute metrics for real and synth data.</span>
+
+<span class="sd">        Run through the metrics dictionary and execute each with its</span>
+<span class="sd">        corresponding arguments. The results are returned as either a</span>
+<span class="sd">        dictionary or dataframe.</span>
+
+<span class="sd">        Results are also silently stored as a dictionary in</span>
+<span class="sd">        `self.metric_results`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        as_df : bool, default False</span>
+<span class="sd">            If `True`, the results will be returned as a</span>
+<span class="sd">            `pandas.DataFrame`, otherwise a dictionary is returned.</span>
+<span class="sd">            Default is `False`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            If `as_df` is `True`. Each row corresponds to a metric-value</span>
+<span class="sd">            pair. Metrics with multiple values have multiple rows.</span>
+<span class="sd">        dict</span>
+<span class="sd">            If `as_df` is `False`. The keys are the metric names and</span>
+<span class="sd">            the values are the metric values (grouped). Metrics with</span>
+<span class="sd">            multiple values are assigned to a single key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="n">metrics_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__metrics</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">metrics_copy</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">metric_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">metric_name</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">metric_func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">metric_func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;func&quot;</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric_func</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">as_df</span><span class="p">:</span>
+            <span class="n">tidy_results</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">vk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">tidy_results</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">vk</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="n">tidy_results</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tidy_results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="Evaluator.plot_histograms"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.plot_histograms">[docs]</a>    <span class="k">def</span> <span class="nf">plot_histograms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot grid of feature distributions.</span>
+
+<span class="sd">        Convenience wrapper for `synthgauge.plot.plot_histograms`. This</span>
+<span class="sd">        function uses the combined real and synthetic data sets and</span>
+<span class="sd">        groups by `&#39;source&#39;`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_histograms</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span><span class="p">,</span>
+            <span class="n">feats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">,</span>
+            <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
+            <span class="n">figcols</span><span class="o">=</span><span class="n">figcols</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.plot_histogram3d"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.plot_histogram3d">[docs]</a>    <span class="k">def</span> <span class="nf">plot_histogram3d</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot 3D histogram.</span>
+
+<span class="sd">        Convenience wrapper for `synthgauge.plot.plot_histogram3d`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: {&quot;real&quot;, &quot;synth&quot;, &quot;combined&quot;}</span>
+<span class="sd">            Dataframe to pass to plotting function. Either `&quot;real&quot;` to</span>
+<span class="sd">            pass `self.real_data`, `&quot;synth&quot;` to pass `self.synth_data`</span>
+<span class="sd">            or `&quot;combined&quot;` to pass `self.combined_data`.</span>
+<span class="sd">        x : str</span>
+<span class="sd">            Column to plot along the x-axis.</span>
+<span class="sd">        y : str</span>
+<span class="sd">            Column to plot alont the y-axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_histogram3d</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">_data&quot;</span><span class="p">),</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">x_bins</span><span class="o">=</span><span class="n">x_bins</span><span class="p">,</span>
+            <span class="n">y_bins</span><span class="o">=</span><span class="n">y_bins</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.plot_correlation"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.plot_correlation">[docs]</a>    <span class="k">def</span> <span class="nf">plot_correlation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="n">figcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot a grid of correlation heatmaps.</span>
+
+<span class="sd">        Convenience wrapper for `synthgauge.plot.plot_correlation`. Each</span>
+<span class="sd">        dataset (real and synthetic) has a plot, as well as one for the</span>
+<span class="sd">        differences in their correlations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_correlation</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">,</span>
+            <span class="n">feats</span><span class="o">=</span><span class="n">feats</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">plot_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">figcols</span><span class="o">=</span><span class="n">figcols</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.plot_crosstab"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.plot_crosstab">[docs]</a>    <span class="k">def</span> <span class="nf">plot_crosstab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot pairwise cross-tabulation.</span>
+
+<span class="sd">        Convenience wrapper for `synthgauge.plot.plot_crosstab`.</span>
+<span class="sd">        Automatically sets `real` and `synth` parameters to the</span>
+<span class="sd">        corresponding data in `self`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_crosstab</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Evaluator.plot_qq"><a class="viewcode-back" href="../../autoapi/synthgauge/index.html#synthgauge.evaluator.Evaluator.plot_qq">[docs]</a>    <span class="k">def</span> <span class="nf">plot_qq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot quantile-quantile plot.</span>
+
+<span class="sd">        Convenience wrapper for `synthgauge.plot.plot_qq`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature : str</span>
+<span class="sd">            Feature to plot.</span>
+<span class="sd">        **kwargs : dict, optional</span>
+<span class="sd">            Keyword arguments to pass to `synthgauge.plot.plot_qq`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">plot</span><span class="o">.</span><span class="n">plot_qq</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">real_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_data</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">,</span> <span class="n">figsize</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -23,7 +23,7 @@ author = 'Ali Cass & Tom White'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0.0'
-
+napoleon_include_private_with_doc = False
 
 # -- General configuration ---------------------------------------------------
 
@@ -35,7 +35,6 @@ extensions = ['autoapi.extension',
               'sphinx.ext.viewcode'
               ]
 autoapi_dirs = ['../../src']
-autoapi_keep_files = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

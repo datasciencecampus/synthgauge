@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.plot &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,12 +16,13 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="synthgauge.utils" href="../utils/index.html" />
-    <link rel="prev" title="synthgauge.evaluate" href="../evaluate/index.html" /> 
+    <link rel="prev" title="synthgauge.evaluator" href="../evaluator/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,7 +48,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../evaluate/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../evaluator/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluator</span></code></a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.utils</span></code></a></li>
 </ul>
@@ -86,37 +87,38 @@
            <div itemprop="articleBody">
              
   <section id="module-synthgauge.plot">
-<span id="synthgauge-plot"></span><h1><a class="reference internal" href="#module-synthgauge.plot" title="synthgauge.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a><a class="headerlink" href="#module-synthgauge.plot" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-plot"></span><h1><a class="reference internal" href="#module-synthgauge.plot" title="synthgauge.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a><a class="headerlink" href="#module-synthgauge.plot" title="Permalink to this heading"></a></h1>
+<p>Functions for visually evaluating synthetic data.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.suggest_label_rotation" title="synthgauge.plot.suggest_label_rotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">suggest_label_rotation</span></code></a>(ax, axis='x', char_lim=5)</p></td>
-<td><p>Advise if labels should be rotated.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histograms" title="synthgauge.plot.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histograms</span></code></a>(df, feats=None, groupby=None, figcols=2, figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histograms" title="synthgauge.plot.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histograms</span></code></a>(df, feats=None, groupby=None, figcols=2, figsize=None)</p></td>
 <td><p>Plot feature distributions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot._order_categorical" title="synthgauge.plot._order_categorical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_order_categorical</span></code></a>(feat)</p></td>
+<td><p>Order a feature only if it is categorical.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)</p></td>
 <td><p>Plot bivariate and univariate graphs.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histogram3d" title="synthgauge.plot.plot_histogram3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram3d</span></code></a>(df, x, y, x_bins='auto', y_bins='auto', figsize=None)</p></td>
 <td><p>Plot 3D histogram of two features.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*df, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)</p></td>
-<td><p>Plot correlation between features in a DataFrame.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*dfs, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)</p></td>
+<td><p>Plot correlation between features in a dataframe.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, **kwargs)</p></td>
-<td><p>Plot crosstab heatmap for two features.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, cmap='rocket', **kwargs)</p></td>
+<td><p>Plot cross-tabulation heatmap for two features.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_qq" title="synthgauge.plot.plot_qq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_qq</span></code></a>(real, synth, feature, n_quantiles=None, figsize=None)</p></td>
-<td><p>Plot a Q-Q plot.</p></td>
+<td><p>Generate a Q-Q plot for a feature of real and synthetic data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_feat_density_diff" title="synthgauge.plot.plot_feat_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feat_density_diff</span></code></a>(real, synth, feats=None, feat_bins=10, diff_bins=10, figsize=None)</p></td>
 <td><p>Plot real and synth feature density differences.</p></td>
@@ -124,91 +126,75 @@
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.plot.suggest_label_rotation">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">suggest_label_rotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">char_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#suggest_label_rotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.suggest_label_rotation" title="Permalink to this definition"></a></dt>
-<dd><p>Advise if labels should be rotated.</p>
-<p>For the specifed axis the maximum characters for the
-labels is calculated. If this is above <cite>char_lim</cite> the function
-will return <cite>True</cite> to suggest that labels should be rotated</p>
+<dt class="sig sig-object py" id="synthgauge.plot.plot_histograms">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_histograms" title="Permalink to this definition"></a></dt>
+<dd><p>Plot feature distributions.</p>
+<p>Plot a histogram (or countplot for categorical data) for each
+feature. Where multiple features are provided a grid will be
+generated to store all the plots.</p>
+<p>Optionally, a groupby feature can be specified to apply a grouping
+prior to calculating the distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – Axes to analyse.</p></li>
-<li><p><strong>axis</strong> (<em>str</em><em>, </em><em>optional</em>) – Default is ‘x’.</p></li>
-<li><p><strong>char_lim</strong> (<em>int</em><em>, </em><em>optional</em>) – Default is <cite>5</cite>.</p></li>
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the feature(s) to be plotted.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features in to plot. If <cite>None</cite> (default), all features are used.</p></li>
+<li><p><strong>groupby</strong> (<em>str</em><em>, </em><em>optional</em>) – Feature on which to group data.</p></li>
+<li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default 2</em>) – Number of columns to use in the figure.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>True if labels should be rotated, otherwise False.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.plot.plot_histograms">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_histograms" title="Permalink to this definition"></a></dt>
-<dd><p>Plot feature distributions.</p>
-<p>Plot a histogram (or countplot for categorical data) for each feature.
-Where multiple features are provided a grid will be generated to store all
-plots.</p>
-<p>Optionally, a groupby feature can be specified to apply a grouping prior
-to calculating the distribution</p>
+<dt class="sig sig-object py" id="synthgauge.plot._order_categorical">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">_order_categorical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#_order_categorical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot._order_categorical" title="Permalink to this definition"></a></dt>
+<dd><p>Order a feature only if it is categorical.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – </p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em>) – Feature(s) to plot. Must be column(s) in <cite>df</cite>.</p></li>
-<li><p><strong>groupby</strong> (<em>str</em><em>, </em><em>default=None</em>) – Feature on which to group data. Default value of <code class="docutils literal notranslate"><span class="pre">None</span></code> means no
-grouping is used.</p></li>
-<li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default=2</em>) – Number of columns to use in figure. Only used when <cite>feats</cite> contains
-more than one feature.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches (W,H). Defaults to
-<code class="docutils literal notranslate"><span class="pre">rcParams[&quot;figure.figsize&quot;](default:</span> <span class="pre">[6.4,</span> <span class="pre">4.8])</span></code>.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>feat</strong> (<em>pd.Series</em>) – The feature to be ordered.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>The ordered feature.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dd class="field-odd"><p>pd.Series</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.plot.plot_joint">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_joint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_joint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_joint" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_joint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_joint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_joint" title="Permalink to this definition"></a></dt>
 <dd><p>Plot bivariate and univariate graphs.</p>
-<p>Convenience function that leverages seaborn. For more granular control
-refer to <code class="docutils literal notranslate"><span class="pre">seaborn.JointGrid</span></code> and <code class="docutils literal notranslate"><span class="pre">seaborn.jointplot</span></code>.</p>
+<p>Convenience function that leverages <cite>seaborn</cite>. For more granular
+control, refer to <cite>seaborn.JointGrid</cite> and <cite>seaborn.jointplot</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the feature(s) to plot.</p></li>
-<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on x axis and and margin. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on y axis and and margin. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>groupby</strong> (<em>str</em><em>, </em><em>default=None</em>) – Feature on which to group data. Default value of <code class="docutils literal notranslate"><span class="pre">None</span></code> means no
-grouping is used.</p></li>
-<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default=``auto``. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>.</p></li>
-<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default=``auto``. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>.</p></li>
-<li><p><strong>figsize</strong> (<em>int</em><em>, </em><em>default=None</em>) – Size of each side of the figure in inches (it will be square). Default
-value of <code class="docutils literal notranslate"><span class="pre">None</span></code> will use default seaborn setting.</p></li>
+<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on the x-axis and -margin.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on the y-axis and -margin.</p></li>
+<li><p><strong>groupby</strong> (<em>str</em><em>, </em><em>optional</em>) – Feature on which to group data.</p></li>
+<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If <cite>array_like</cite>, must be sequence of
+bin edges. If <cite>int</cite>, specifies the number of bins to use. If
+<cite>str</cite>, can be anything accepted by <cite>numpy.histogram_bin_edges</cite>.
+Defaults to <cite>“auto”</cite>.</p></li>
+<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If <cite>array_like</cite>, must be sequence of
+bin edges. If <cite>int</cite>, specifies the number of bins to use. If
+<cite>str</cite>, can be anything accepted by <cite>numpy.histogram_bin_edges</cite>.
+Defaults to <cite>“auto”</cite>.</p></li>
+<li><p><strong>figsize</strong> (<em>int</em><em>, </em><em>default 6</em>) – Size of each side of the figure in inches (it will be square).
+Defaults to six inches.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>seaborn.axisgrid.JointGrid</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>seaborn.axisgrid.JointGrid</p>
 </dd>
 </dl>
 </dd></dl>
@@ -218,71 +204,71 @@ value of <code class="docutils literal notranslate"><span class="pre">None</span
 <span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_histogram3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_histogram3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_histogram3d" title="Permalink to this definition"></a></dt>
 <dd><p>Plot 3D histogram of two features.</p>
 <p>This is similar to a 2D histogram plot with an extra axis added
-to display the count for each featurewise pair as 3D bars.</p>
+to display the count for each feature-wise pair as 3D bars.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the feature(s) to plot.</p></li>
-<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on x axis and and margin. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on y axis and and margin. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default= <code class="docutils literal notranslate"><span class="pre">auto</span></code>. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>. If <cite>x</cite> or <cite>y</cite> is categorical
-the bins will be set to the cardinality of the feature.</p></li>
-<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default= <code class="docutils literal notranslate"><span class="pre">auto</span></code>. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>. If <cite>x</cite> or <cite>y</cite> is categorical
-the bins will be set to the cardinality of the feature.</p></li>
-<li><p><strong>figsize</strong> (<em>int</em><em>, </em><em>default=None</em>) – Size of each side of the figure in inches (it will be square). Default
-value of <code class="docutils literal notranslate"><span class="pre">None</span></code> will use default plot settings.</p></li>
+<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on the x-axis and -margin.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on the y-axis and -margin.</p></li>
+<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If the corresponding feature is
+categorical, the bins will be set to the cardinality of that
+feature. If <cite>array_like</cite>, must be sequence of bin edges. If
+<cite>int</cite>, specifies the number of bins to use. If <cite>str</cite>, can be
+anything accepted by <cite>numpy.histogram_bin_edges</cite>. Defaults to
+<cite>“auto”</cite>.</p></li>
+<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If the corresponding feature is
+categorical, the bins will be set to the cardinality of that
+feature. If <cite>array_like</cite>, must be sequence of bin edges. If
+<cite>int</cite>, specifies the number of bins to use. If <cite>str</cite>, can be
+anything accepted by <cite>numpy.histogram_bin_edges</cite>. Defaults to
+<cite>“auto”</cite>.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.plot.plot_correlation">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_correlation" title="Permalink to this definition"></a></dt>
-<dd><p>Plot correlation between features in a DataFrame.</p>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dfs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_correlation" title="Permalink to this definition"></a></dt>
+<dd><p>Plot correlation between features in a dataframe.</p>
 <p>For each dataframe provided a subplot is generated showing a
-correlation heatmap of the features. For numeric features the method can
-be any method supported by <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.corr</span></code>; for categorical or
-object feature types <code class="docutils literal notranslate"><span class="pre">'cramers_v'</span></code> must be specified. If the method does
-not match the data type an error is raised.</p>
-<p>The <cite>plot_diff</cite> parameter will also include a difference plot i.e.
-correlation difference between two dataframes. This is only used when
-two dataframes are provided.</p>
+correlation heatmap of the features. For numeric features, the
+method can be anything supported by <cite>pandas.DataFrame.corr</cite>; for
+categorical or object feature types <cite>“cramers_v”</cite> must be specified.
+If the method does not match the data type, an error is raised.</p>
+<p>The <cite>plot_diff</cite> parameter will also include a difference plot, i.e.
+correlation difference between two dataframes. This is only used
+when two dataframes are provided.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>*df</strong> (<em>pandas.DataFrame</em>) – Any number of DataFrame objects to plot.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em>) – Feature(s) to plot. Must be column(s) in <cite>df</cite>.</p></li>
-<li><p><strong>method</strong> (<em>{'pearson'</em><em>|</em><em>'spearman'</em><em>|</em><em>'cramers_v'}</em><em>, </em><em>default='pearson'</em>) – Correlation method. See <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.corr</span></code> for more details on
-<code class="docutils literal notranslate"><span class="pre">'pearson'</span></code> and <code class="docutils literal notranslate"><span class="pre">'spearman'</span></code>. When <code class="docutils literal notranslate"><span class="pre">'cramers_v'</span></code> is specified,
-correlation is calculated using
-<code class="docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation.cramers_v</span></code>.</p></li>
-<li><p><strong>plot_diff</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True and exactly two data frames are provided will also plot
-a heatmap of the absolute differences between the respective datasets’
-correlations.</p></li>
-<li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default=2</em>) – Number of columns to use in figure. Only used when <cite>feats</cite> contains
-more than one feature.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches (W,H). Defaults to
-<code class="docutils literal notranslate"><span class="pre">rcParams[&quot;figure.figsize&quot;](default:</span> <span class="pre">[6.4,</span> <span class="pre">4.8])</span></code>.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any other keyword arguments to be passed to <code class="docutils literal notranslate"><span class="pre">seaborn.heatmap</span></code>. For
-example <code class="docutils literal notranslate"><span class="pre">annot=True</span></code> will turn on cell annotations. See documentation
-for more examples.</p></li>
+<li><p><strong>*dfs</strong> (<em>pandas.DataFrame</em>) – Any number of dataframes to plot.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to plot. Must be present in all elements of <cite>dfs</cite>.
+If <cite>None</cite> (default), uses features common to all dataframes.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;pearson&quot;</em><em>, </em><em>&quot;spearman&quot;</em><em>, </em><em>&quot;cramers_v&quot;}</em><em>, </em><em>default &quot;pearson&quot;</em>) – Correlation method. See <cite>pandas.DataFrame.corr</cite> for more details
+on <cite>“pearson”</cite> and <cite>“spearman”</cite>. When <cite>“cramers_v”</cite> is
+specified, correlation is calculated using
+<cite>synthgauge.metrics.correlation.cramers_v</cite>.</p></li>
+<li><p><strong>plot_diff</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite> and exactly two dataframes are provided, will also
+plot a heatmap of the absolute differences between the
+respective datasets’ correlations.</p></li>
+<li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default 2</em>) – Number of columns to use in the figure. Only used when <cite>feats</cite>
+contains more than one feature.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any other keyword arguments to be passed to <cite>seaborn.heatmap</cite>.
+For example <cite>annot=True</cite> will turn on cell annotations. See
+documentation for more examples.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If <cite>method</cite> does not match the data type(s) of <cite>feats</cite>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>matplotlib.figure.Figure</p>
@@ -292,40 +278,39 @@ for more examples.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.plot.plot_crosstab">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_crosstab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_crosstab" title="Permalink to this definition"></a></dt>
-<dd><p>Plot crosstab heatmap for two features.</p>
-<p>The two-feature crosstab calculation is performed and plotted as a heatmap.
-One heatmap is shown for the <cite>real</cite> data and one for the <cite>synthetic</cite>.
-Numeric features are discretised using the corresponding bins argument.</p>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rocket'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_crosstab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_crosstab" title="Permalink to this definition"></a></dt>
+<dd><p>Plot cross-tabulation heatmap for two features.</p>
+<p>The two-feature crosstab calculation is performed and plotted as a
+heatmap. One heatmap is shown for the real data and one for the
+synthetic. Numeric features are discretised using the <cite>*_bins</cite>
+arguments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the sythetic data.</p></li>
-<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on x axis. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on y axis. Must be column in <cite>df</cite>.</p></li>
-<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default= <code class="docutils literal notranslate"><span class="pre">auto</span></code>. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>.
-Only used for numeric features.</p></li>
-<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default='auto'</em>) – If <code class="docutils literal notranslate"><span class="pre">array_like</span></code> must be sequence of bin edges. If <code class="docutils literal notranslate"><span class="pre">int</span></code>, specifies
-the number of bins to use. If <code class="docutils literal notranslate"><span class="pre">str</span></code>, specifies the method used to
-calculate the optimal bin width. Default= <code class="docutils literal notranslate"><span class="pre">auto</span></code>. For all possible
-values see <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code>.
-Only used for numeric features.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches (W,H). Defaults to
-<code class="docutils literal notranslate"><span class="pre">rcParams[&quot;figure.figsize&quot;](default:</span> <span class="pre">[6.4,</span> <span class="pre">4.8])</span></code>.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any other keyword arguments to be passed to <code class="docutils literal notranslate"><span class="pre">seaborn.heatmap</span></code>. For
-example <code class="docutils literal notranslate"><span class="pre">annot=True</span></code> will turn on cell annotations. See documentation
-for more examples.</p></li>
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>x</strong> (<em>str</em>) – Feature to plot on the x-axis and -margin.</p></li>
+<li><p><strong>y</strong> (<em>str</em>) – Feature to plot on the y-axis and -margin.</p></li>
+<li><p><strong>x_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If <cite>array_like</cite>, must be sequence of
+bin edges. If <cite>int</cite>, specifies the number of bins to use. If
+<cite>str</cite>, can be anything accepted by <cite>numpy.histogram_bin_edges</cite>.
+Defaults to <cite>“auto”</cite>. Only used for numeric features.</p></li>
+<li><p><strong>y_bins</strong> (<em>array_like</em><em> or </em><em>int</em><em> or </em><em>str</em><em>, </em><em>default &quot;auto&quot;</em>) – Binning method for axis. If <cite>array_like</cite>, must be sequence of
+bin edges. If <cite>int</cite>, specifies the number of bins to use. If
+<cite>str</cite>, can be anything accepted by <cite>numpy.histogram_bin_edges</cite>.
+Defaults to <cite>“auto”</cite>. Only used for numeric features.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
+<li><p><strong>cmap</strong> (<em>str</em><em>, </em><em>default &quot;rocket&quot;</em>) – Palette name for heatmap and colour bar. See the documentation
+for <cite>seaborn.color_palette</cite> on available palette formats.
+Defaults to <cite>“rocket”</cite>.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any other keyword arguments to be passed to <cite>seaborn.heatmap</cite>.
+For example, <cite>annot=True</cite> will turn on cell annotations. See
+documentation for more examples.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -333,33 +318,31 @@ for more examples.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.plot.plot_qq">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_qq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_quantiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_qq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_qq" title="Permalink to this definition"></a></dt>
-<dd><p>Plot a Q-Q plot.</p>
-<p>Generate a Quantile-Quantile plot of <cite>feature</cite> for the real and
-synthetic data. Q-Q plots are used to visualise two datasets
-to see if they are generated from the same distribution.</p>
-<p>In this case, it is used to provide some insight into the distribution
-of feature <cite>feature</cite> in the synthetic data versus the real data. If the
-plot is a straight line then it can be inferred that the two
-distributions are similar and therefore the synthetically generated
-data follows the same distribution as the real data.</p>
+<dd><p>Generate a Q-Q plot for a feature of real and synthetic data.</p>
+<p>Quantile-quantile (Q-Q) plots are used to visualise two sets of
+numeric data to see if they are generated from the same
+distribution.</p>
+<p>In this case, it is used to provide some insight into the
+feature distributions for the synthetic and real data. If the
+scatter plot shows a straight line, then it can be inferred that the
+two distributions are similar and therefore the synthetically
+generated data follows the same distribution as the real data.</p>
 <p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Q-Q_plot">Q-Q Plot</a> for more
 information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the sythetic data.</p></li>
-<li><p><strong>feature</strong> (<em>str</em>) – Feature to plot.</p></li>
-<li><p><strong>n_quantiles</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of quantiles to calculate. If <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default) and
-<code class="docutils literal notranslate"><span class="pre">real[feature]</span></code> has the same length as <code class="docutils literal notranslate"><span class="pre">synth[feature]</span></code> then
-<cite>n_quantiles</cite> is set to the number of elements. If the lengths are
-different then n_quantiles is set to the length of <code class="docutils literal notranslate"><span class="pre">real[feature]</span></code>.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches (W,H). Defaults to
-<code class="docutils literal notranslate"><span class="pre">rcParams[&quot;figure.figsize&quot;](default:</span> <span class="pre">[6.4,</span> <span class="pre">4.8])</span></code>.</p></li>
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feature</strong> (<em>str</em>) – Feature to plot. Must be in <cite>real</cite> and <cite>synth</cite>.</p></li>
+<li><p><strong>n_quantiles</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Number of quantiles to calculate. If <cite>None</cite> (default), uses the
+length of <cite>real</cite>.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – If <cite>feature</cite> is not a numeric data type feature.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>matplotlib.figure.Figure</p>
@@ -371,35 +354,32 @@ different then n_quantiles is set to the length of <code class="docutils literal
 <dt class="sig sig-object py" id="synthgauge.plot.plot_feat_density_diff">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">plot_feat_density_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feat_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diff_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#plot_feat_density_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot.plot_feat_density_diff" title="Permalink to this definition"></a></dt>
 <dd><p>Plot real and synth feature density differences.</p>
-<p>For each feature the feature density difference between <cite>real</cite> and
-<cite>synth</cite> is calculated using <code class="docutils literal notranslate"><span class="pre">synthgauge.utils.feature_density_diff</span></code>.</p>
-<p>If a single feature is provided the plot shows the raw density
-differences for each bin.</p>
-<p>Where multiple feature are provided, the density differences are
-concatenated into a flattened array and a histogram plotted. The
+<p>For each feature, the density difference between <cite>real</cite> and <cite>synth</cite>
+is calculated using <cite>synthgauge.utils._feature_density_diff</cite>.</p>
+<p>If a single feature is provided in <cite>feats</cite>, the plot shows the raw
+density differences for each bin in that feature.</p>
+<p>Where multiple features are provided, the density differences are
+pd.concatenated into a flattened array and a histogram plotted. The
 histogram represents the distribution of differences in densities
 across all features and bins.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the sythetic data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional.</em>) – The features that will be used to compute the densities. By
-default all features in <cite>real</cite> will be used.</p></li>
-<li><p><strong>feat_bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Bins to use for computing the feature densities. This value is passed
-to <code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code> so can be any value accepted by
-that function. The default setting of <code class="docutils literal notranslate"><span class="pre">10</span></code> uses 10 bins.</p></li>
-<li><p><strong>diff_bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Bins to use for the difference histogram. Only used when
-multiple features are provided. This value is passed to
-<code class="docutils literal notranslate"><span class="pre">numpy.histogram_bin_edges</span></code> so can be any value accepted by
-that function. The default setting of <code class="docutils literal notranslate"><span class="pre">10</span></code> uses 10 bins.</p></li>
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features used to compute the densities. If <cite>None</cite> (default), all
+common features are used.</p></li>
+<li><p><strong>feat_bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>default 10</em>) – Bins to use for computing the feature densities. This value is
+passed to <cite>numpy.histogram_bin_edges</cite> so can be any value
+accepted by that function. By default, uses 10 bins.</p></li>
+<li><p><strong>diff_bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>default 10</em>) – Bins to use when computing the multiple-feature difference
+histogram. This value is passed to <cite>numpy.histogram_bin_edges</cite>
+so can be any value accepted by that function. By default, uses
+10 bins.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The matplotlib axes containing the plot.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.axes._subplots.AxesSubplot</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -412,7 +392,7 @@ that function. The default setting of <code class="docutils literal notranslate"
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../evaluate/index.html" class="btn btn-neutral float-left" title="synthgauge.evaluate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../evaluator/index.html" class="btn btn-neutral float-left" title="synthgauge.evaluator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../utils/index.html" class="btn btn-neutral float-right" title="synthgauge.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

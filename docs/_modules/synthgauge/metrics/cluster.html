@@ -15,6 +15,7 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -67,150 +68,164 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.metrics.cluster</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">clustering metric</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">KMeans</span>
-<span class="kn">from</span> <span class="nn">kmodes.kprototypes</span> <span class="k">import</span> <span class="n">KPrototypes</span>
+<span></span><span class="sd">&quot;&quot;&quot;Utility metrics derived from centroid-based clustering.&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">df_combine</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">kmodes.kprototypes</span> <span class="kn">import</span> <span class="n">KPrototypes</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">df_combine</span>
 
 
-<div class="viewcode-block" id="clustered_MSD"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/cluster/index.html#synthgauge.metrics.cluster.clustered_MSD">[docs]</a><span class="k">def</span> <span class="nf">clustered_MSD</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">synthetic_indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;clustered mean-squared difference</span>
-
-<span class="sd">    This metric performs a cluster analysis on the data and then considers the</span>
-<span class="sd">    proportion of synthetic data in each cluster. It measures the difference</span>
-<span class="sd">    between this and the overall proportion, squares, and then takes the mean</span>
-<span class="sd">    across clusters.</span>
+<div class="viewcode-block" id="_get_cluster_labels"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/cluster/index.html#synthgauge.metrics.cluster._get_cluster_labels">[docs]</a><span class="k">def</span> <span class="nf">_get_cluster_labels</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply the chosen clustering method to a dataset and return its</span>
+<span class="sd">    final labels.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    combined : 2d numpy array</span>
-<span class="sd">        Array containing both the real and synthetic data. Rows are examples</span>
-<span class="sd">        and columns are variables.</span>
-<span class="sd">    synthetic_indicator : 1d numpy array</span>
-<span class="sd">        Corresponding boolean array indicating which of the rows in `combined`</span>
-<span class="sd">        are synthetic (1), and which are real (0).</span>
-<span class="sd">    method : {&#39;kmeans&#39;,&#39;kprototypes&#39;}, default=&#39;kmeans&#39;</span>
-<span class="sd">        Clustering method to use. See sklearn.cluster.KMeans and</span>
-<span class="sd">        kmodes.kprototypes.KPrototypes for details.</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real and synthetic data.</span>
+<span class="sd">    method : {&quot;kmeans&quot;, &quot;kprototypes&quot;}</span>
+<span class="sd">        Which clustering method to use.</span>
 <span class="sd">    k : int</span>
-<span class="sd">        Integer indicating how many clusters to form during the analysis.</span>
-<span class="sd">    random_state : int, RandomState instance or None, default: None</span>
-<span class="sd">        If int, random_state is the seed used by the random number generator;</span>
-<span class="sd">        If RandomState instance, random_state is the random number generator;</span>
-<span class="sd">        If None, the random number generator is the RandomState instance used</span>
-<span class="sd">        by `np.random`.</span>
+<span class="sd">        Number of clusters to fit.</span>
+<span class="sd">    random_state : int, optional</span>
+<span class="sd">        Random seed for fitting clusters.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    MSD_p : float</span>
-<span class="sd">        Mean-squared difference between the within-cluster proportions of</span>
-<span class="sd">        synthetic data and the overall proportion of synthetic data.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    There is no obvious criterion for selecting the number of clusters `k`. One</span>
-<span class="sd">    approach when comparing two different synthetic datasets against eachother</span>
-<span class="sd">    could be to try several values of `k` with the original data to examine the</span>
-<span class="sd">    sensitivity of the choice of `k`, and then go with the one that is most</span>
-<span class="sd">    often the best choice.</span>
-
-<span class="sd">    Additionally, it is important to note that this metric says nothing about</span>
-<span class="sd">    how the data are distributed within clusters.</span>
+<span class="sd">    labels : np.ndarray</span>
+<span class="sd">        Integer labels indicating cluster membership for each point in</span>
+<span class="sd">        `combined`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;kmeans&#39;</span><span class="p">:</span>
-        <span class="n">combined_numeric</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
-        <span class="n">clusters</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-            <span class="n">combined_numeric</span><span class="p">)</span><span class="o">.</span><span class="n">labels_</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;kprototype&#39;</span><span class="p">:</span>
-        <span class="n">cat_cols</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span>
-            <span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
-        <span class="n">cat_cols_i</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-            <span class="n">combined</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">]</span>
-        <span class="n">clusters</span> <span class="o">=</span> <span class="n">KPrototypes</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-            <span class="n">combined</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="n">cat_cols_i</span><span class="p">)</span><span class="o">.</span><span class="n">labels_</span>
-    <span class="n">cluster_proportion</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ki</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
-        <span class="n">cluster_proportion</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">synthetic_indicator</span><span class="p">[</span><span class="n">clusters</span> <span class="o">==</span> <span class="n">ki</span><span class="p">])</span>
-                                  <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">clusters</span> <span class="o">==</span> <span class="n">ki</span><span class="p">))</span>
-    <span class="n">cluster_proportion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cluster_proportion</span><span class="p">)</span>
 
-    <span class="c1"># calculate error from ideal proportion</span>
-    <span class="n">ideal_prop</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">synthetic_indicator</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;kmeans&quot;</span><span class="p">:</span>
+        <span class="n">numeric</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span>
+            <span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;elkan&quot;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">numeric</span><span class="p">)</span>
 
-    <span class="n">prop_square_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">cluster_proportion</span> <span class="o">-</span> <span class="n">ideal_prop</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;kprototypes&quot;</span><span class="p">:</span>
+        <span class="n">categorical_idxs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">combined</span><span class="o">.</span><span class="n">dtypes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">KPrototypes</span><span class="p">(</span>
+            <span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="n">categorical_idxs</span><span class="p">)</span>
 
-    <span class="n">MSE_p</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">prop_square_error</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">prop_square_error</span><span class="p">)</span>
-    <span class="c1"># print(MSE_p)</span>
-    <span class="k">return</span> <span class="n">MSE_p</span></div>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s1">&#39;Clustering method must be one of `&quot;kmeans&quot;` or&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;`&quot;kprototypes&quot;` not </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1">.&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="multi_clustered_MSD"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.cluster.multi_clustered_MSD">[docs]</a><span class="k">def</span> <span class="nf">multi_clustered_MSD</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;kmeans&#39;</span><span class="p">,</span> <span class="n">k_min</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                        <span class="n">k_max</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;multiple clustered mean-squared difference</span>
-
-<span class="sd">    This metric performs the `clustered_MSD` above multiple times.</span>
+<div class="viewcode-block" id="_get_cluster_proportions"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/cluster/index.html#synthgauge.metrics.cluster._get_cluster_proportions">[docs]</a><span class="k">def</span> <span class="nf">_get_cluster_proportions</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">indicator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the proportion of each cluster that is synthetic.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Numeric features to use. Non-numeric features will be filtered out. By</span>
-<span class="sd">        default all numeric features are used.</span>
-<span class="sd">    method : {&#39;kmeans&#39;,&#39;kprototypes&#39;}, default=&#39;kmeans&#39;</span>
-<span class="sd">        Clustering method to use. See sklearn.cluster.KMeans and</span>
-<span class="sd">        kmodes.kprototypes.KPrototypes for details.</span>
-<span class="sd">    k_min : int</span>
-<span class="sd">        Minimum number of clusters to perform cluster analysis with.</span>
-<span class="sd">    k_max : int</span>
-<span class="sd">        Maximum number of clusters to perform cluster analysis with.</span>
-<span class="sd">    random_state : int, RandomState instance or None, default: None</span>
-<span class="sd">        If int, random_state is the seed used by the random number generator;</span>
-<span class="sd">        If RandomState instance, random_state is the random number generator;</span>
-<span class="sd">        If None, the random number generator is the RandomState instance used</span>
-<span class="sd">        by `np.random`.</span>
+<span class="sd">    labels : array_like</span>
+<span class="sd">        Cluster membership array.</span>
+<span class="sd">    indicator : array_like</span>
+<span class="sd">        Indicator of which data are real and which are synthetic.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    cluster_MSDs : 1d numpy array</span>
-<span class="sd">        array containing MSDs from cluster analyses with different number of</span>
-<span class="sd">        clusters</span>
+<span class="sd">    proportions : numpy.ndarray</span>
+<span class="sd">        Array with synthetic data proportion of each cluster.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">proportions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+        <span class="n">proportions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="n">indicator</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">])</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">proportions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clustered_msd"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.cluster.clustered_msd">[docs]</a><span class="k">def</span> <span class="nf">clustered_msd</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;kmeans&quot;</span><span class="p">,</span>
+    <span class="n">k_min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">k_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Multiple) clustered mean-squared difference (MSD).</span>
+
+<span class="sd">    This metric clusters the real and synthetic data together, measuring</span>
+<span class="sd">    the synthetic utility according to its representation across the</span>
+<span class="sd">    fitted clusters. Since there is often no obvious choice for the</span>
+<span class="sd">    number of clusters, :math:`k`, we consider a range of values.</span>
+
+<span class="sd">    For each value of :math:`k`, the chosen clustering method is fit</span>
+<span class="sd">    and the proportion of synthetic data in each cluster is recorded.</span>
+<span class="sd">    The clustered MSD is then calculated as the mean-squared difference</span>
+<span class="sd">    between these proportions and the overall proportion of synthetic</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    This collection of MSDs is summarised by taking its minimum to give</span>
+<span class="sd">    the metric value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to use in the clustering. If `None` (default), all</span>
+<span class="sd">        common features are used.</span>
+<span class="sd">    method : {&quot;kmeans&quot;, &quot;kprototypes&quot;}, default &quot;kmeans&quot;</span>
+<span class="sd">        Clustering method to use. Only k-means and k-prototypes</span>
+<span class="sd">        are implemented. If using k-means (default), only numeric</span>
+<span class="sd">        columns are considered, while k-prototypes allows for mixed-type</span>
+<span class="sd">        clustering.</span>
+<span class="sd">    k_min : int, default 2</span>
+<span class="sd">        Minimum number of clusters to use. Default of 2.</span>
+<span class="sd">    k_max : int, default 10</span>
+<span class="sd">        Maximum number of clusters to use. Default of 10.</span>
+<span class="sd">    random_state : int, optional</span>
+<span class="sd">        The random seed used to fit the clustering algorithm.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The minimum observed clustered MSD.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Since there is no obvious way to select the number of clusters `k`, one</span>
-<span class="sd">    approach when comparing two different synthetic datasets against eachother</span>
-<span class="sd">    could be to try several values of `k` with the original data to examine the</span>
-<span class="sd">    sensitivity of the choice of `k`, and then go with the one that is most</span>
-<span class="sd">    often the best choice.</span>
+<span class="sd">    This function can be used with a single value of `k` by setting</span>
+<span class="sd">    `k_min` and `k_max` both to `k`. For instance, if a sensible number</span>
+<span class="sd">    of clusters is known a priori.</span>
 
-<span class="sd">    Additionally, it is important to note that this metric says nothing about</span>
-<span class="sd">    how the data are distributed within clusters.</span>
-
+<span class="sd">    This metric says nothing about how appropriate the clustering method</span>
+<span class="sd">    may be for the data at hand, nor how the data are distributed among</span>
+<span class="sd">    the clusters. Both methods considered here have rather strong</span>
+<span class="sd">    assumptions about the relative size and characteristics of the</span>
+<span class="sd">    clusters in the data. As such, exploratory analysis is advised to</span>
+<span class="sd">    determine whether such centroid-based clustering is well-suited.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># combine data</span>
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="n">feats</span><span class="p">,</span>
-                          <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># remove source column</span>
-    <span class="n">synth_bool</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">)</span>
 
-    <span class="n">cluster_MSDs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">indicator</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k_min</span><span class="p">,</span> <span class="n">k_max</span><span class="p">):</span>
-        <span class="c1"># print(k)</span>
-        <span class="n">cluster_MSDs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">clustered_MSD</span><span class="p">(</span>
-            <span class="n">combined</span><span class="p">,</span> <span class="n">synth_bool</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">))</span>
+    <span class="n">msds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k_min</span><span class="p">,</span> <span class="n">k_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">_get_cluster_labels</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span>
+        <span class="n">proportions</span> <span class="o">=</span> <span class="n">_get_cluster_proportions</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
+        <span class="n">msd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">proportions</span> <span class="o">-</span> <span class="n">indicator</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+        <span class="n">msds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msd</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">cluster_MSDs</span><span class="p">)</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">msds</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

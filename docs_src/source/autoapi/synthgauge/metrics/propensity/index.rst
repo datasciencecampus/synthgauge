@@ -3,6 +3,11 @@
 
 .. py:module:: synthgauge.metrics.propensity
 
+.. autoapi-nested-parse::
+
+   Propensity-based utility metrics.
+
+
 
 Module Contents
 ---------------
@@ -13,284 +18,327 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.propensity.propensity_MSE
-   synthgauge.metrics.propensity.expected_p_MSE
-   synthgauge.metrics.propensity.stdev_p_MSE
-   synthgauge.metrics.propensity.perm_expected_sd_p_MSE
-   synthgauge.metrics.propensity.p_MSE_ratio
-   synthgauge.metrics.propensity.standardised_p_MSE
+   synthgauge.metrics.propensity._combine_encode_and_pop
+   synthgauge.metrics.propensity._get_propensity_scores
+   synthgauge.metrics.propensity.pmse
+   synthgauge.metrics.propensity._pmse_logr_statistics
+   synthgauge.metrics.propensity._pmse_cart_statistics
+   synthgauge.metrics.propensity.pmse_ratio
+   synthgauge.metrics.propensity.pmse_standardised
    synthgauge.metrics.propensity.propensity_metrics
 
 
 
-.. py:function:: propensity_MSE(real, synth, method, **kwargs)
+.. py:function:: _combine_encode_and_pop(real, synth)
 
-   Propensity mean-squared error
-
-   We think of the propensity of an example as the estimated probability it is
-   classified as being synthetic. For a good synthetic dataset we would expect
-   this to be the same as the proportion of synthetic examples used in
-   training. The mean squared error from this proportion is hence a suitable
-   utility metric.
+   Get the combined, encoded real and synthetic data, and their
+   origins.
 
    :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
+   :type real: pandas.DataFrame
    :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param method: Classification method to use.
-   :type method: str, ['CART', 'LogisticRegression']
-   :param \*\*kwargs: Keyword arguments passed to classification function.
-   :type \*\*kwargs: dict
+   :type synth: pandas.DataFrame
 
-   :returns: **MSE_p** -- Propensity score mean squared error.
+   :returns: * **combined** (*pandas.DataFrame*) -- The combined data with categorical columns one-hot encoded.
+             * **indicator** (*numpy.ndarray*) -- An indicator for whether the data is real (0) or synthetic (1).
+
+
+.. py:function:: _get_propensity_scores(data, labels, method, **kwargs)
+
+   Fit a propensity model to the data and extract its scores.
+
+   :param data: Dataframe to fit propensity model to.
+   :type data: pandas.DataFrame
+   :param labels: Indicator for which data are real (0) or synthetic (1).
+   :type labels: numpy.ndarray
+   :param method: Which propensity model to use.
+   :type method: {"cart", "logr"}
+   :param \*\*kwargs: Keyword arguments passed to propensity model.
+   :type \*\*kwargs: dict, optional
+
+   :returns: **scores** -- Propensity score for each point in `data`.
+   :rtype: numpy.ndarray
+
+
+.. py:function:: pmse(combined, indicator, method, **kwargs)
+
+   Calculate the propensity score mean-squared error (pMSE).
+
+   :param combined: The combined set of real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: An indicator for which data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param \*\*kwargs: Keyword arguments passed to propensity model.
+   :type \*\*kwargs: dict, optional
+
+   :returns: Propensity score mean-squared error.
    :rtype: float
 
    .. seealso:: :obj:`sklearn.linear_model.LogisticRegression`, :obj:`sklearn.tree.DecisionTreeClassifier`
 
    .. rubric:: Notes
 
-   Propensity scores represent probabilities of group membership. By modelling
-   whether an example is synthetic or not, we can use propensity scores as a
-   measure of utility.
+   Propensity scores represent probabilities of group membership. By
+   modelling whether an example is synthetic or not, we can use
+   propensity scores as a measure of utility.
 
    This returns zero if the distributions are identical, and is bounded
-   above by 1-c if they are nothing alike, where c is the proportion of
-   synthetic data. This method is therefore good for comparing multiple
-   synthetic datasets. However, as this is not a test, there is no threshold
-   distance below which we can claim the distributions are statistically the
-   same.
+   above by :math:`1 - c` if they are nothing alike, where :math:`c` is
+   the proportion of the data that is synthetic. This method is
+   therefore good for comparing multiple synthetic datasets. However,
+   as this is not a test, there is no threshold distance below which we
+   can claim the distributions are statistically the same.
 
-   This function assumes that some preprocessing has been carried out so that
-   the data is ready to be passed to the classification function. Encoding
-   of categorical data is performed, but, for example, scaling is not. Without
-   this erroneous results may be returned. The logistic regression can fail to
-   converge if many variables are considered. Anecdotally, this doesn't seem
-   to drastically impact the propensity scores, although this should be
-   investigated formally. `**kwargs` are passed to the classification model so
-   it can be tuned.
+   This function assumes that some preprocessing has been carried out
+   so that the data is ready to be passed to the classification
+   function. Encoding of categorical data is performed, but, for
+   example, scaling is not. Without this, erroneous results may be
+   returned. The logistic regression can fail to converge if many
+   variables are considered. Anecdotally, this doesn't seem to
+   drastically impact the propensity scores, although this should be
+   investigated formally.
 
-   Using a CART model as a classifier is recommended in the literature however
-   we also support the use of logistic regression.
+   Using a CART model as a classifier is recommended in the literature
+   however we also support the use of logistic regression. For further
+   details, see: https://doi.org/10.1111/rssa.12358
 
-   https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358
 
+.. py:function:: _pmse_logr_statistics(combined, indicator)
 
-.. py:function:: expected_p_MSE(real, synth)
+   Calculate the location and scale of pMSE in the null case where
+   the real and synthetic datasets are formed from identical processes.
 
-   Expected propensity mean-squared error
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
 
-   This is the expected propensity mean-squared error under the null case
-   that the `real` and `synth` datasets are distributionally similar.
-
-   :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-
-   :returns: **MSE_p** -- Expected propensity score mean square-squared error.
-   :rtype: float
+   :returns: * **loc** (*float*) -- Expectation of pMSE in the null case.
+             * **scale** (*float*) -- Standard deviation of pMSE in the null case.
 
    .. rubric:: Notes
 
-   This expectation is used to standardise `propensity_MSE` to an
-   interpretable scale.
+   It has been shown that the null case is distributed as a multiple of
+   a :math:`\chi^2` distribution with :math:`k-1` degrees of freedom.
 
-   It has been shown that the null case is distributed as a multiple of a
-   :math:`\chi^2` distribution with :math:`k-1` degrees of freedom, which has
-   expectation:
+   Therefore, its expectation is:
 
    .. math::
 
-       (k-1)(1-c)^2c/N
+       E(pMSE) = \frac{(k - 1)(1 - c)^2}{N}
 
-   where :math:`k` is the number of predictors in the model, :math:`c` is the
-   proportion of synthetic data, and :math:`N` is the total number of examples
-   Further explanation and derivation of this formulation can be found here:
-   https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358 Appendix A1.
-
-
-.. py:function:: stdev_p_MSE(real, synth)
-
-   Standard deviation propensity mean-squared error
-
-   This is the standard deviation of the propensity mean-squared error under
-   the null case that the `real` and `synth` datasets are distributionally
-   similar.
-
-   :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-
-   :returns: **st_dev** -- Expected propensity score mean square-squared error standard deviation.
-   :rtype: float
-
-   .. rubric:: Notes
-
-   This standard deviation is used to standardise `propensity_MSE` to an
-   interpretable scale.
-
-   It has been shown that the null case is distributed as a multiple of a
-   :math:`\chi^2` distribution with :math:`k-1` degrees of freedom, which has
-   standard deviation:
+   and its standard deviation is:
 
    .. math::
 
-       \sqrt{2(k-1)}(1-c)^2c/N
+       sd(pMSE) = \frac{c \sqrt{2(k - 1)} (1 - c)^2}{N}
 
-   where :math:`k` is the number of predictors in the model, :math:`c` is the
-   proportion of synthetic data, and :math:`N` is the total number of examples
-   Further explanation and derivation of this formulation can be found here:
-   https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358 Appendix A1.
+   where :math:`k` is the number of predictors used in the model,
+   :math:`c` is the proportion of synthetic data, and :math:`N` is the
+   total number of data points.
+
+   Here, all features and first-order interactions are used in the
+   model. Let :math:`m` be the number of features, then:
+
+   .. math::
+
+       k = m + \binom{m}{2}
+
+   Further explanation and derivation of these results can be found at:
+   https://doi.org/10.1111/rssa.12358
 
 
-.. py:function:: perm_expected_sd_p_MSE(real, synth, num_perms=20, **kwargs)
+.. py:function:: _pmse_cart_statistics(combined, indicator, num_perms, **kwargs)
 
-   Permutation Expected and Standard Deviation Propensity Mean Squared Error
+   Estimate the location and scale of pMSE in the null case by
+   repeating pMSE calculations on permuations of the indicator column
+   using a CART model.
 
-   Repeat pMSE calculation several times but while randomly permutating the
-   boolean indicator column. This should approximate propensity mean squared
-   error results for 'properly' synthesised datasets when it is not possible
-   to calculate these directly, in particular when CART is used.
+   The set of calculations are then summarised using the mean or
+   standard deviation, respectively.
 
-   :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param num_perms: The number of times to repeat the process.
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param num_perms: The number of permutations to consider.
    :type num_perms: int
-   :param \*\*kwargs: Keyword arguments passed to DecisionTreeClassifier function.
-   :type \*\*kwargs: dict
+   :param \*\*kwargs: Keyword arguments passed to
+                      `sklearn.tree.DecisionTreeClassifer`.
+   :type \*\*kwargs: dict, optional
 
-   :returns: * **mean** (*float*) -- Mean of the propensity_MSE scores over all the repititions.
-             * **sd** (*float*) -- Standard deviation of the propensity_MSE scores over all the
-               repititions.
+   :returns: * **loc** (*float*) -- Estimated expectation of pMSE in the null case.
+             * **scale** (*float*) -- Estimated standard deviation of pMSE in the null case.
 
    .. rubric:: Notes
 
-   This function is only intended to be used within `propensity_metrics()`.
+   When using a CART propensity model, the number of predictors is
+   unknown and the results used in `_pmse_logr_statistics` do not
+   apply.
 
-   This function is stochastic so will return a differnet result every time.
+   To circumvent this, we repeatedly calculate pMSE using permutations
+   of the synthetic indicator column. This should approximate the
+   results for "properly" synthesised data without knowing :math:`k` a
+   priori.
+
+   Further details of this approach are available at:
+   https://doi.org/10.1111/rssa.12358
+
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the CART model.
+   Without specifying this, the results will not be reproducible.
 
 
-.. py:function:: p_MSE_ratio(real, synth, method='CART', feats=None, **kwargs)
+.. py:function:: pmse_ratio(combined, indicator, method, num_perms=None, **kwargs)
 
-   Propensity mean-squared error ratio
+   The propensity score mean-squared error ratio.
 
-   This is the ratio of observed propensity mean-squared error, to that
-   expected under the null case that the synthetic and real datasets are
-   similarly distributed.
+   This is the ratio of observed pMSE to that expected under the null
+   case, i.e.
 
-   :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param method: Classification method to use.
-   :type method: str, ['CART', 'LogisticRegression']
-   :param feats: List of features in the dataset that will be used in propensity
-                 calculations. By default all features will be used.
-   :type feats: list of str, optional.
-   :param \*\*kwargs: Keyword arguments passed to classifier function.
-   :type \*\*kwargs: dict
+   .. math::
 
-   :returns: **ratio** -- Ratio of the propensity score mean square-squared error.
+       ratio(pMSE) = \frac{pMSE}{E(pMSE)}
+
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param num_perms: Number of permutations to consider when estimating the null case
+                     statistics with a CART model.
+   :type num_perms: int, optional
+   :param \*\*kwargs: Keyword arguments passed to the propensity model classifier.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The observed-to-null pMSE ratio.
    :rtype: float
 
    .. rubric:: Notes
 
-   This standardisation transforms the scale for the MSE into one that makes
-   more sense for synthetic data. Before, the MSE score gave better utility
-   as the value got closer to zero, which is only attainable when the datasets
-   are identical. However, when generating synthetic data we do not want to
-   produce identical entries, but to acheive distributional similarity between
-   the distribution of the observed data and the model used to generate the
-   synthetic.
+   The interpretation of this metric makes more sense for synthetic
+   data. The pMSE alone gives better utility as the value gets closer
+   to zero, which is only attainable when the datasets are identical.
+   However, when generating synthetic data, we do not want to produce
+   identical entries. Rather, we want to achieve similarity between the
+   distributions of the real and synthetic datasets.
 
-   This ratio tends towards one when the datasets are similar and increases
+   This ratio tends towards one when this is achieved, and increases
    otherwise.
 
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the model when
+   using a CART model. Without specifying this, the results will not be
+   reproducible.
 
-.. py:function:: standardised_p_MSE(real, synth, method='CART', feats=None, **kwargs)
 
-   Standardised propensity mean-squared error
+.. py:function:: pmse_standardised(combined, indicator, method, num_perms=None, **kwargs)
 
-   This is the difference between the observed propensity mean-squared error
-   and that expected under the null case that the synthetic and real datasets
-   are similarly distributed, scaled by the standard deviation.
+   The standardised propensity score mean-squared error.
 
-   :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param method: Classification method to use.
-   :type method: str, ['CART', 'LogisticRegression']
-   :param feats: List of features in the dataset that will be used in propensity
-                 calculations. By default all features will be used.
-   :type feats: list of str, optional.
-   :param \*\*kwargs: Keyword arguments passed to LogisticRegression function.
-   :type \*\*kwargs: dict
+   This takes the observed pMSE and standardises it against the null
+   case, i.e.
 
-   :returns: **ratio** -- Standardised propensity score mean square-squared error.
+   .. math::
+
+       stand(pMSE) = (pMSE - E(pMSE)) / sd(pMSE)
+
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param num_perms: Number of permutations to consider when estimating the null case
+                     statistics with a CART model.
+   :type num_perms: int, optional
+   :param \*\*kwargs: Keyword arguments passed to the propensity model.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The null-standardised pMSE.
    :rtype: float
 
    .. rubric:: Notes
 
-   This standardisation transforms the scale for the MSE into one that makes
-   more sense for synthetic data. Before, the MSE score gave better utility
-   as the value got closer to zero, which is only attainable when the datasets
-   are identical. However, when generating synthetic data we do not want to
-   produce identical entries, but to acheive distributional similarity between
-   the distribution of the observed data and the model used to generate the
-   synthetic.
+   The interpretation of this metric makes more sense for synthetic
+   data. The pMSE alone indicates better utility as it gets closer to
+   zero, which is only attainable when the datasets are identical.
+   However, when generating synthetic data, we do not want to produce
+   identical entries. Rather, we want to achieve similarity between the
+   distributions of the real and synthetic datasets.
 
-   This metric tends towards zero when the datasets are similar and increases
-   otherwise.
+   This standardised value tends towards zero when this is achieved,
+   and increases in magnitude otherwise.
+
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the model when
+   using a CART model. Without specifying this, the results will not be
+   reproducible.
 
 
-.. py:function:: propensity_metrics(real, synth, method='CART', feats=None, num_perms=20, **kwargs)
+.. py:function:: propensity_metrics(real, synth, method='cart', feats=None, num_perms=20, **kwargs)
 
-   Propensity metrics
+   Propensity score-based metrics.
 
-   This function calculates three flavours of propensity mean-squared error,
-   all of which quantify utility by measuring how well a classifier can be
-   trained to distinguish `real` and `synth`. It returns the raw, observed
-   value together with this value standardised by the expected value if the
-   dataset was well synthesised, and also as a ratio of the expected value.
+   This function calculates three metrics based on the propensity score
+   mean-squared error (pMSE), all of which quantify utility by
+   measuring the distinguishability of the synthetic data. That is, how
+   readily real and synthetic data can be identified.
+
+   To do this, the datasets are combined and their origins tracked by a
+   boolean indicator. This combined dataset is then used to fit a
+   binary classification model (CART or logistic regression with
+   first-order interactions) with the indicator as the target. The
+   propensity score for each row is then extracted and summarised to
+   give a metric.
+
+   The returned metrics are the observed pMSE along with the pMSE ratio
+   and standardised pMSE. These second two metrics are given relative
+   to the null case where the real and synthetic data are produced from
+   identical processes.
 
    :param real: Dataframe containing the real data.
-   :type real: pandas dataframe
+   :type real: pandas.DataFrame
    :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas dataframe
-   :param method: Classification method to use.
-   :type method: str, ['CART', 'LogisticRegression']
-   :param feats: List of features in the dataset that will be used in propensity
-                 calculations. By default all features will be used.
-   :type feats: list of str, optional.
-   :param num_perms: If CART method is used, this is the number of times to repeat process
-                     when calculating the expected mean-squared error.
-   :type num_perms: int
-   :param \*\*kwargs: Keyword arguments passed to LogisticRegression function.
-   :type \*\*kwargs: dict
+   :type synth: pandas.DataFrame
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}, default "cart"
+   :param feats: List of features in the dataset to be used in the propensity
+                 model. If `None` (default), all common features are used.
+   :type feats: list of str or None, default None
+   :param num_perms: Number of permutations to consider when estimating the null case
+                     statistics with a CART model.
+   :type num_perms: int, default 20
+   :param \*\*kwargs: Keyword arguments passed to the propensity model.
+   :type \*\*kwargs: dict, optional
 
-   :returns: * **observed_p_MSE** (*float*) -- Observed propensity score mean squared error.
-             * **standardised_p_MSE** (*float*) -- Standardised propensity score mean square-squared error.
-             * **ratio_p_MSE** (*float*) -- Ratio of the propensity score mean square-squared error to the
-               expected value.
+   :returns: * **observed** (*float*) -- The observed pMSE.
+             * **standard** (*float*) -- The null-standardised pMSE.
+             * **ratio** (*float*) -- The observed-null pMSE ratio.
+
+   :raises ValueError: If `method` is not one of `'cart'` or `'logr'`.
+
+   .. seealso:: :obj:`sklearn.linear_model.LogisticRegression`, :obj:`sklearn.tree.DecisionTreeClassifier`, :obj:`synthgauge.metrics.propensity.pmse`, :obj:`synthgauge.metrics.propensity.pmse_ratio`, :obj:`synthgauge.metrics.propensity.pmse_standardised`
 
    .. rubric:: Notes
 
-   The standardisation and ratio operations transform the scales for the MSE
-   into ones that make more sense for synthetic data. For the observed
-   propensity the MSE score gives better utility as the value gets closer to
-   zero, which is only attainable when the datasets are identical. However,
-   when generating synthetic data we do not want to produce identical entries,
-   but to acheive distributional similarity between the distribution of the
-   observed data and the model used to generate the synthetic.
+   For the CART model, `sklearn.tree.DecisionTreeClassifier` is used.
+   Meanwhile, the logistic regression model uses
+   `sklearn.linear_model.LogisticRegression`.
 
-   The standardised score tends towards zero when the datasets are similar
-   and increases otherwise.
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the model when
+   using a CART model. Without specifying this, the results will not be
+   reproducible.
 
-   The ratio tends towards one when the datasets are similar and increases
-   otherwise.
+   Details on these metrics can be found at:
+   https://doi.org/10.1111/rssa.12358
 
 

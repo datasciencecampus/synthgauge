@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.metrics.correlation &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,11 +16,12 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="synthgauge.metrics.privacy" href="../privacy/index.html" />
+    <link rel="next" title="synthgauge.metrics.density" href="../density/index.html" />
     <link rel="prev" title="synthgauge.metrics.cluster" href="../cluster/index.html" /> 
 </head>
 
@@ -84,52 +85,101 @@
            <div itemprop="articleBody">
              
   <section id="module-synthgauge.metrics.correlation">
-<span id="synthgauge-metrics-correlation"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.correlation" title="synthgauge.metrics.correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.correlation" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-metrics-correlation"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.correlation" title="synthgauge.metrics.correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.correlation" title="Permalink to this heading"></a></h1>
+<p>Correlation-based utility metrics.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_MSD" title="synthgauge.metrics.correlation.correlation_MSD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_MSD</span></code></a>(real, synth, feats=None)</p></td>
-<td><p>correlation mean-squared-difference</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation._mean_squared_difference" title="synthgauge.metrics.correlation._mean_squared_difference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_mean_squared_difference</span></code></a>(x, y)</p></td>
+<td><p>Calculate the mean-squared difference (error) between two numeric</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.cramers_v" title="synthgauge.metrics.correlation.cramers_v"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cramers_v</span></code></a>(var1, var2)</p></td>
-<td><p>Cramer's V</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation._cramers_v" title="synthgauge.metrics.correlation._cramers_v"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_cramers_v</span></code></a>(var1, var2)</p></td>
+<td><p>Cramer's V.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.cramers_v_MSE" title="synthgauge.metrics.correlation.cramers_v_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cramers_v_MSE</span></code></a>(real, synth, feats=None)</p></td>
-<td><p>Cramer's V Mean Squared Error</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation._pairwise_cramers_v" title="synthgauge.metrics.correlation._pairwise_cramers_v"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pairwise_cramers_v</span></code></a>(data)</p></td>
+<td><p>Compute pairwise Cramer's V for the columns of <cite>data</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_ratio" title="synthgauge.metrics.correlation.correlation_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_ratio</span></code></a>(categorical, continuous)</p></td>
-<td><p>Correlation ratio</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_msd" title="synthgauge.metrics.correlation.correlation_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_msd</span></code></a>(real, synth, method='pearson', feats=None)</p></td>
+<td><p>Mean-squared difference in correlation coefficients.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_ratio_MSE" title="synthgauge.metrics.correlation.correlation_ratio_MSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_ratio_MSE</span></code></a>(real, synth, categorical_feats='auto', numerical_feats=None)</p></td>
-<td><p>Correlation Ratio Mean Squared Error</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation._correlation_ratio" title="synthgauge.metrics.correlation._correlation_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_correlation_ratio</span></code></a>(categorical, continuous)</p></td>
+<td><p>Categorical-continuous correlation ratio.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_ratio_msd" title="synthgauge.metrics.correlation.correlation_ratio_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_ratio_msd</span></code></a>(real, synth, categorical=None, numeric=None)</p></td>
+<td><p>Correlation ratio mean-squared difference.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.correlation.correlation_MSD">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">correlation_MSD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#correlation_MSD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.correlation_MSD" title="Permalink to this definition"></a></dt>
-<dd><p>correlation mean-squared-difference</p>
-<p>This metric calculates the mean squared difference between the correlation
-matrices for the real and synthetic datasets. This gives an indication of
-how well the synthetic data has retained inter-variable relationships.</p>
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation._mean_squared_difference">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">_mean_squared_difference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#_mean_squared_difference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation._mean_squared_difference" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the mean-squared difference (error) between two numeric
+objects or two arrays.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation._cramers_v">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">_cramers_v</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#_cramers_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation._cramers_v" title="Permalink to this definition"></a></dt>
+<dd><p>Cramer’s V.</p>
+<p>Measures the association between two nominal categorical variables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Numeric features to use. Non-numeric features will be filtered out. By
-default all numeric features are used.</p></li>
+<li><p><strong>var1</strong> (<em>pandas.Series</em>) – Measurements for the first variable.</p></li>
+<li><p><strong>var2</strong> (<em>pandas.Series</em>) – Measurements for the second variable.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>MSD_c</strong> – Correlation mean squared difference.</p>
+<dd class="field-even"><p>The association between the two variables.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Wikipedia suggests that this formulation of Cramer’s V tends to
+overestimate the strength of an association and poses a corrected
+version. However, since we are only concerned with how associations
+compare and not what the actual values are, we continue to use this
+simpler version.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation._pairwise_cramers_v">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">_pairwise_cramers_v</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#_pairwise_cramers_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation._pairwise_cramers_v" title="Permalink to this definition"></a></dt>
+<dd><p>Compute pairwise Cramer’s V for the columns of <cite>data</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation.correlation_msd">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">correlation_msd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#correlation_msd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.correlation_msd" title="Permalink to this definition"></a></dt>
+<dd><p>Mean-squared difference in correlation coefficients.</p>
+<p>This metric calculates the mean squared difference between the
+correlation matrices for the real and synthetic datasets. This gives
+an indication of how well the synthetic data has retained bivariate
+relationships.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>method</strong> (<em>{&quot;pearson&quot;</em><em>, </em><em>&quot;spearman&quot;</em><em>, </em><em>&quot;cramers_v&quot;}</em><em>, </em><em>default &quot;pearson&quot;</em>) – </p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to measure correlation across. If <cite>method=”cramers_v”</cite>,
+all numeric columns will be filtered out. Likewise, for the
+other correlation methods, all non-numeric columns are removed.
+If <cite>None</cite> (default), all common features that satisfy the needs
+of <cite>method</cite> are used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Mean-squared difference of correlation coefficients.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
@@ -140,130 +190,78 @@ default all numeric features are used.</p></li>
 <p><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.corrcoef</span></code></p>
 </div>
 <p class="rubric">Notes</p>
-<p>Correlations only make sense for numerical data, so this function first
-filters the columns by datatype.</p>
-<p>The smaller the number this function returns, the better the synthetic
-data captures the correlation between variables in the real data. This
-method is therefore good for comparing multiple synthetic datasets to see
-which is closest to the real. However, as this is not a test, there is no
-threshold value below which we can claim the datasets are statistically
-the same.</p>
+<p>The smaller the number this function returns, the better the
+synthetic data captures the correlation between variables in the
+real data. This method is therefore good for comparing multiple
+synthetic datasets to see which is closest to the real. However, as
+this is not a test, there is no threshold value below which we can
+claim the datasets are statistically the same.</p>
+<p>We only consider the coefficients above the main diagonal when
+calculating the MSD. If we included the entire matrix, we would
+double-count each pair of features as well as including the trivial
+ones along the main diagonal.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.correlation.cramers_v">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">cramers_v</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#cramers_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.cramers_v" title="Permalink to this definition"></a></dt>
-<dd><p>Cramer’s V</p>
-<p>Measures the association between two nominal categorical variables.</p>
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation._correlation_ratio">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">_correlation_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categorical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#_correlation_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation._correlation_ratio" title="Permalink to this definition"></a></dt>
+<dd><p>Categorical-continuous correlation ratio.</p>
+<p>Calculates the correlation ratio for categorical-continuous
+association. Describes the possibility of deducing the corresponding
+category for a given continuous value.</p>
+<p>Missing values are not permitted in either series. Any rows with a
+missing value are dropped from both series before calculating the
+ratio.</p>
+<p>Returns a value in the range [0, 1] where 0 means a category can not
+be determined given a continuous measurement and 1 means it can with
+absolute certainty.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>var1</strong> (<em>pandas.Series</em>) – Series object containing the values for one of the variables to be used
-in the comparison.</p></li>
-<li><p><strong>var2</strong> (<em>pandas.Series</em>) – Series object containing the values for the other variable to be used
-in the comparison.</p></li>
+<li><p><strong>categorical</strong> (<em>pandas.Series</em>) – Categorical feature measurements.</p></li>
+<li><p><strong>continuous</strong> (<em>pandas.Series</em>) – Continuous feature measurements.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>Cramers_V</strong> – The amount of association between the two variables.</p>
+<dd class="field-even"><p>The categorical-continuous association ratio.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Wikipedia suggests that this formulation of Cramer’s V tends to
-overestimate the strength of an association and poses a corrected version.
-However, since we are only concerned with how associations compare and not
-what the actual values are, we continue to use this simpler version.</p>
+<p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Correlation_ratio">https://en.wikipedia.org/wiki/Correlation_ratio</a> for details.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.correlation.cramers_v_MSE">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">cramers_v_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#cramers_v_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.cramers_v_MSE" title="Permalink to this definition"></a></dt>
-<dd><p>Cramer’s V Mean Squared Error</p>
-<p>This metric calculates the difference in association between categorical
-features in the real and synthetic datasets.</p>
+<dt class="sig sig-object py" id="synthgauge.metrics.correlation.correlation_ratio_msd">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">correlation_ratio_msd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numeric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#correlation_ratio_msd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.correlation_ratio_msd" title="Permalink to this definition"></a></dt>
+<dd><p>Correlation ratio mean-squared difference.</p>
+<p>This metric calculates the mean-squared difference in association
+between categorical and continuous feature pairings in the real and
+synthetic datasets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Feature(s) in <cite>real</cite> and <cite>synth</cite> to include in comparison. By default
-all object and categorical columns are selected.</p></li>
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>categorical</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Categorical features in <cite>real</cite> and <cite>synth</cite> to include in
+comparison. If <cite>None</cite> (default), uses all common object-type
+columns.</p></li>
+<li><p><strong>numeric</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Numerical features in <cite>real</cite> and <cite>synth</cite> to include in
+comparison. If <cite>None</cite> (default), uses all common columns not
+selected by <cite>categorical</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>cramers_v_MSE</strong> – Mean squared error between <cite>real</cite> and <cite>synth</cite> in Cramer’s V scores
-across feature pairs.</p>
+<dd class="field-even"><p>Mean squared difference between <cite>real</cite> and <cite>synth</cite> in
+correlation ratio scores across all categorical-continuous
+feature pairs.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>This metric is only valid for categorical features so a warning is returned
-if any of the selected features appear to be numeric. If no features are
-selected, only the <cite>category</cite> and <cite>object</cite> types are used.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.correlation.correlation_ratio">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">correlation_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">categorical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continuous</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#correlation_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.correlation_ratio" title="Permalink to this definition"></a></dt>
-<dd><p>Correlation ratio</p>
-<p>Calculates the correlation ratio for categorical-continuous association.
-Describes the possibility of deducing the corresponding category for a
-given continuous value.</p>
-<p>Returns a value in the range [0,1] where 0 means a category can not be
-determined given a continuous measurement and 1 means it can with absolute
-certainty.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>categorical</strong> (<em>Pandas Series</em>) – A sequence of categorical measurements</p></li>
-<li><p><strong>continuous</strong> (<em>Pandas Series</em>) – A sequence of continuous measurements</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float in the range [0,1]</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Correlation_ratio">https://en.wikipedia.org/wiki/Correlation_ratio</a> for more details.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.correlation.correlation_ratio_MSE">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.correlation.</span></span><span class="sig-name descname"><span class="pre">correlation_ratio_MSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorical_feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/correlation.html#correlation_ratio_MSE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.correlation.correlation_ratio_MSE" title="Permalink to this definition"></a></dt>
-<dd><p>Correlation Ratio Mean Squared Error</p>
-<p>This metric calculates the difference in association between categorical
-and continuous feature pairings in the real and synthetic datasets.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>categorical_feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Categorical feature(s) in <cite>real</cite> and <cite>synth</cite> to include in comparison.
-By default all object and categorical columns are selected.</p></li>
-<li><p><strong>numerical_feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Numerical feature(s) in <cite>real</cite> and <cite>synth</cite> to include in comparison.
-By default all columns not in <cite>categorical_feats</cite> are selected.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>corr_ratio_MSE</strong> – Mean squared error between <cite>real</cite> and <cite>synth</cite> in correlation ratio
-scores across valid feature pairs.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>If no categorical features are selected, columns of type <cite>category</cite> or
-<cite>object</cite> are used. If no numerical features are selected, all columns that
-are not listed as categorical features are used.</p>
 </dd></dl>
 
 </section>
@@ -275,7 +273,7 @@ are not listed as categorical features are used.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../cluster/index.html" class="btn btn-neutral float-left" title="synthgauge.metrics.cluster" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../privacy/index.html" class="btn btn-neutral float-right" title="synthgauge.metrics.privacy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../density/index.html" class="btn btn-neutral float-right" title="synthgauge.metrics.density" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

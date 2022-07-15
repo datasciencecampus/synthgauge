@@ -15,6 +15,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -67,96 +68,59 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.plot</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span></span><span class="sd">&quot;&quot;&quot;Functions for visually evaluating synthetic data.&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">crosstab</span><span class="p">,</span> <span class="n">cut</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">Index</span>
-<span class="kn">from</span> <span class="nn">pandas.core.dtypes.common</span> <span class="k">import</span> <span class="p">(</span><span class="n">is_categorical_dtype</span><span class="p">,</span> <span class="n">is_numeric_dtype</span><span class="p">,</span>
-                                       <span class="n">is_object_dtype</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">cat_encode</span><span class="p">,</span> <span class="n">feature_density_diff</span>
-<span class="kn">from</span> <span class="nn">.metrics.correlation</span> <span class="k">import</span> <span class="n">cramers_v</span>
+<span class="kn">from</span> <span class="nn">pandas.core.dtypes.common</span> <span class="kn">import</span> <span class="n">is_numeric_dtype</span>
+
+<span class="kn">from</span> <span class="nn">.metrics.correlation</span> <span class="kn">import</span> <span class="n">_pairwise_cramers_v</span>
+<span class="kn">from</span> <span class="nn">.metrics.density</span> <span class="kn">import</span> <span class="n">_feature_density_diff</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">cat_encode</span>
 
 <span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">()</span>
-
-
-<div class="viewcode-block" id="suggest_label_rotation"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.suggest_label_rotation">[docs]</a><span class="k">def</span> <span class="nf">suggest_label_rotation</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">char_lim</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Advise if labels should be rotated.</span>
-
-<span class="sd">    For the specifed axis the maximum characters for the</span>
-<span class="sd">    labels is calculated. If this is above `char_lim` the function</span>
-<span class="sd">    will return `True` to suggest that labels should be rotated</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    ax: matplotlib.axes.Axes</span>
-<span class="sd">        Axes to analyse.</span>
-<span class="sd">    axis: str, optional</span>
-<span class="sd">        Default is &#39;x&#39;.</span>
-<span class="sd">    char_lim: int, optional</span>
-<span class="sd">        Default is `5`.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bool</span>
-<span class="sd">        True if labels should be rotated, otherwise False.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tick_func</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;get_{axis.lower()}ticklabels&#39;</span>
-    <span class="n">labels</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">tick_func</span><span class="p">)()</span>
-    <span class="n">max_chars</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">max_chars</span> <span class="o">&gt;</span> <span class="n">char_lim</span></div>
 
 
 <div class="viewcode-block" id="plot_histograms"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_histograms">[docs]</a><span class="k">def</span> <span class="nf">plot_histograms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groupby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot feature distributions.</span>
 
-<span class="sd">    Plot a histogram (or countplot for categorical data) for each feature.</span>
-<span class="sd">    Where multiple features are provided a grid will be generated to store all</span>
-<span class="sd">    plots.</span>
+<span class="sd">    Plot a histogram (or countplot for categorical data) for each</span>
+<span class="sd">    feature. Where multiple features are provided a grid will be</span>
+<span class="sd">    generated to store all the plots.</span>
 
-<span class="sd">    Optionally, a groupby feature can be specified to apply a grouping prior</span>
-<span class="sd">    to calculating the distribution</span>
+<span class="sd">    Optionally, a groupby feature can be specified to apply a grouping</span>
+<span class="sd">    prior to calculating the distribution.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    df: pandas.DataFrame</span>
-<span class="sd">    feats: str or list of str</span>
-<span class="sd">        Feature(s) to plot. Must be column(s) in `df`.</span>
-<span class="sd">    groupby: str, default=None</span>
-<span class="sd">        Feature on which to group data. Default value of ``None`` means no</span>
-<span class="sd">        grouping is used.</span>
-<span class="sd">    figcols: int, default=2</span>
-<span class="sd">        Number of columns to use in figure. Only used when `feats` contains</span>
-<span class="sd">        more than one feature.</span>
-<span class="sd">    figsize: tuple of float, optional</span>
-<span class="sd">        Size of figure in inches (W,H). Defaults to</span>
-<span class="sd">        ``rcParams[&quot;figure.figsize&quot;](default: [6.4, 4.8])``.</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the feature(s) to be plotted.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features in to plot. If `None` (default), all features are used.</span>
+<span class="sd">    groupby : str, optional</span>
+<span class="sd">        Feature on which to group data.</span>
+<span class="sd">    figcols : int, default 2</span>
+<span class="sd">        Number of columns to use in the figure.</span>
+<span class="sd">    figsize : tuple of float, optional</span>
+<span class="sd">        Size of figure in inches `(width, height)`. Defaults to</span>
+<span class="sd">        `matplotlib.pyplot.rcParams[&quot;figure.figsize&quot;]`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
 
     <span class="n">n_rows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="o">/</span> <span class="n">figcols</span><span class="p">))</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">figcols</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">ft</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
-        <span class="k">if</span> <span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">])</span> <span class="ow">or</span> <span class="n">is_object_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">]):</span>
-            <span class="n">dist_func</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span>
-        <span class="k">elif</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">]):</span>
-            <span class="n">dist_func</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
-
-        <span class="n">dist_func</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">ft</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">feat</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">()):</span>
+        <span class="n">plotter</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span> <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feat</span><span class="p">])</span> <span class="k">else</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span>
+        <span class="n">plotter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">feat</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">)</span>
 
     <span class="c1"># Turn off axes with no data</span>
     <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">ravel</span><span class="p">():</span>
@@ -168,120 +132,136 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<div class="viewcode-block" id="plot_joint"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_joint">[docs]</a><span class="k">def</span> <span class="nf">plot_joint</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groupby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-               <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot bivariate and univariate graphs.</span>
-
-<span class="sd">    Convenience function that leverages seaborn. For more granular control</span>
-<span class="sd">    refer to ``seaborn.JointGrid`` and ``seaborn.jointplot``.</span>
+<div class="viewcode-block" id="_order_categorical"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot._order_categorical">[docs]</a><span class="k">def</span> <span class="nf">_order_categorical</span><span class="p">(</span><span class="n">feat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Order a feature only if it is categorical.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">    feat : pd.Series</span>
+<span class="sd">        The feature to be ordered.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pd.Series</span>
+<span class="sd">        The ordered feature.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">feat</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_ordered</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">feat</span></div>
+
+
+<div class="viewcode-block" id="plot_joint"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_joint">[docs]</a><span class="k">def</span> <span class="nf">plot_joint</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groupby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="mi">6</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot bivariate and univariate graphs.</span>
+
+<span class="sd">    Convenience function that leverages `seaborn`. For more granular</span>
+<span class="sd">    control, refer to `seaborn.JointGrid` and `seaborn.jointplot`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        DataFrame containing the feature(s) to plot.</span>
-<span class="sd">    x: str</span>
-<span class="sd">        Feature to plot on x axis and and margin. Must be column in `df`.</span>
-<span class="sd">    y: str</span>
-<span class="sd">        Feature to plot on y axis and and margin. Must be column in `df`.</span>
-<span class="sd">    groupby: str, default=None</span>
-<span class="sd">        Feature on which to group data. Default value of ``None`` means no</span>
-<span class="sd">        grouping is used.</span>
-<span class="sd">    x_bins, y_bins: array_like or int or str, default=&#39;auto&#39;</span>
-<span class="sd">        If ``array_like`` must be sequence of bin edges. If ``int``, specifies</span>
-<span class="sd">        the number of bins to use. If ``str``, specifies the method used to</span>
-<span class="sd">        calculate the optimal bin width. Default=``auto``. For all possible</span>
-<span class="sd">        values see ``numpy.histogram_bin_edges``.</span>
-<span class="sd">    figsize: int, default=None</span>
-<span class="sd">        Size of each side of the figure in inches (it will be square). Default</span>
-<span class="sd">        value of ``None`` will use default seaborn setting.</span>
+<span class="sd">    x : str</span>
+<span class="sd">        Feature to plot on the x-axis and -margin.</span>
+<span class="sd">    y : str</span>
+<span class="sd">        Feature to plot on the y-axis and -margin.</span>
+<span class="sd">    groupby : str, optional</span>
+<span class="sd">        Feature on which to group data.</span>
+<span class="sd">    x_bins, y_bins : array_like or int or str, default &quot;auto&quot;</span>
+<span class="sd">        Binning method for axis. If `array_like`, must be sequence of</span>
+<span class="sd">        bin edges. If `int`, specifies the number of bins to use. If</span>
+<span class="sd">        `str`, can be anything accepted by `numpy.histogram_bin_edges`.</span>
+<span class="sd">        Defaults to `&quot;auto&quot;`.</span>
+<span class="sd">    figsize: int, default 6</span>
+<span class="sd">        Size of each side of the figure in inches (it will be square).</span>
+<span class="sd">        Defaults to six inches.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    seaborn.axisgrid.JointGrid</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">figsize</span> <span class="o">=</span> <span class="n">figsize</span> <span class="ow">or</span> <span class="mi">6</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">JointGrid</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 
-    <span class="c1"># If a feature is categorical it must be used &#39;as_ordered&#39; for plotting a</span>
-    <span class="c1"># histogram</span>
-    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="n">ft</span><span class="p">):</span> <span class="k">return</span> <span class="n">ft</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_ordered</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ft</span><span class="p">,</span> <span class="s1">&#39;cat&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">ft</span>
-    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">order</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">]),</span> <span class="n">y</span><span class="o">=</span><span class="n">order</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]),</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span>
-                 <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">ax_joint</span><span class="p">)</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">JointGrid</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">_order_categorical</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">]),</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">_order_categorical</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]),</span>
+        <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">ax_joint</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># For margins can use countplot or hist depending on data type.</span>
     <span class="c1"># No legends are shown for these marginal plots.</span>
-    <span class="k">if</span> <span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="ow">or</span> <span class="n">is_object_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">]):</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">ax_marg_x</span><span class="p">)</span>
-        <span class="n">lg</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">lg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lg</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">x_bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">ax_marg_x</span><span class="p">,</span>
-                     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">side</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">bins</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">((</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">x_bins</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">)):</span>
 
-    <span class="k">if</span> <span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">])</span> <span class="ow">or</span> <span class="n">is_object_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]):</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">ax_marg_y</span><span class="p">)</span>
-        <span class="n">lg</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">lg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lg</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">groupby</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">y_bins</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">g</span><span class="o">.</span><span class="n">ax_marg_y</span><span class="p">,</span>
-                     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">side</span><span class="p">:</span> <span class="n">feat</span><span class="p">,</span>
+            <span class="s2">&quot;ax&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;ax_marg_</span><span class="si">{</span><span class="n">side</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;hue&quot;</span><span class="p">:</span> <span class="n">groupby</span><span class="p">,</span>
+        <span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">g</span></div>
+        <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feat</span><span class="p">]):</span>
+            <span class="n">plotter</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
+            <span class="n">plot_kwargs</span><span class="p">[</span><span class="s2">&quot;bins&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plotter</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span>
+
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plotter</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">legend</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">legend</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">grid</span></div>
 
 
-<div class="viewcode-block" id="plot_histogram3d"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_histogram3d">[docs]</a><span class="k">def</span> <span class="nf">plot_histogram3d</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_histogram3d"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_histogram3d">[docs]</a><span class="k">def</span> <span class="nf">plot_histogram3d</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot 3D histogram of two features.</span>
 
 <span class="sd">    This is similar to a 2D histogram plot with an extra axis added</span>
-<span class="sd">    to display the count for each featurewise pair as 3D bars.</span>
+<span class="sd">    to display the count for each feature-wise pair as 3D bars.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        DataFrame containing the feature(s) to plot.</span>
-<span class="sd">    x: str</span>
-<span class="sd">        Feature to plot on x axis and and margin. Must be column in `df`.</span>
-<span class="sd">    y: str</span>
-<span class="sd">        Feature to plot on y axis and and margin. Must be column in `df`.</span>
-<span class="sd">    x_bins, y_bins: array_like or int or str, default=&#39;auto&#39;</span>
-<span class="sd">        If ``array_like`` must be sequence of bin edges. If ``int``, specifies</span>
-<span class="sd">        the number of bins to use. If ``str``, specifies the method used to</span>
-<span class="sd">        calculate the optimal bin width. Default= ``auto``. For all possible</span>
-<span class="sd">        values see ``numpy.histogram_bin_edges``. If `x` or `y` is categorical</span>
-<span class="sd">        the bins will be set to the cardinality of the feature.</span>
-<span class="sd">    figsize: int, default=None</span>
-<span class="sd">        Size of each side of the figure in inches (it will be square). Default</span>
-<span class="sd">        value of ``None`` will use default plot settings.</span>
+<span class="sd">    x : str</span>
+<span class="sd">        Feature to plot on the x-axis and -margin.</span>
+<span class="sd">    y : str</span>
+<span class="sd">        Feature to plot on the y-axis and -margin.</span>
+<span class="sd">    x_bins, y_bins : array_like or int or str, default &quot;auto&quot;</span>
+<span class="sd">        Binning method for axis. If the corresponding feature is</span>
+<span class="sd">        categorical, the bins will be set to the cardinality of that</span>
+<span class="sd">        feature. If `array_like`, must be sequence of bin edges. If</span>
+<span class="sd">        `int`, specifies the number of bins to use. If `str`, can be</span>
+<span class="sd">        anything accepted by `numpy.histogram_bin_edges`. Defaults to</span>
+<span class="sd">        `&quot;auto&quot;`.</span>
+<span class="sd">    figsize: tuple of float, optional</span>
+<span class="sd">        Size of figure in inches `(width, height)`. Defaults to</span>
+<span class="sd">        `matplotlib.pyplot.rcParams[&quot;figure.figsize&quot;]`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># Encode categorical data</span>
-    <span class="n">cat_feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">ft_name</span> <span class="k">for</span> <span class="n">ft_name</span><span class="p">,</span> <span class="n">ft_series</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
-                 <span class="k">if</span> <span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">ft_series</span><span class="p">)</span>
-                 <span class="ow">or</span> <span class="n">is_object_dtype</span><span class="p">(</span><span class="n">ft_series</span><span class="p">)]</span>
+    <span class="n">cat_feats</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">columns</span>
     <span class="n">cat_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat_feats</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cat_feats</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">cat_labels</span> <span class="o">=</span> <span class="n">cat_encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cat_feats</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Determine bins</span>
     <span class="n">bins_xy</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ft</span><span class="p">,</span> <span class="n">ft_bins</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="p">[</span><span class="n">x_bins</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="n">ft</span> <span class="ow">in</span> <span class="n">cat_feats</span><span class="p">:</span>
-            <span class="c1"># If categorical set bins to cardinality</span>
-            <span class="n">bins_xy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># otherwise compute bins as specified</span>
-            <span class="n">bins_xy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">ft</span><span class="p">],</span> <span class="n">ft_bins</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">feat</span><span class="p">,</span> <span class="n">bins</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="p">[</span><span class="n">x_bins</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">]):</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feat</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span> <span class="k">if</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">cat_feats</span> <span class="k">else</span> <span class="n">bins</span>
+        <span class="n">bins_xy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feat</span><span class="p">],</span> <span class="n">bins</span><span class="p">))</span>
 
     <span class="c1"># Create figure</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
 
     <span class="c1"># Compute 2D histogram</span>
     <span class="n">hist</span><span class="p">,</span> <span class="n">xedges</span><span class="p">,</span> <span class="n">yedges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins_xy</span><span class="p">)</span>
@@ -297,13 +277,13 @@
     <span class="n">zpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">dz</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span>
 
     <span class="c1"># Plot the 3D bars</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">bar3d</span><span class="p">(</span><span class="n">xpos</span><span class="p">,</span> <span class="n">ypos</span><span class="p">,</span> <span class="n">zpos</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">zsort</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">bar3d</span><span class="p">(</span><span class="n">xpos</span><span class="p">,</span> <span class="n">ypos</span><span class="p">,</span> <span class="n">zpos</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">,</span> <span class="n">zsort</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">)</span>
 
     <span class="c1"># Set title and labels</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;$count$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;3D Histogram&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;$count$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;3D Histogram&quot;</span><span class="p">)</span>
 
     <span class="c1"># Set tick lables for categorical features</span>
     <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cat_labels</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -316,91 +296,94 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<div class="viewcode-block" id="plot_correlation"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_correlation">[docs]</a><span class="k">def</span> <span class="nf">plot_correlation</span><span class="p">(</span><span class="o">*</span><span class="n">df</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">,</span> <span class="n">plot_diff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                     <span class="n">figcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot correlation between features in a DataFrame.</span>
+<div class="viewcode-block" id="plot_correlation"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_correlation">[docs]</a><span class="k">def</span> <span class="nf">plot_correlation</span><span class="p">(</span>
+    <span class="o">*</span><span class="n">dfs</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span>
+    <span class="n">plot_diff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">figcols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot correlation between features in a dataframe.</span>
 
 <span class="sd">    For each dataframe provided a subplot is generated showing a</span>
-<span class="sd">    correlation heatmap of the features. For numeric features the method can</span>
-<span class="sd">    be any method supported by ``pandas.DataFrame.corr``; for categorical or</span>
-<span class="sd">    object feature types ``&#39;cramers_v&#39;`` must be specified. If the method does</span>
-<span class="sd">    not match the data type an error is raised.</span>
+<span class="sd">    correlation heatmap of the features. For numeric features, the</span>
+<span class="sd">    method can be anything supported by `pandas.DataFrame.corr`; for</span>
+<span class="sd">    categorical or object feature types `&quot;cramers_v&quot;` must be specified.</span>
+<span class="sd">    If the method does not match the data type, an error is raised.</span>
 
-<span class="sd">    The `plot_diff` parameter will also include a difference plot i.e.</span>
-<span class="sd">    correlation difference between two dataframes. This is only used when</span>
-<span class="sd">    two dataframes are provided.</span>
+<span class="sd">    The `plot_diff` parameter will also include a difference plot, i.e.</span>
+<span class="sd">    correlation difference between two dataframes. This is only used</span>
+<span class="sd">    when two dataframes are provided.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    *df: pandas.DataFrame</span>
-<span class="sd">        Any number of DataFrame objects to plot.</span>
-<span class="sd">    feats: str or list of str</span>
-<span class="sd">        Feature(s) to plot. Must be column(s) in `df`.</span>
-<span class="sd">    method: {&#39;pearson&#39;|&#39;spearman&#39;|&#39;cramers_v&#39;}, default=&#39;pearson&#39;</span>
-<span class="sd">        Correlation method. See ``pandas.DataFrame.corr`` for more details on</span>
-<span class="sd">        ``&#39;pearson&#39;`` and ``&#39;spearman&#39;``. When ``&#39;cramers_v&#39;`` is specified,</span>
-<span class="sd">        correlation is calculated using</span>
-<span class="sd">        ``synthgauge.metrics.correlation.cramers_v``.</span>
-<span class="sd">    plot_diff: bool, default=False</span>
-<span class="sd">        If True and exactly two data frames are provided will also plot</span>
-<span class="sd">        a heatmap of the absolute differences between the respective datasets&#39;</span>
-<span class="sd">        correlations.</span>
-<span class="sd">    figcols: int, default=2</span>
-<span class="sd">        Number of columns to use in figure. Only used when `feats` contains</span>
-<span class="sd">        more than one feature.</span>
-<span class="sd">    figsize: tuple of float, optional</span>
-<span class="sd">        Size of figure in inches (W,H). Defaults to</span>
-<span class="sd">        ``rcParams[&quot;figure.figsize&quot;](default: [6.4, 4.8])``.</span>
-<span class="sd">    **kwargs: dict, optional</span>
-<span class="sd">        Any other keyword arguments to be passed to ``seaborn.heatmap``. For</span>
-<span class="sd">        example ``annot=True`` will turn on cell annotations. See documentation</span>
-<span class="sd">        for more examples.</span>
+<span class="sd">    *dfs : pandas.DataFrame</span>
+<span class="sd">        Any number of dataframes to plot.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to plot. Must be present in all elements of `dfs`.</span>
+<span class="sd">        If `None` (default), uses features common to all dataframes.</span>
+<span class="sd">    method : {&quot;pearson&quot;, &quot;spearman&quot;, &quot;cramers_v&quot;}, default &quot;pearson&quot;</span>
+<span class="sd">        Correlation method. See `pandas.DataFrame.corr` for more details</span>
+<span class="sd">        on `&quot;pearson&quot;` and `&quot;spearman&quot;`. When `&quot;cramers_v&quot;` is</span>
+<span class="sd">        specified, correlation is calculated using</span>
+<span class="sd">        `synthgauge.metrics.correlation.cramers_v`.</span>
+<span class="sd">    plot_diff : bool, default False</span>
+<span class="sd">        If `True` and exactly two dataframes are provided, will also</span>
+<span class="sd">        plot a heatmap of the absolute differences between the</span>
+<span class="sd">        respective datasets&#39; correlations.</span>
+<span class="sd">    figcols : int, default 2</span>
+<span class="sd">        Number of columns to use in the figure. Only used when `feats`</span>
+<span class="sd">        contains more than one feature.</span>
+<span class="sd">    figsize : tuple of float, optional</span>
+<span class="sd">        Size of figure in inches `(width, height)`. Defaults to</span>
+<span class="sd">        `matplotlib.pyplot.rcParams[&quot;figure.figsize&quot;]`.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Any other keyword arguments to be passed to `seaborn.heatmap`.</span>
+<span class="sd">        For example `annot=True` will turn on cell annotations. See</span>
+<span class="sd">        documentation for more examples.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `method` does not match the data type(s) of `feats`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">method_cramers_v</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compute cramers_v</span>
 
-<span class="sd">        Compute pairwise cramers_v correlation for the entire dataframe.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-            <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">cramers_v</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]))</span>
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dfs</span><span class="p">)))</span>
 
-        <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+    <span class="n">corr_results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">dfs</span><span class="p">:</span>
 
-        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-
-    <span class="n">corr_results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">df</span><span class="p">:</span>
-        <span class="c1"># If no features specified use all columns</span>
-        <span class="k">if</span> <span class="n">feats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">feats</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">columns</span>
-
-        <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pearson&#39;</span><span class="p">,</span> <span class="s1">&#39;spearman&#39;</span><span class="p">]:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="s2">&quot;spearman&quot;</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No numeric columns available for method: &quot;</span>
-                                 <span class="n">f</span><span class="s2">&quot;</span><span class="si">{method}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No numeric columns available for method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
-            <span class="n">corr_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span>
-                <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">))</span>
+            <span class="n">corr_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cramers_v&#39;</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;cramers_v&quot;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No categorical columns available for &quot;</span>
-                                 <span class="n">f</span><span class="s2">&quot;method: </span><span class="si">{method}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No categorical columns available for method: </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
 
-            <span class="n">corr_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">method_cramers_v</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span>
-                <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">))</span>
+            <span class="n">corr_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">_pairwise_cramers_v</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
 
     <span class="c1"># Get min and max to set consistant colourbar</span>
     <span class="n">corr_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">corr_results</span><span class="p">)</span>
@@ -415,20 +398,21 @@
 
     <span class="n">n_subplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">corr_results</span><span class="p">)</span>
     <span class="n">ncols</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">n_subplots</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">figcols</span>
-    <span class="n">nrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_subplots</span><span class="o">/</span><span class="n">ncols</span><span class="p">))</span>
+    <span class="n">nrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_subplots</span> <span class="o">/</span> <span class="n">ncols</span><span class="p">))</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">ax_num</span><span class="p">,</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">corr</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
-                                            <span class="n">corr_results</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">ax_num</span><span class="p">,</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">corr</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+        <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">corr_results</span><span class="p">)</span>
+    <span class="p">):</span>
         <span class="k">if</span> <span class="n">ax_num</span> <span class="o">==</span> <span class="n">n_subplots</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">plot_diff</span><span class="p">:</span>
-            <span class="n">sp_title</span> <span class="o">=</span> <span class="s1">&#39;Correlation Difference&#39;</span>
-            <span class="c1"># Ignore vmin and vmax for this plot as scale will be different</span>
-            <span class="c1"># to the others</span>
+            <span class="n">sp_title</span> <span class="o">=</span> <span class="s2">&quot;Correlation Difference&quot;</span>
+            <span class="c1"># Ignore vmin and vmax for this plot as scale will be</span>
+            <span class="c1"># different to the others</span>
             <span class="n">vmin</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">vmax</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sp_title</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;DataFrame {ax_num+1} Correlation&quot;</span>
+            <span class="n">sp_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DataFrame </span><span class="si">{</span><span class="n">ax_num</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> Correlation&quot;</span>
 
         <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -443,81 +427,98 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<div class="viewcode-block" id="plot_crosstab"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_crosstab">[docs]</a><span class="k">def</span> <span class="nf">plot_crosstab</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">y_bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-                  <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot crosstab heatmap for two features.</span>
+<div class="viewcode-block" id="plot_crosstab"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_crosstab">[docs]</a><span class="k">def</span> <span class="nf">plot_crosstab</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">,</span>
+    <span class="n">x_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">y_bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;rocket&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot cross-tabulation heatmap for two features.</span>
 
-<span class="sd">    The two-feature crosstab calculation is performed and plotted as a heatmap.</span>
-<span class="sd">    One heatmap is shown for the `real` data and one for the `synthetic`.</span>
-<span class="sd">    Numeric features are discretised using the corresponding bins argument.</span>
+<span class="sd">    The two-feature crosstab calculation is performed and plotted as a</span>
+<span class="sd">    heatmap. One heatmap is shown for the real data and one for the</span>
+<span class="sd">    synthetic. Numeric features are discretised using the `*_bins`</span>
+<span class="sd">    arguments.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the sythetic data.</span>
-<span class="sd">    x: str</span>
-<span class="sd">        Feature to plot on x axis. Must be column in `df`.</span>
-<span class="sd">    y: str</span>
-<span class="sd">        Feature to plot on y axis. Must be column in `df`.</span>
-<span class="sd">    x_bins, y_bins: array_like or int or str, default=&#39;auto&#39;</span>
-<span class="sd">        If ``array_like`` must be sequence of bin edges. If ``int``, specifies</span>
-<span class="sd">        the number of bins to use. If ``str``, specifies the method used to</span>
-<span class="sd">        calculate the optimal bin width. Default= ``auto``. For all possible</span>
-<span class="sd">        values see ``numpy.histogram_bin_edges``.</span>
-<span class="sd">        Only used for numeric features.</span>
-<span class="sd">    figsize: tuple of float, optional</span>
-<span class="sd">        Size of figure in inches (W,H). Defaults to</span>
-<span class="sd">        ``rcParams[&quot;figure.figsize&quot;](default: [6.4, 4.8])``.</span>
-<span class="sd">    **kwargs: dict, optional</span>
-<span class="sd">        Any other keyword arguments to be passed to ``seaborn.heatmap``. For</span>
-<span class="sd">        example ``annot=True`` will turn on cell annotations. See documentation</span>
-<span class="sd">        for more examples.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    x : str</span>
+<span class="sd">        Feature to plot on the x-axis and -margin.</span>
+<span class="sd">    y : str</span>
+<span class="sd">        Feature to plot on the y-axis and -margin.</span>
+<span class="sd">    x_bins, y_bins : array_like or int or str, default &quot;auto&quot;</span>
+<span class="sd">        Binning method for axis. If `array_like`, must be sequence of</span>
+<span class="sd">        bin edges. If `int`, specifies the number of bins to use. If</span>
+<span class="sd">        `str`, can be anything accepted by `numpy.histogram_bin_edges`.</span>
+<span class="sd">        Defaults to `&quot;auto&quot;`. Only used for numeric features.</span>
+<span class="sd">    figsize : tuple of float, optional</span>
+<span class="sd">        Size of figure in inches `(width, height)`. Defaults to</span>
+<span class="sd">        `matplotlib.pyplot.rcParams[&quot;figure.figsize&quot;]`.</span>
+<span class="sd">    cmap : str, default &quot;rocket&quot;</span>
+<span class="sd">        Palette name for heatmap and colour bar. See the documentation</span>
+<span class="sd">        for `seaborn.color_palette` on available palette formats.</span>
+<span class="sd">        Defaults to `&quot;rocket&quot;`.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Any other keyword arguments to be passed to `seaborn.heatmap`.</span>
+<span class="sd">        For example, `annot=True` will turn on cell annotations. See</span>
+<span class="sd">        documentation for more examples.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># Collect x and y values</span>
     <span class="n">real_x</span><span class="p">,</span> <span class="n">real_y</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">real</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
     <span class="n">synth_x</span><span class="p">,</span> <span class="n">synth_y</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
-    <span class="n">all_x</span> <span class="o">=</span> <span class="n">real_x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synth_x</span><span class="p">)</span>
-    <span class="n">all_y</span> <span class="o">=</span> <span class="n">real_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">synth_y</span><span class="p">)</span>
+    <span class="n">all_x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">real_x</span><span class="p">,</span> <span class="n">synth_x</span><span class="p">))</span>
+    <span class="n">all_y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">real_y</span><span class="p">,</span> <span class="n">synth_y</span><span class="p">))</span>
 
     <span class="c1"># Discretise numeric features</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">all_x</span><span class="p">):</span>
-            <span class="n">x_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">all_x</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">x_bins</span><span class="p">)</span>
-            <span class="n">real_x</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">real_x</span><span class="p">,</span> <span class="n">x_bins</span><span class="p">)</span>
-            <span class="n">synth_x</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">synth_x</span><span class="p">,</span> <span class="n">x_bins</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">all_x</span><span class="p">):</span>
+        <span class="n">x_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">all_x</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">x_bins</span><span class="p">)</span>
+        <span class="n">real_x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">real_x</span><span class="p">,</span> <span class="n">x_bins</span><span class="p">)</span>
+        <span class="n">synth_x</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">synth_x</span><span class="p">,</span> <span class="n">x_bins</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">all_y</span><span class="p">):</span>
-            <span class="n">y_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">all_y</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">y_bins</span><span class="p">)</span>
-            <span class="n">real_y</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">real_y</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">)</span>
-            <span class="n">synth_y</span> <span class="o">=</span> <span class="n">cut</span><span class="p">(</span><span class="n">synth_y</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;`x_bins` and `y_bins` must not be None&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">all_y</span><span class="p">):</span>
+        <span class="n">y_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">all_y</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">y_bins</span><span class="p">)</span>
+        <span class="n">real_y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">real_y</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">)</span>
+        <span class="n">synth_y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">synth_y</span><span class="p">,</span> <span class="n">y_bins</span><span class="p">)</span>
 
-    <span class="n">freq_real</span> <span class="o">=</span> <span class="n">crosstab</span><span class="p">(</span><span class="n">real_x</span><span class="p">,</span> <span class="n">real_y</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">freq_synth</span> <span class="o">=</span> <span class="n">crosstab</span><span class="p">(</span><span class="n">synth_x</span><span class="p">,</span> <span class="n">synth_y</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">freq_real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">real_x</span><span class="p">,</span> <span class="n">real_y</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">freq_synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">synth_x</span><span class="p">,</span> <span class="n">synth_y</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Use same scale for real and synth</span>
     <span class="n">vmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">freq_real</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">freq_synth</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
     <span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">freq_real</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">freq_synth</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-    <span class="n">mpbl</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">mpl</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">),</span>
-                                 <span class="n">cmap</span><span class="o">=</span><span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s2">&quot;rocket&quot;</span><span class="p">,</span>
-                                 <span class="n">as_cmap</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-    <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">freq_real</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;REAL&#39;</span><span class="p">)</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">as_cmap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mpbl</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">mpl</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
 
-    <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">freq_synth</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;SYNTH&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">freq</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">freq_real</span><span class="p">,</span> <span class="n">freq_synth</span><span class="p">),</span> <span class="n">axes</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;REAL&quot;</span><span class="p">,</span> <span class="s2">&quot;SYNTH&quot;</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+            <span class="n">freq</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+            <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+            <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mpbl</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
 
@@ -525,69 +526,61 @@
 
 
 <div class="viewcode-block" id="plot_qq"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_qq">[docs]</a><span class="k">def</span> <span class="nf">plot_qq</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Plot a Q-Q plot.</span>
+    <span class="sd">&quot;&quot;&quot;Generate a Q-Q plot for a feature of real and synthetic data.</span>
 
-<span class="sd">    Generate a Quantile-Quantile plot of `feature` for the real and</span>
-<span class="sd">    synthetic data. Q-Q plots are used to visualise two datasets</span>
-<span class="sd">    to see if they are generated from the same distribution.</span>
+<span class="sd">    Quantile-quantile (Q-Q) plots are used to visualise two sets of</span>
+<span class="sd">    numeric data to see if they are generated from the same</span>
+<span class="sd">    distribution.</span>
 
-<span class="sd">    In this case, it is used to provide some insight into the distribution</span>
-<span class="sd">    of feature `feature` in the synthetic data versus the real data. If the</span>
-<span class="sd">    plot is a straight line then it can be inferred that the two</span>
-<span class="sd">    distributions are similar and therefore the synthetically generated</span>
-<span class="sd">    data follows the same distribution as the real data.</span>
+<span class="sd">    In this case, it is used to provide some insight into the</span>
+<span class="sd">    feature distributions for the synthetic and real data. If the</span>
+<span class="sd">    scatter plot shows a straight line, then it can be inferred that the</span>
+<span class="sd">    two distributions are similar and therefore the synthetically</span>
+<span class="sd">    generated data follows the same distribution as the real data.</span>
 
 <span class="sd">    See `Q-Q Plot &lt;https://en.wikipedia.org/wiki/Q-Q_plot&gt;`_ for more</span>
 <span class="sd">    information.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the sythetic data.</span>
-<span class="sd">    feature: str</span>
-<span class="sd">        Feature to plot.</span>
-<span class="sd">    n_quantiles: int, optional</span>
-<span class="sd">        Number of quantiles to calculate. If ``None`` (the default) and</span>
-<span class="sd">        ``real[feature]`` has the same length as ``synth[feature]`` then</span>
-<span class="sd">        `n_quantiles` is set to the number of elements. If the lengths are</span>
-<span class="sd">        different then n_quantiles is set to the length of ``real[feature]``.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feature : str</span>
+<span class="sd">        Feature to plot. Must be in `real` and `synth`.</span>
+<span class="sd">    n_quantiles : int or None, default None</span>
+<span class="sd">        Number of quantiles to calculate. If `None` (default), uses the</span>
+<span class="sd">        length of `real`.</span>
 <span class="sd">    figsize: tuple of float, optional</span>
-<span class="sd">        Size of figure in inches (W,H). Defaults to</span>
-<span class="sd">        ``rcParams[&quot;figure.figsize&quot;](default: [6.4, 4.8])``.</span>
+<span class="sd">        Size of figure in inches `(width, height)`. Defaults to</span>
+<span class="sd">        `matplotlib.pyplot.rcParams[&quot;figure.figsize&quot;]`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If `feature` is not a numeric data type feature.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">n_quantiles</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">]):</span>
-            <span class="c1"># Matching lengths do not require computing quantiles</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Determine n_quantiles from real data</span>
-            <span class="n">n_quantiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">])</span>
-            <span class="n">qs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">)</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">qs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The feature must be numeric not of type: </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">n_quantiles</span> <span class="o">=</span> <span class="n">n_quantiles</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
+
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">qs</span><span class="p">)</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;real data quantiles&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;synth data quantiles&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Q-Q Plot for &quot;</span><span class="si">{feature}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
-
-    <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">suggest_label_rotation</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">())</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;real data quantiles&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;synth data quantiles&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Q-Q Plot for </span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Plot X = Y</span>
     <span class="n">min_xy</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
@@ -597,86 +590,83 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<div class="viewcode-block" id="plot_feat_density_diff"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_feat_density_diff">[docs]</a><span class="k">def</span> <span class="nf">plot_feat_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feat_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                           <span class="n">diff_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_feat_density_diff"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_feat_density_diff">[docs]</a><span class="k">def</span> <span class="nf">plot_feat_density_diff</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feat_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">diff_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot real and synth feature density differences.</span>
 
-<span class="sd">    For each feature the feature density difference between `real` and</span>
-<span class="sd">    `synth` is calculated using ``synthgauge.utils.feature_density_diff``.</span>
+<span class="sd">    For each feature, the density difference between `real` and `synth`</span>
+<span class="sd">    is calculated using `synthgauge.utils._feature_density_diff`.</span>
 
-<span class="sd">    If a single feature is provided the plot shows the raw density</span>
-<span class="sd">    differences for each bin.</span>
+<span class="sd">    If a single feature is provided in `feats`, the plot shows the raw</span>
+<span class="sd">    density differences for each bin in that feature.</span>
 
-<span class="sd">    Where multiple feature are provided, the density differences are</span>
-<span class="sd">    concatenated into a flattened array and a histogram plotted. The</span>
+<span class="sd">    Where multiple features are provided, the density differences are</span>
+<span class="sd">    pd.concatenated into a flattened array and a histogram plotted. The</span>
 <span class="sd">    histogram represents the distribution of differences in densities</span>
 <span class="sd">    across all features and bins.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the sythetic data.</span>
-<span class="sd">    feats: str or list of str, optional.</span>
-<span class="sd">        The features that will be used to compute the densities. By</span>
-<span class="sd">        default all features in `real` will be used.</span>
-<span class="sd">    feat_bins: str or int, optional</span>
-<span class="sd">        Bins to use for computing the feature densities. This value is passed</span>
-<span class="sd">        to ``numpy.histogram_bin_edges`` so can be any value accepted by</span>
-<span class="sd">        that function. The default setting of ``10`` uses 10 bins.</span>
-<span class="sd">    diff_bins: str or int, optional</span>
-<span class="sd">        Bins to use for the difference histogram. Only used when</span>
-<span class="sd">        multiple features are provided. This value is passed to</span>
-<span class="sd">        ``numpy.histogram_bin_edges`` so can be any value accepted by</span>
-<span class="sd">        that function. The default setting of ``10`` uses 10 bins.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features used to compute the densities. If `None` (default), all</span>
+<span class="sd">        common features are used.</span>
+<span class="sd">    feat_bins : str or int, default 10</span>
+<span class="sd">        Bins to use for computing the feature densities. This value is</span>
+<span class="sd">        passed to `numpy.histogram_bin_edges` so can be any value</span>
+<span class="sd">        accepted by that function. By default, uses 10 bins.</span>
+<span class="sd">    diff_bins : str or int, default 10</span>
+<span class="sd">        Bins to use when computing the multiple-feature difference</span>
+<span class="sd">        histogram. This value is passed to `numpy.histogram_bin_edges`</span>
+<span class="sd">        so can be any value accepted by that function. By default, uses</span>
+<span class="sd">        10 bins.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    matplotlib.axes._subplots.AxesSubplot</span>
-<span class="sd">        The matplotlib axes containing the plot.</span>
+<span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span>
+
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">diff_hist</span><span class="p">,</span> <span class="n">diff_edges</span> <span class="o">=</span> <span class="n">feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span>
-                                                     <span class="n">feat_bins</span><span class="p">)</span>
-        <span class="n">xlabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{feats[0]}</span><span class="s1"> Binned&#39;</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Density Difference&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;Feature Density Difference for </span><span class="si">{feats[0]}</span><span class="s1">&#39;</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">feats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">diff_hist</span><span class="p">,</span> <span class="n">diff_edges</span> <span class="o">=</span> <span class="n">_feature_density_diff</span><span class="p">(</span>
+            <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">feat_bins</span>
+        <span class="p">)</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2"> Binned&quot;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Density Difference&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Feature Density Difference for </span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># TODO: option to have different bins for each feature</span>
-        <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">feat_bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">]</span>
+        <span class="n">diffs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">feat_bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">feats</span>
+        <span class="p">]</span>
 
-        <span class="n">diff_hist</span><span class="p">,</span> <span class="n">diff_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">diffs</span><span class="p">),</span>
-                                             <span class="n">bins</span><span class="o">=</span><span class="n">diff_bins</span><span class="p">)</span>
+        <span class="n">diff_hist</span><span class="p">,</span> <span class="n">diff_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">diffs</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="n">diff_bins</span>
+        <span class="p">)</span>
 
-        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Difference Bins&#39;</span>
-        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Count&#39;</span>
-        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Histogram of Density Differences&#39;</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Difference Bins&quot;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Count&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Histogram of Density Differences&quot;</span>
 
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
 
     <span class="c1"># default bar width is too large so use scaled bin size</span>
     <span class="n">bar_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">diff_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">diff_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.8</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">diff_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">diff_hist</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">bar_width</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">diff_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">diff_hist</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;edge&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">bar_width</span><span class="p">)</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">ax</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 </pre></div>
 
            </div>

@@ -15,6 +15,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -67,76 +68,120 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.datasets</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">random</span>
+<span></span><span class="sd">&quot;&quot;&quot;Functions for creating toy datasets.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="k">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
 
 
-<div class="viewcode-block" id="make_blood_types_df"><a class="viewcode-back" href="../../autoapi/synthgauge/datasets/index.html#synthgauge.datasets.make_blood_types_df">[docs]</a><span class="k">def</span> <span class="nf">make_blood_types_df</span><span class="p">(</span><span class="n">noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">proportion_nan</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Create Dummy Data for examples</span>
-
-<span class="sd">    This function creates dummy data for the synthgauge examples.</span>
+<div class="viewcode-block" id="_adjust_data_elements"><a class="viewcode-back" href="../../autoapi/synthgauge/datasets/index.html#synthgauge.datasets._adjust_data_elements">[docs]</a><span class="k">def</span> <span class="nf">_adjust_data_elements</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">nan_prop</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adjust the given data and put it into a dataframe.</span>
+<span class="sd">    This function is not intended to be used directly by users.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    noise : int</span>
-<span class="sd">        Standard deviation of the Gaussian noise to add to the data, default</span>
-<span class="sd">        zero.</span>
-<span class="sd">    proportion_nan: float [0,1]</span>
-<span class="sd">        Proportion of dataset to replace with nans.</span>
-<span class="sd">    random_seed : int</span>
-<span class="sd">        Use for reproducibility.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">        The data array to be adjusted.</span>
+<span class="sd">    labels : numpy.ndarray</span>
+<span class="sd">        A set of labels for classifying the rows of `data`.</span>
+<span class="sd">    noise : float</span>
+<span class="sd">        The amount of noise to inject into the data. Specifically,</span>
+<span class="sd">        this controls the `scale` parameter of a zero-centred normal</span>
+<span class="sd">        distribution.</span>
+<span class="sd">    nan_prop : float</span>
+<span class="sd">        The proportion of elements to replace with missing values.</span>
+<span class="sd">    seed : int</span>
+<span class="sd">        A random seed used to choose missing element indices and sample</span>
+<span class="sd">        noise.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pd.DataFrame</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        The adjusted, combined dataframe.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+
+    <span class="n">num_cols</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">num_nans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">nan_prop</span><span class="p">)</span>
+    <span class="n">nan_idxs</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">num_nans</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">nan_coords</span> <span class="o">=</span> <span class="p">[(</span><span class="n">idx</span> <span class="o">//</span> <span class="n">num_cols</span><span class="p">,</span> <span class="n">idx</span> <span class="o">%</span> <span class="n">num_cols</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">nan_idxs</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">nan_coords</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">nan_coords</span><span class="p">))]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">noise</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="make_blood_types_df"><a class="viewcode-back" href="../../autoapi/synthgauge/datasets/index.html#synthgauge.datasets.make_blood_types_df">[docs]</a><span class="k">def</span> <span class="nf">make_blood_types_df</span><span class="p">(</span><span class="n">noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">nan_prop</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a toy dataset about blood types and physical atrtibutes.</span>
+
+<span class="sd">    This function is used to create data for the package&#39;s examples and</span>
+<span class="sd">    its tests. Its outputs are not intended to imply or be used for any</span>
+<span class="sd">    meaningful data analysis.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    noise : float</span>
+<span class="sd">        Standard deviation of the Gaussian noise added to the data.</span>
+<span class="sd">        Default is zero (no noise) and must be non-negative.</span>
+<span class="sd">    nan_prop : float, default 0</span>
+<span class="sd">        Proportion of dataset to replace with missing values.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Seed used by all random samplers. Used for reproducibility.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        A toy &quot;blood type&quot; dataset.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The amout of noise can be tuned to crudely simulate the creation of</span>
+<span class="sd">    The amount of noise can be tuned to crudely simulate the creation of</span>
 <span class="sd">    synthetic data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                               <span class="n">n_features</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                               <span class="n">n_informative</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                               <span class="n">n_redundant</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                               <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
-                               <span class="n">flip_y</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-                               <span class="n">random_state</span><span class="o">=</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span>
+        <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">n_features</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">n_informative</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">n_redundant</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">n_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+        <span class="n">flip_y</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
-    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">_adjust_data_elements</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">nan_prop</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
 
-    <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">X</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">y</span><span class="p">))</span>
-    <span class="n">prop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">proportion_nan</span><span class="p">)</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">prop</span><span class="p">)]</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">prop</span><span class="p">)]</span>
-    <span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;age&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;height&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;weight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hair_colour&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;eye_colour&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;blood_type&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
 
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">mat</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">noise</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">6</span><span class="p">)))</span>
-
-    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">,</span>
-                  <span class="s1">&#39;hair_colour&#39;</span><span class="p">,</span> <span class="s1">&#39;eye_colour&#39;</span><span class="p">,</span> <span class="s1">&#39;blood_type&#39;</span><span class="p">]</span>
-
-    <span class="n">df</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">age</span><span class="o">*</span><span class="p">(</span><span class="mi">52</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">+</span><span class="mi">44</span><span class="p">))</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">height</span><span class="o">*</span><span class="p">(</span><span class="mi">52</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">+</span><span class="mi">175</span><span class="p">))</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">weight</span><span class="o">*</span><span class="p">(</span><span class="mi">52</span><span class="o">/</span><span class="mi">9</span><span class="p">)</span><span class="o">+</span><span class="mi">80</span><span class="p">))</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">hair_colour</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">hair_colour</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
-        <span class="s1">&#39;Red&#39;</span><span class="p">,</span> <span class="s1">&#39;Black&#39;</span><span class="p">,</span> <span class="s1">&#39;Brown&#39;</span><span class="p">,</span> <span class="s1">&#39;Blonde&#39;</span><span class="p">])</span>
-        <span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">())</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">eye_colour</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">eye_colour</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
-                           <span class="s1">&#39;Blue&#39;</span><span class="p">,</span> <span class="s1">&#39;Brown&#39;</span><span class="p">,</span> <span class="s1">&#39;Green&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">()</span>
-    <span class="n">df</span><span class="o">.</span><span class="n">blood_type</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">blood_type</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
-                           <span class="s1">&#39;O&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;AB&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">age</span> <span class="o">*</span> <span class="p">(</span><span class="mi">52</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="mi">44</span><span class="p">))</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="p">(</span><span class="mi">52</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="mi">175</span><span class="p">))</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="p">(</span><span class="mi">52</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span> <span class="o">+</span> <span class="mi">80</span><span class="p">))</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">hair_colour</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">hair_colour</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Red&quot;</span><span class="p">,</span> <span class="s2">&quot;Black&quot;</span><span class="p">,</span> <span class="s2">&quot;Brown&quot;</span><span class="p">,</span> <span class="s2">&quot;Blonde&quot;</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">eye_colour</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">eye_colour</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Blue&quot;</span><span class="p">,</span> <span class="s2">&quot;Brown&quot;</span><span class="p">,</span> <span class="s2">&quot;Green&quot;</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">blood_type</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">blood_type</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;AB&quot;</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_unordered</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
 </pre></div>
 
            </div>

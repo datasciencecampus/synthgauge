@@ -15,6 +15,7 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -67,36 +68,93 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.metrics.correlation</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">mean_squared_error</span>
+<span></span><span class="sd">&quot;&quot;&quot;Correlation-based utility metrics.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">corrcoef</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">chi2_contingency</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">combinations</span><span class="p">,</span> <span class="n">product</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">chi2_contingency</span>
 
 
-<div class="viewcode-block" id="correlation_MSD"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.correlation.correlation_MSD">[docs]</a><span class="k">def</span> <span class="nf">correlation_MSD</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;correlation mean-squared-difference</span>
+<div class="viewcode-block" id="_mean_squared_difference"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation._mean_squared_difference">[docs]</a><span class="k">def</span> <span class="nf">_mean_squared_difference</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the mean-squared difference (error) between two numeric</span>
+<span class="sd">    objects or two arrays.&quot;&quot;&quot;</span>
 
-<span class="sd">    This metric calculates the mean squared difference between the correlation</span>
-<span class="sd">    matrices for the real and synthetic datasets. This gives an indication of</span>
-<span class="sd">    how well the synthetic data has retained inter-variable relationships.</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_cramers_v"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation._cramers_v">[docs]</a><span class="k">def</span> <span class="nf">_cramers_v</span><span class="p">(</span><span class="n">var1</span><span class="p">,</span> <span class="n">var2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cramer&#39;s V.</span>
+
+<span class="sd">    Measures the association between two nominal categorical variables.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Numeric features to use. Non-numeric features will be filtered out. By</span>
-<span class="sd">        default all numeric features are used.</span>
+<span class="sd">    var1 : pandas.Series</span>
+<span class="sd">        Measurements for the first variable.</span>
+<span class="sd">    var2 : pandas.Series</span>
+<span class="sd">        Measurements for the second variable.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    MSD_c : float</span>
-<span class="sd">        Correlation mean squared difference.</span>
+<span class="sd">    float</span>
+<span class="sd">        The association between the two variables.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Wikipedia suggests that this formulation of Cramer&#39;s V tends to</span>
+<span class="sd">    overestimate the strength of an association and poses a corrected</span>
+<span class="sd">    version. However, since we are only concerned with how associations</span>
+<span class="sd">    compare and not what the actual values are, we continue to use this</span>
+<span class="sd">    simpler version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">confusion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">var1</span><span class="p">,</span> <span class="n">var2</span><span class="p">))</span>
+    <span class="n">chi2</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">chi2_contingency</span><span class="p">(</span><span class="n">confusion</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">chi2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">confusion</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">confusion</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="_pairwise_cramers_v"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation._pairwise_cramers_v">[docs]</a><span class="k">def</span> <span class="nf">_pairwise_cramers_v</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute pairwise Cramer&#39;s V for the columns of `data`.&quot;&quot;&quot;</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_cramers_v</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]))</span>
+
+    <span class="n">size</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="correlation_msd"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.correlation.correlation_msd">[docs]</a><span class="k">def</span> <span class="nf">correlation_msd</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pearson&quot;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mean-squared difference in correlation coefficients.</span>
+
+<span class="sd">    This metric calculates the mean squared difference between the</span>
+<span class="sd">    correlation matrices for the real and synthetic datasets. This gives</span>
+<span class="sd">    an indication of how well the synthetic data has retained bivariate</span>
+<span class="sd">    relationships.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    method : {&quot;pearson&quot;, &quot;spearman&quot;, &quot;cramers_v&quot;}, default &quot;pearson&quot;</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to measure correlation across. If `method=&quot;cramers_v&quot;`,</span>
+<span class="sd">        all numeric columns will be filtered out. Likewise, for the</span>
+<span class="sd">        other correlation methods, all non-numeric columns are removed.</span>
+<span class="sd">        If `None` (default), all common features that satisfy the needs</span>
+<span class="sd">        of `method` are used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Mean-squared difference of correlation coefficients.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -104,208 +162,134 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Correlations only make sense for numerical data, so this function first</span>
-<span class="sd">    filters the columns by datatype.</span>
+<span class="sd">    The smaller the number this function returns, the better the</span>
+<span class="sd">    synthetic data captures the correlation between variables in the</span>
+<span class="sd">    real data. This method is therefore good for comparing multiple</span>
+<span class="sd">    synthetic datasets to see which is closest to the real. However, as</span>
+<span class="sd">    this is not a test, there is no threshold value below which we can</span>
+<span class="sd">    claim the datasets are statistically the same.</span>
 
-<span class="sd">    The smaller the number this function returns, the better the synthetic</span>
-<span class="sd">    data captures the correlation between variables in the real data. This</span>
-<span class="sd">    method is therefore good for comparing multiple synthetic datasets to see</span>
-<span class="sd">    which is closest to the real. However, as this is not a test, there is no</span>
-<span class="sd">    threshold value below which we can claim the datasets are statistically</span>
-<span class="sd">    the same.</span>
+<span class="sd">    We only consider the coefficients above the main diagonal when</span>
+<span class="sd">    calculating the MSD. If we included the entire matrix, we would</span>
+<span class="sd">    double-count each pair of features as well as including the trivial</span>
+<span class="sd">    ones along the main diagonal.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
+
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cramers_v&quot;</span><span class="p">:</span>
+        <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">rcorr</span><span class="p">,</span> <span class="n">scorr</span> <span class="o">=</span> <span class="n">_pairwise_cramers_v</span><span class="p">(</span><span class="n">real</span><span class="p">),</span> <span class="n">_pairwise_cramers_v</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-    <span class="c1"># select only numeric variables</span>
-    <span class="n">real_numeric</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
-    <span class="n">synth_numeric</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span>
-    <span class="c1"># calculate correlation matrices</span>
-    <span class="n">real_corr</span> <span class="o">=</span> <span class="n">corrcoef</span><span class="p">(</span><span class="n">real_numeric</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">synth_corr</span> <span class="o">=</span> <span class="n">corrcoef</span><span class="p">(</span><span class="n">synth_numeric</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># return mean squared difference</span>
-    <span class="k">return</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">real_corr</span><span class="p">,</span> <span class="n">synth_corr</span><span class="p">)</span></div>
+        <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">rcorr</span><span class="p">,</span> <span class="n">scorr</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">),</span> <span class="n">synth</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+
+    <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rcorr</span><span class="p">)),</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">rcorr</span><span class="p">,</span> <span class="n">scorr</span> <span class="o">=</span> <span class="n">rcorr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">idxs</span><span class="p">),</span> <span class="n">scorr</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_mean_squared_difference</span><span class="p">(</span><span class="n">rcorr</span><span class="p">,</span> <span class="n">scorr</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="cramers_v"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation.cramers_v">[docs]</a><span class="k">def</span> <span class="nf">cramers_v</span><span class="p">(</span><span class="n">var1</span><span class="p">,</span> <span class="n">var2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Cramer&#39;s V</span>
+<div class="viewcode-block" id="_correlation_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation._correlation_ratio">[docs]</a><span class="k">def</span> <span class="nf">_correlation_ratio</span><span class="p">(</span><span class="n">categorical</span><span class="p">,</span> <span class="n">continuous</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Categorical-continuous correlation ratio.</span>
 
-<span class="sd">    Measures the association between two nominal categorical variables.</span>
+<span class="sd">    Calculates the correlation ratio for categorical-continuous</span>
+<span class="sd">    association. Describes the possibility of deducing the corresponding</span>
+<span class="sd">    category for a given continuous value.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    var1 : pandas.Series</span>
-<span class="sd">        Series object containing the values for one of the variables to be used</span>
-<span class="sd">        in the comparison.</span>
-<span class="sd">    var2 : pandas.Series</span>
-<span class="sd">        Series object containing the values for the other variable to be used</span>
-<span class="sd">        in the comparison.</span>
+<span class="sd">    Missing values are not permitted in either series. Any rows with a</span>
+<span class="sd">    missing value are dropped from both series before calculating the</span>
+<span class="sd">    ratio.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    Cramers_V : float</span>
-<span class="sd">        The amount of association between the two variables.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Wikipedia suggests that this formulation of Cramer&#39;s V tends to</span>
-<span class="sd">    overestimate the strength of an association and poses a corrected version.</span>
-<span class="sd">    However, since we are only concerned with how associations compare and not</span>
-<span class="sd">    what the actual values are, we continue to use this simpler version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">confusion_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">var1</span><span class="p">,</span> <span class="n">var2</span><span class="p">))</span>
-    <span class="c1"># Chi-squared test statistic, sample size, and minimum of rows and columns</span>
-    <span class="n">X2</span> <span class="o">=</span> <span class="n">chi2_contingency</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">correction</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">)</span>
-    <span class="n">minDim</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
-    <span class="c1"># Calculate Cramer&#39;s V</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">X2</span><span class="o">/</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="n">minDim</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="cramers_v_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.correlation.cramers_v_MSE">[docs]</a><span class="k">def</span> <span class="nf">cramers_v_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Cramer&#39;s V Mean Squared Error</span>
-
-<span class="sd">    This metric calculates the difference in association between categorical</span>
-<span class="sd">    features in the real and synthetic datasets.</span>
+<span class="sd">    Returns a value in the range [0, 1] where 0 means a category can not</span>
+<span class="sd">    be determined given a continuous measurement and 1 means it can with</span>
+<span class="sd">    absolute certainty.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Feature(s) in `real` and `synth` to include in comparison. By default</span>
-<span class="sd">        all object and categorical columns are selected.</span>
+<span class="sd">    categorical : pandas.Series</span>
+<span class="sd">        Categorical feature measurements.</span>
+<span class="sd">    continuous : pandas.Series</span>
+<span class="sd">        Continuous feature measurements.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    cramers_v_MSE : float</span>
-<span class="sd">        Mean squared error between `real` and `synth` in Cramer&#39;s V scores</span>
-<span class="sd">        across feature pairs.</span>
+<span class="sd">    float</span>
+<span class="sd">        The categorical-continuous association ratio.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    This metric is only valid for categorical features so a warning is returned</span>
-<span class="sd">    if any of the selected features appear to be numeric. If no features are</span>
-<span class="sd">    selected, only the `category` and `object` types are used.</span>
+<span class="sd">    See https://en.wikipedia.org/wiki/Correlation_ratio for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># check features are categorical if supplied</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">feats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">non_cat</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span>
-            <span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_cat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Selected features include numeric types:&#39;</span>
-                          <span class="n">f</span><span class="s1">&#39;</span><span class="si">{non_cat}</span><span class="s1"> If these should not be included, rerun &#39;</span>
-                          <span class="s1">&#39;specifying different features. Otherwise, they will&#39;</span>
-                          <span class="s1">&#39; be assumed to be encoded categories.&#39;</span><span class="p">)</span>
-    <span class="c1"># find all possible feature combinations</span>
-    <span class="n">feat_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">real_cramers_v</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">synth_cramers_v</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1"># loop through feature combinations</span>
-    <span class="k">for</span> <span class="n">feat1</span><span class="p">,</span> <span class="n">feat2</span> <span class="ow">in</span> <span class="n">feat_combinations</span><span class="p">:</span>
-        <span class="n">real_cramers_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cramers_v</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feat1</span><span class="p">],</span> <span class="n">real</span><span class="p">[</span><span class="n">feat2</span><span class="p">]))</span>
-        <span class="n">synth_cramers_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cramers_v</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">feat1</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feat2</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">real_cramers_v</span><span class="p">,</span> <span class="n">synth_cramers_v</span><span class="p">)</span></div>
 
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">categorical</span><span class="p">,</span> <span class="n">continuous</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+    <span class="n">categorical</span><span class="p">,</span> <span class="n">continuous</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span>
 
-<div class="viewcode-block" id="correlation_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/correlation/index.html#synthgauge.metrics.correlation.correlation_ratio">[docs]</a><span class="k">def</span> <span class="nf">correlation_ratio</span><span class="p">(</span><span class="n">categorical</span><span class="p">,</span> <span class="n">continuous</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Correlation ratio</span>
-
-<span class="sd">    Calculates the correlation ratio for categorical-continuous association.</span>
-<span class="sd">    Describes the possibility of deducing the corresponding category for a</span>
-<span class="sd">    given continuous value.</span>
-
-<span class="sd">    Returns a value in the range [0,1] where 0 means a category can not be</span>
-<span class="sd">    determined given a continuous measurement and 1 means it can with absolute</span>
-<span class="sd">    certainty.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    categorical : Pandas Series</span>
-<span class="sd">        A sequence of categorical measurements</span>
-<span class="sd">    continuous : Pandas Series</span>
-<span class="sd">        A sequence of continuous measurements</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    float in the range [0,1]</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    See https://en.wikipedia.org/wiki/Correlation_ratio for more details.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">categories</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">categorical</span><span class="p">)</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">categorical</span><span class="p">)</span>
     <span class="n">category_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">))</span>
     <span class="n">category_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">))</span>
+
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">categories</span><span class="p">):</span>
         <span class="n">cts_in_cat</span> <span class="o">=</span> <span class="n">continuous</span><span class="p">[</span><span class="n">categorical</span> <span class="o">==</span> <span class="n">cat</span><span class="p">]</span>
         <span class="n">category_means</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cts_in_cat</span><span class="p">)</span>
         <span class="n">category_counts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cts_in_cat</span><span class="p">)</span>
+
     <span class="n">total_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">continuous</span><span class="p">)</span>
-    <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">category_counts</span><span class="o">*</span><span class="p">((</span><span class="n">category_means</span><span class="o">-</span><span class="n">total_mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">continuous</span><span class="o">-</span><span class="n">total_mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numerator</span><span class="o">/</span><span class="n">denominator</span><span class="p">)</span></div>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">category_counts</span> <span class="o">*</span> <span class="p">((</span><span class="n">category_means</span> <span class="o">-</span> <span class="n">total_mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">continuous</span> <span class="o">-</span> <span class="n">total_mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="correlation_ratio_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.correlation.correlation_ratio_MSE">[docs]</a><span class="k">def</span> <span class="nf">correlation_ratio_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">categorical_feats</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-                          <span class="n">numerical_feats</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Correlation Ratio Mean Squared Error</span>
+<div class="viewcode-block" id="correlation_ratio_msd"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.correlation.correlation_ratio_msd">[docs]</a><span class="k">def</span> <span class="nf">correlation_ratio_msd</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">numeric</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Correlation ratio mean-squared difference.</span>
 
-<span class="sd">    This metric calculates the difference in association between categorical</span>
-<span class="sd">    and continuous feature pairings in the real and synthetic datasets.</span>
+<span class="sd">    This metric calculates the mean-squared difference in association</span>
+<span class="sd">    between categorical and continuous feature pairings in the real and</span>
+<span class="sd">    synthetic datasets.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
+<span class="sd">    real : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">    synth : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    categorical_feats: str or list of str, optional</span>
-<span class="sd">        Categorical feature(s) in `real` and `synth` to include in comparison.</span>
-<span class="sd">        By default all object and categorical columns are selected.</span>
-<span class="sd">    numerical_feats: str or list of str, optional</span>
-<span class="sd">        Numerical feature(s) in `real` and `synth` to include in comparison.</span>
-<span class="sd">        By default all columns not in `categorical_feats` are selected.</span>
+<span class="sd">    categorical : list of str or None, default None</span>
+<span class="sd">        Categorical features in `real` and `synth` to include in</span>
+<span class="sd">        comparison. If `None` (default), uses all common object-type</span>
+<span class="sd">        columns.</span>
+<span class="sd">    numeric : list of str or None, default None</span>
+<span class="sd">        Numerical features in `real` and `synth` to include in</span>
+<span class="sd">        comparison. If `None` (default), uses all common columns not</span>
+<span class="sd">        selected by `categorical`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    corr_ratio_MSE : float</span>
-<span class="sd">        Mean squared error between `real` and `synth` in correlation ratio</span>
-<span class="sd">        scores across valid feature pairs.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    If no categorical features are selected, columns of type `category` or</span>
-<span class="sd">    `object` are used. If no numerical features are selected, all columns that</span>
-<span class="sd">    are not listed as categorical features are used.</span>
+<span class="sd">    float</span>
+<span class="sd">        Mean squared difference between `real` and `synth` in</span>
+<span class="sd">        correlation ratio scores across all categorical-continuous</span>
+<span class="sd">        feature pairs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">categorical_feats</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
-        <span class="n">categorical_feats</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span>
-            <span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
-    <span class="k">if</span> <span class="n">numerical_feats</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">numerical_feats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">categorical_feats</span><span class="p">))</span>
-    <span class="n">real_corr_ratio</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">synth_corr_ratio</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">cat_feat</span><span class="p">,</span> <span class="n">num_feat</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="n">categorical_feats</span><span class="p">,</span>
-                                           <span class="n">numerical_feats</span><span class="p">)):</span>
-        <span class="n">real_corr_ratio</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correlation_ratio</span><span class="p">(</span>
-            <span class="n">real</span><span class="p">[</span><span class="n">cat_feat</span><span class="p">],</span> <span class="n">real</span><span class="p">[</span><span class="n">num_feat</span><span class="p">]))</span>
-        <span class="n">synth_corr_ratio</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correlation_ratio</span><span class="p">(</span>
-            <span class="n">synth</span><span class="p">[</span><span class="n">cat_feat</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">num_feat</span><span class="p">]))</span>
-    <span class="k">return</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="n">real_corr_ratio</span><span class="p">,</span> <span class="n">synth_corr_ratio</span><span class="p">)</span></div>
 
+    <span class="n">common</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">categorical</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">categorical</span>
+        <span class="ow">or</span> <span class="n">real</span><span class="p">[</span><span class="n">common</span><span class="p">]</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">)</span>
+    <span class="n">numeric</span> <span class="o">=</span> <span class="n">numeric</span> <span class="ow">or</span> <span class="n">common</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">categorical</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
+    <span class="n">real_corr_ratio</span><span class="p">,</span> <span class="n">synth_corr_ratio</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">cat_feat</span><span class="p">,</span> <span class="n">num_feat</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">categorical</span><span class="p">,</span> <span class="n">numeric</span><span class="p">):</span>
+        <span class="n">real_corr_ratio</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">_correlation_ratio</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">cat_feat</span><span class="p">],</span> <span class="n">real</span><span class="p">[</span><span class="n">num_feat</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">synth_corr_ratio</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">_correlation_ratio</span><span class="p">(</span><span class="n">synth</span><span class="p">[</span><span class="n">cat_feat</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">num_feat</span><span class="p">])</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_mean_squared_difference</span><span class="p">(</span><span class="n">real_corr_ratio</span><span class="p">,</span> <span class="n">synth_corr_ratio</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
