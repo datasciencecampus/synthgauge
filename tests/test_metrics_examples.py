@@ -130,13 +130,13 @@ def test_propensity_metric_logistic(evaluator):
     )
     results = evaluator.evaluate()
 
-    assert results["propensity_logr"].observed_p_MSE == pytest.approx(
+    assert results["propensity_logr"].pmse == pytest.approx(
         0.05493054447730439
     )
-    assert results["propensity_logr"].standardised_p_MSE == pytest.approx(
+    assert results["propensity_logr"].pmse_standardised == pytest.approx(
         65.6818850109618
     )
-    assert results["propensity_logr"].ratio_p_MSE == pytest.approx(
+    assert results["propensity_logr"].pmse_ratio == pytest.approx(
         6.7606823972066445
     )
 
@@ -153,13 +153,13 @@ def test_propensity_metric_CART(evaluator):
     )
     results = evaluator.evaluate()
 
-    assert results["propensity_cart"].observed_p_MSE == pytest.approx(
+    assert results["propensity_cart"].pmse == pytest.approx(
         0.24683333333333332
     )
-    assert results["propensity_cart"].standardised_p_MSE == pytest.approx(
+    assert results["propensity_cart"].pmse_standardised == pytest.approx(
         0.32171687896285317
     )
-    assert results["propensity_cart"].ratio_p_MSE == pytest.approx(
+    assert results["propensity_cart"].pmse_ratio == pytest.approx(
         1.0008369591991682
     )
 
