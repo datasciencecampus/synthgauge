@@ -1,4 +1,4 @@
-""" A submodule for all utility and privacy metrics. """
+"""A submodule for all utility and privacy metrics."""
 
 from .classification import classification_comparison
 from .cluster import clustered_msd

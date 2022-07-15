@@ -15,8 +15,10 @@ class Evaluator:
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     handle_nans : str, default "drop"
         Whether to drop missing values. If yes, use "drop" (default).
 
@@ -341,8 +343,10 @@ class Evaluator:
             Dataframe to pass to plotting function. Either `"real"` to
             pass `self.real_data`, `"synth"` to pass `self.synth_data`
             or `"combined"` to pass `self.combined_data`.
-        x, y : str
-            Columns to plot along the x and y axes.
+        x : str
+            Column to plot along the x-axis.
+        y : str
+            Column to plot alont the y-axis.
         """
 
         return plot.plot_histogram3d(

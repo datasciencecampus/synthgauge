@@ -21,8 +21,10 @@ def df_combine(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         Features to combine. If `None` (default), all common features
         are used.
@@ -90,8 +92,10 @@ def df_separate(
 
     Returns
     -------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real data and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     """
 
     feats = list(feats) if feats is not None else list(data.columns)
@@ -116,8 +120,10 @@ def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         Features to launder. If `None` (default), all common features
         are used.
@@ -128,8 +134,10 @@ def launder(real, synth, feats=None, suffix_real="real", suffix_synth="synth"):
 
     Returns
     -------
-    real, synth : pandas.DataFrame
-        Laundered versions of the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the laundered real data.
+    synth : pandas.DataFrame
+        Dataframe containing the laundered synthetic data.
     """
 
     feats = feats or real.columns.intersection(synth.columns)

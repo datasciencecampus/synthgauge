@@ -17,8 +17,10 @@ def _feature_density_diff(real, synth, feature, bins=10):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         The feature that will be used to compute the density.
     bins : str or int, default 10

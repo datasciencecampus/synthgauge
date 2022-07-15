@@ -85,9 +85,10 @@ def _get_scores(test, pred):
 
     Parameters
     ----------
-    test, pred : array_like
-        Labels from the test set and prediction, respectively, used to
-        calculate the scores.
+    test : array_like
+        Labels from the test set.
+    pred : array_like
+        Predicted labels.
 
     Returns
     -------
@@ -123,8 +124,10 @@ def classification_comparison(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str
         List of column names to use as the input in the classification.
     target : str

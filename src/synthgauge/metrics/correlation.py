@@ -21,8 +21,10 @@ def _cramers_v(var1, var2):
 
     Parameters
     ----------
-    var1, var2 : pandas.Series
-        Series objects containing the variables to be compared.
+    var1 : pandas.Series
+        Measurements for the first variable.
+    var2 : pandas.Series
+        Measurements for the second variable.
 
     Returns
     -------
@@ -67,8 +69,10 @@ def correlation_msd(real, synth, method="pearson", feats=None):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     method : {"pearson", "spearman", "cramers_v"}, default "pearson"
     feats : list of str or None, default None
         Features to measure correlation across. If `method="cramers_v"`,
@@ -135,8 +139,10 @@ def _correlation_ratio(categorical, continuous):
 
     Parameters
     ----------
-    categorical, continuous : pandas.Series
-        Sequences of categorical and continuous measurements.
+    categorical : pandas.Series
+        Categorical feature measurements.
+    continuous : pandas.Series
+        Continuous feature measurements.
 
     Returns
     -------
@@ -176,8 +182,10 @@ def correlation_ratio_msd(real, synth, categorical=None, numeric=None):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     categorical : list of str or None, default None
         Categorical features in `real` and `synth` to include in
         comparison. If `None` (default), uses all common object-type

@@ -1,4 +1,4 @@
-""" A library for evaluating synthetic data. """
+"""A library for evaluating synthetic data."""
 
 # flake8: noqa
 import pkg_resources

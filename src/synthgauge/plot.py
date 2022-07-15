@@ -91,15 +91,17 @@ def plot_joint(
     ----------
     df : pandas.DataFrame
         DataFrame containing the feature(s) to plot.
-    x, y : str
-        Features to plot on the x and y axes (and margins).
+    x : str
+        Feature to plot on the x-axis and -margin.
+    y : str
+        Feature to plot on the y-axis and -margin.
     groupby : str, optional
         Feature on which to group data.
     x_bins, y_bins : array_like or int or str, default "auto"
-        Binning method for x and y axes. If `array_like`, must be
-        sequence of bin edges. If `int`, specifies the number of bins to
-        use. If `str`, can be anything accepted by
-        `numpy.histogram_bin_edges`. Defaults to `"auto"`.
+        Binning method for axis. If `array_like`, must be sequence of
+        bin edges. If `int`, specifies the number of bins to use. If
+        `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+        Defaults to `"auto"`.
     figsize: int, default 6
         Size of each side of the figure in inches (it will be square).
         Defaults to six inches.
@@ -154,14 +156,17 @@ def plot_histogram3d(df, x, y, x_bins="auto", y_bins="auto", figsize=None):
     ----------
     df : pandas.DataFrame
         DataFrame containing the feature(s) to plot.
-    x, y : str
-        Features to plot on the x and y axes (and margins).
+    x : str
+        Feature to plot on the x-axis and -margin.
+    y : str
+        Feature to plot on the y-axis and -margin.
     x_bins, y_bins : array_like or int or str, default "auto"
-        Binning method for x and y axes. If `x` or `y` is categorical,
-        the bins will be set to the cardinality of the feature. If
-        `array_like`, must be sequence of bin edges. If `int`, specifies
-        the number of bins to use. If `str`, can be anything accepted by
-        `numpy.histogram_bin_edges`. Defaults to `"auto"`.
+        Binning method for axis. If the corresponding feature is
+        categorical, the bins will be set to the cardinality of that
+        feature. If `array_like`, must be sequence of bin edges. If
+        `int`, specifies the number of bins to use. If `str`, can be
+        anything accepted by `numpy.histogram_bin_edges`. Defaults to
+        `"auto"`.
     figsize: tuple of float, optional
         Size of figure in inches `(width, height)`. Defaults to
         `matplotlib.pyplot.rcParams["figure.figsize"]`.
@@ -372,17 +377,19 @@ def plot_crosstab(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    x, y : str
-        Features to plot on the x and y axes (and margins). Must be in
-        `real` and `synth`.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    x : str
+        Feature to plot on the x-axis and -margin.
+    y : str
+        Feature to plot on the y-axis and -margin.
     x_bins, y_bins : array_like or int or str, default "auto"
-        Binning method for x and y axes. If `array_like`, must be
-        sequence of bin edges. If `int`, specifies the number of bins to
-        use. If `str`, can be anything accepted by
-        `numpy.histogram_bin_edges`. Defaults to `"auto"`. Only used for
-        numeric features.
+        Binning method for axis. If `array_like`, must be sequence of
+        bin edges. If `int`, specifies the number of bins to use. If
+        `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+        Defaults to `"auto"`. Only used for numeric features.
     figsize : tuple of float, optional
         Size of figure in inches `(width, height)`. Defaults to
         `matplotlib.pyplot.rcParams["figure.figsize"]`.
@@ -466,8 +473,10 @@ def plot_qq(real, synth, feature, n_quantiles=None, figsize=None):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature to plot. Must be in `real` and `synth`.
     n_quantiles : int or None, default None
@@ -529,8 +538,10 @@ def plot_feat_density_diff(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         Features used to compute the densities. If `None` (default), all
         common features are used.

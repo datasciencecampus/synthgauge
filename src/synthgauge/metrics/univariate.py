@@ -11,8 +11,10 @@ def _get_bin_counts(real, synth, feature, bins):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data, respectively.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data. respectively.
     feature : str
         Feature to be processed into bin counts. Must be continuous.
     bins : int or str or None
@@ -52,8 +54,10 @@ def kullback_leibler(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     bins : int or str or None, default "auto"
@@ -129,8 +133,10 @@ def jensen_shannon_divergence(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     bins : int or str or None, default "auto"
@@ -203,8 +209,10 @@ def jensen_shannon_distance(real, synth, feature, bins="auto", **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     bins : int or str or None, default "auto"
@@ -277,8 +285,10 @@ def wasserstein(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     **kwargs : dict, optional
@@ -345,8 +355,10 @@ def kolmogorov_smirnov(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Name of the feature to compare. This must be continuous.
     **kwargs : dict, optional
@@ -410,8 +422,10 @@ def kruskal_wallis(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     **kwargs : dict, optional
@@ -473,8 +487,10 @@ def mann_whitney(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     **kwargs : dict, optional
@@ -536,8 +552,10 @@ def wilcoxon(real, synth, feature, **kwargs):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feature : str
         Feature of the datasets to compare. This must be continuous.
     **kwargs : dict, optional

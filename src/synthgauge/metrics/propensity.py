@@ -18,8 +18,10 @@ def _combine_encode_and_pop(real, synth):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
 
     Returns
     -------
@@ -395,8 +397,10 @@ def propensity_metrics(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     method : {"cart", "logr"}, default "cart"
         Which propensity model to use. Must be either CART (`"cart"`) or
         logistic regression with first-order interactions (`"logr"`).

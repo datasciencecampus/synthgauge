@@ -14,18 +14,18 @@ def _get_cluster_labels(combined, method, k, random_state):
 
     Parameters
     ----------
-    combined: pandas.DataFrame
+    combined : pandas.DataFrame
         Dataframe containing the real and synthetic data.
-    method: {"kmeans", "kprototypes"}
+    method : {"kmeans", "kprototypes"}
         Which clustering method to use.
-    k: int
+    k : int
         Number of clusters to fit.
-    random_state: int, optional
+    random_state : int, optional
         Random seed for fitting clusters.
 
     Returns
     -------
-    labels: np.ndarray
+    labels : np.ndarray
         Integer labels indicating cluster membership for each point in
         `combined`.
     """
@@ -60,13 +60,14 @@ def _get_cluster_proportions(labels, indicator):
 
     Parameters
     ----------
-    labels, indicator: array_like
-        Arrays detailing cluster membership (`labels`) and which points
-        are real or synthetic (`indicator`).
+    labels : array_like
+        Cluster membership array.
+    indicator : array_like
+        Indicator of which data are real and which are synthetic.
 
     Returns
     -------
-    proportions: numpy.ndarray
+    proportions : numpy.ndarray
         Array with synthetic data proportion of each cluster.
     """
 
@@ -106,8 +107,10 @@ def clustered_msd(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         Features to use in the clustering. If `None` (default), all
         common features are used.
@@ -116,9 +119,10 @@ def clustered_msd(
         are implemented. If using k-means (default), only numeric
         columns are considered, while k-prototypes allows for mixed-type
         clustering.
-    k_min, k_max : int
-        Minimum and maximum number of clusters to use. Defaults are 10
-        and 40, respectively.
+    k_min : int, default 2
+        Minimum number of clusters to use. Default of 2.
+    k_max : int, default 10
+        Maximum number of clusters to use. Default of 10.
     random_state : int, optional
         The random seed used to fit the clustering algorithm.
 

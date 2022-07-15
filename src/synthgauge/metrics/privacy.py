@@ -58,8 +58,10 @@ def tcap_score(real, synth, key, target):
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     key : list of str
         List of features in `synth` to use as the key.
     target : str
@@ -107,14 +109,14 @@ def tcap_score(real, synth, key, target):
     return np.mean(target_matches)
 
 
-def _find_outliers(data, outlier_factor_threshold, n_neighbours):
+def _find_outliers(data, threshold, n_neighbours):
     """Identify local outliers using the nearest-neighbour principle.
 
     Parameters
     ----------
     data : pandas.DataFrame
         Dataframe to be assessed for outliers.
-    outlier_factor_threshold : float
+    threshold : float
         Float influencing classification of outliers. Increasing this
         threshold means that fewer points are considered outliers.
     n_neighbours : int
@@ -137,7 +139,7 @@ def _find_outliers(data, outlier_factor_threshold, n_neighbours):
     lof.fit_predict(data)
 
     outlier_factor = -lof.negative_outlier_factor_
-    outlier_bool = outlier_factor < outlier_factor_threshold
+    outlier_bool = outlier_factor < threshold
 
     return outlier_bool
 
@@ -159,8 +161,10 @@ def min_nearest_neighbour(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         Features in `real` and `synth` to use when calculating
         distance. If `None` (default), all common features are used.
@@ -240,8 +244,10 @@ def sample_overlap_score(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        DataFrames containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
     feats : list of str or None, default None
         The features used to match records. If `None` (default), all
         common features are used.
