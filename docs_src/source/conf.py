@@ -14,6 +14,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import synthgauge as sg
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +23,7 @@ copyright = '2022, Data Science Campus'
 author = 'Ali Cass & Tom White'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = sg.__version__
 napoleon_include_private_with_doc = False
 
 # -- General configuration ---------------------------------------------------
