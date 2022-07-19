@@ -9,7 +9,7 @@ synthetically generated data.
 
 The library provides a range of metrics and visualisations for assessing and
 comparing distributions of features between real and synthetic data. At its
-core is the `Evaluator` class, which provides a consistant interface to
+core is the `Evaluator` class, which provides a consistent interface for
 applying a range of metrics to the data. By creating several `Evaluator`
 instances, you can easily evaluate synthetic data generated from a range of
 methods in a consistent and comparable manner.
@@ -18,7 +18,7 @@ methods in a consistent and comparable manner.
 :lock: vs. :bar_chart:
 
 When generating synthetic data, there is generally a trade-off between privacy
-(i.ev. keeping sensitive information private) and utility (i.ev. ensuring the
+(i.e. keeping sensitive information private) and utility (i.e. ensuring the
 dataset is still fit for purpose).
 
 The metrics included in SynthGauge fall into these categories and work is
@@ -33,7 +33,7 @@ SynthGauge **is not** going to make any decisions on behalf of the user. It
 won’t specify if one synthetic dataset is better than another. This decision is
 dataset- and purpose-dependent so can vary widely from user to user.
 
-It is a **decision-support tool**, not a decision-making tool.
+Simply, SynthGauge is a **decision-support tool**, not a decision-making tool.
 
 ## Getting Started
 
@@ -45,16 +45,17 @@ be installed directly from GitHub. The package is configured using
 `setuptools` and `wheel`. Be sure to update these if you havent for a while!
 
 ```bash
-$ pip3 install -U pip setuptools wheel
-$ pip3 install git+https://github.com/datasciencecampus/synthgauge@v1.0.0
+$ python -m pip install --upgrade pip setuptools wheel
+$ python -m pip install git+https://github.com/datasciencecampus/synthgauge
 ```
 
 Import the package and check the version:
 
-```
+```python
 >>> import synthgauge
 >>> print(synthgauge.__version__)
 1.0.0
+
 ```
 ### Usage
 To help users get acquainted example Jupyter Notebooks are included in the
@@ -105,4 +106,4 @@ questions to [datacampus@ons.gov.uk](mailto:datacampus@ons.gov.uk).
 If you encounter any bugs as part of your usage of `synthgauge`, please file an
 issue detailing as much information as possible and include a minimal
 reproducible example. If you wish to contribute code to the project, please
-refer to [CONTRIBUTING](CONTRIBUTING.md).
+refer to the [contribution guidelines](CONTRIBUTING.md).
