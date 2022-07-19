@@ -18,9 +18,9 @@ import synthgauge as sg
 
 # -- Project information -----------------------------------------------------
 
-project = 'SynthGauge'
-copyright = '2022, Data Science Campus'
-author = 'Ali Cass & Tom White'
+project = "SynthGauge"
+copyright = "2022, Data Science Campus"
+author = "Ali Cass, Tom White and Henry Wilde"
 
 # The full version, including alpha/beta/rc tags
 release = sg.__version__
@@ -31,14 +31,17 @@ napoleon_include_private_with_doc = False
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['autoapi.extension',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.viewcode'
-              ]
-autoapi_dirs = ['../../src']
+extensions = [
+    "autoapi.extension",
+    "nbsphinx",
+    "nbsphinx_link",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+]
+autoapi_dirs = ["../../src"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -51,18 +54,18 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Logo for sidebar
-html_logo = './_static/favicon.png'
+html_logo = "./_static/favicon.png"
 
 # Faviocon
-html_favicon = './_static/favicon.png'
+html_favicon = "./_static/favicon.png"
 
 # # replace "view page source" with "edit on github" in Read The Docs theme
 # #  * https://github.com/readthedocs/sphinx_rtd_theme/issues/529
