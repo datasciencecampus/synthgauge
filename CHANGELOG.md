@@ -1,5 +1,13 @@
 # v2.0.0 - 2022-07-19
 
+This release hopes to improve the reproducibility of `synthgauge` by adding
+reliable random number sampling, robust tests, fuller documentation, code
+formatting, continuous integration, code styling and bug fixes.
+
+As well as these additions, several parts of the codebase have been refactored
+and reorganised to be clearer to users and developers at the expense of
+breaking back-compatibility.
+
 ## Features
 
 - Pseudo-random number seeding is now carried out according to best practices,
