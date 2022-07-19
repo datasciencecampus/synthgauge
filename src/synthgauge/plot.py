@@ -526,7 +526,7 @@ def plot_feat_density_diff(
     """Plot real and synth feature density differences.
 
     For each feature, the density difference between `real` and `synth`
-    is calculated using `synthgauge.utils._feature_density_diff`.
+    is calculated using `metrics.density._feature_density_diff`.
 
     If a single feature is provided in `feats`, the plot shows the raw
     density differences for each bin in that feature.
