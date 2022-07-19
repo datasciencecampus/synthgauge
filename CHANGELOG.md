@@ -8,6 +8,9 @@ As well as these additions, several parts of the codebase have been refactored
 and reorganised to be clearer to users and developers at the expense of
 breaking back-compatibility.
 
+Finally, the licence under which this software is released has been updated to
+the MIT License.
+
 ## Features
 
 - Pseudo-random number seeding is now carried out according to best practices,

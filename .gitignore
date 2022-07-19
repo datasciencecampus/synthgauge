@@ -7,5 +7,6 @@
 __pycache__
 .ipynb_checkpoints
 .cache
+dist
 docs_src/build
 *.egg-info
