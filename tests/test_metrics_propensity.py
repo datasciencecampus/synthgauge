@@ -199,11 +199,7 @@ def test_propensity_metrics(real, synth, method, seed):
     )
 
     assert repr(result).startswith("PropensityResult")
-    assert result._fields == (
-        "observed_p_MSE",
-        "standardised_p_MSE",
-        "ratio_p_MSE",
-    )
+    assert result._fields == ("pmse", "pmse_standardised", "pmse_ratio")
     assert all(isinstance(val, float) for val in result)
 
 

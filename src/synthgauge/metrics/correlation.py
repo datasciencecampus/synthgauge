@@ -1,79 +1,30 @@
 """Correlation-based utility metrics."""
 
-import warnings
-from itertools import combinations, product
+import itertools
 
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency
 
 
-def _mean_squared_error(x, y):
-    """Calculate the mean-squared error between two numeric objects or
-    two arrays."""
+def _mean_squared_difference(x, y):
+    """Calculate the mean-squared difference (error) between two numeric
+    objects or two arrays."""
 
-    return np.mean((np.array(x) - np.array(y)) ** 2)
-
-
-def correlation_MSD(real, synth, feats=None):
-    """Correlation mean-squared difference.
-
-    This metric calculates the mean squared difference between the
-    Pearson correlation matrices for the real and synthetic datasets.
-    This gives an indication of how well the synthetic data has retained
-    bivariate relationships.
-
-    Parameters
-    ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    feats : list of str or None, default None
-        Numeric features to use. Non-numeric features will be filtered
-        out. If `None` (default), all common numeric features are used.
-
-    Returns
-    -------
-    float
-        Mean-squared difference of Pearson correlation coefficients.
-
-    See Also
-    --------
-    numpy.corrcoef
-
-    Notes
-    -----
-    Pearson correlation coefficients can only be defined for numerical
-    data, so this function first filters the columns by data-type.
-
-    The smaller the number this function returns, the better the
-    synthetic data captures the correlation between variables in the
-    real data. This method is therefore good for comparing multiple
-    synthetic datasets to see which is closest to the real. However, as
-    this is not a test, there is no threshold value below which we can
-    claim the datasets are statistically the same.
-    """
-
-    feats = feats or real.columns.intersection(synth.columns)
-
-    # select only numeric variables
-    real_numeric = real[feats].select_dtypes(np.number)
-    synth_numeric = synth[feats].select_dtypes(np.number)
-    # calculate correlation matrices
-    real_corr = np.corrcoef(real_numeric, rowvar=False)
-    synth_corr = np.corrcoef(synth_numeric, rowvar=False)
-    # return mean squared difference
-    return _mean_squared_error(real_corr, synth_corr)
+    return np.nanmean((np.array(x) - np.array(y)) ** 2)
 
 
-def cramers_v(var1, var2):
+def _cramers_v(var1, var2):
     """Cramer's V.
 
     Measures the association between two nominal categorical variables.
 
     Parameters
     ----------
-    var1, var2 : pandas.Series
-        Series objects containing the variables to be compared.
+    var1 : pandas.Series
+        Measurements for the first variable.
+    var2 : pandas.Series
+        Measurements for the second variable.
 
     Returns
     -------
@@ -89,76 +40,89 @@ def cramers_v(var1, var2):
     simpler version.
     """
 
-    confusion_matrix = np.array(pd.crosstab(var1, var2))
-    # Chi-squared test statistic, sample size, and minimum of rows and columns
-    X2 = chi2_contingency(confusion_matrix, correction=False)[0]
-    n = np.sum(confusion_matrix)
-    minDim = min(confusion_matrix.shape) - 1
-    # Calculate Cramer's V
-    return np.sqrt((X2 / n) / minDim)
+    confusion = np.array(pd.crosstab(var1, var2))
+    chi2, *_ = chi2_contingency(confusion, correction=False)
+
+    return np.sqrt((chi2 / np.sum(confusion)) / (min(confusion.shape) - 1))
 
 
-def cramers_v_MSE(real, synth, feats=None):
-    """Cramer's V mean-squared error.
+def _pairwise_cramers_v(data):
+    """Compute pairwise Cramer's V for the columns of `data`."""
 
-    This metric calculates the mean-sqaured difference in association
-    between categorical features in the real and synthetic datasets.
+    results = []
+    for x, y in itertools.product(data.columns, repeat=2):
+        results.append(_cramers_v(data[x], data[y]))
+
+    size = data.shape[1]
+    results = np.array(results).reshape((size, size))
+
+    return pd.DataFrame(results, index=data.columns, columns=data.columns)
+
+
+def correlation_msd(real, synth, method="pearson", feats=None):
+    """Mean-squared difference in correlation coefficients.
+
+    This metric calculates the mean squared difference between the
+    correlation matrices for the real and synthetic datasets. This gives
+    an indication of how well the synthetic data has retained bivariate
+    relationships.
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    method : {"pearson", "spearman", "cramers_v"}, default "pearson"
     feats : list of str or None, default None
-        Features in `real` and `synth` to include in comparison.
-        If `None` (default), uses all common object-type columns.
-
-    Warns
-    -----
-    UserWarning
-        If any of `feats` are numeric.
+        Features to measure correlation across. If `method="cramers_v"`,
+        all numeric columns will be filtered out. Likewise, for the
+        other correlation methods, all non-numeric columns are removed.
+        If `None` (default), all common features that satisfy the needs
+        of `method` are used.
 
     Returns
     -------
     float
-        Mean squared error between `real` and `synth` Cramer's V scores
-        across feature pairs.
+        Mean-squared difference of correlation coefficients.
+
+    See Also
+    --------
+    numpy.corrcoef
 
     Notes
     -----
-    This metric is only valid for categorical features so a warning is
-    sent if any of the selected features appear to be numeric. If no
-    features are selected, only the `category` and `object` types are
-    used.
+    The smaller the number this function returns, the better the
+    synthetic data captures the correlation between variables in the
+    real data. This method is therefore good for comparing multiple
+    synthetic datasets to see which is closest to the real. However, as
+    this is not a test, there is no threshold value below which we can
+    claim the datasets are statistically the same.
+
+    We only consider the coefficients above the main diagonal when
+    calculating the MSD. If we included the entire matrix, we would
+    double-count each pair of features as well as including the trivial
+    ones along the main diagonal.
     """
-    # check features are categorical if supplied
-    feats = feats or real.select_dtypes(
-        include=("object", "category")
-    ).columns.intersection(synth.columns)
 
-    non_cat_cols = (
-        real[feats].select_dtypes(exclude=["object", "category"]).columns
-    )
-    if non_cat_cols.any():
-        warnings.warn(
-            f"Selected features include numeric types: {non_cat_cols}."
-            "\nIf these should not be included, rerun specifying "
-            "different features. Otherwise, they will be assumed to be "
-            "encoded categories."
-        )
+    feats = feats or real.columns.intersection(synth.columns)
 
-    # find all possible feature combinations
-    feat_combinations = list(combinations(feats, 2))
-    real_cramers_v = []
-    synth_cramers_v = []
-    # loop through feature combinations
-    for feat1, feat2 in feat_combinations:
-        real_cramers_v.append(cramers_v(real[feat1], real[feat2]))
-        synth_cramers_v.append(cramers_v(synth[feat1], synth[feat2]))
+    if method == "cramers_v":
+        real = real[feats].select_dtypes(exclude="number")
+        synth = synth[feats].select_dtypes(exclude="number")
+        rcorr, scorr = _pairwise_cramers_v(real), _pairwise_cramers_v(synth)
+    else:
+        real = real[feats].select_dtypes(include="number")
+        synth = synth[feats].select_dtypes(include="number")
+        rcorr, scorr = real.corr(method=method), synth.corr(method=method)
 
-    return _mean_squared_error(real_cramers_v, synth_cramers_v)
+    idxs = np.triu(np.ones(len(rcorr)), k=1).astype(bool)
+    rcorr, scorr = rcorr.where(idxs), scorr.where(idxs)
+
+    return _mean_squared_difference(rcorr, scorr)
 
 
-def correlation_ratio(categorical, continuous):
+def _correlation_ratio(categorical, continuous):
     """Categorical-continuous correlation ratio.
 
     Calculates the correlation ratio for categorical-continuous
@@ -175,8 +139,10 @@ def correlation_ratio(categorical, continuous):
 
     Parameters
     ----------
-    categorical, continuous : pandas.Series
-        Sequences of categorical and continuous measurements.
+    categorical : pandas.Series
+        Categorical feature measurements.
+    continuous : pandas.Series
+        Continuous feature measurements.
 
     Returns
     -------
@@ -207,10 +173,8 @@ def correlation_ratio(categorical, continuous):
     return np.sqrt(numerator / denominator)
 
 
-def correlation_ratio_MSE(
-    real, synth, categorical_feats=None, numerical_feats=None
-):
-    """Correlation ratio mean-squared error.
+def correlation_ratio_msd(real, synth, categorical=None, numeric=None):
+    """Correlation ratio mean-squared difference.
 
     This metric calculates the mean-squared difference in association
     between categorical and continuous feature pairings in the real and
@@ -218,43 +182,41 @@ def correlation_ratio_MSE(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    categorical_feats : list of str or None, default None
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    categorical : list of str or None, default None
         Categorical features in `real` and `synth` to include in
         comparison. If `None` (default), uses all common object-type
         columns.
-    numerical_feats : list of str or None, default None
+    numeric : list of str or None, default None
         Numerical features in `real` and `synth` to include in
         comparison. If `None` (default), uses all common columns not
-        selected by `categorical_feats`.
+        selected by `categorical`.
 
     Returns
     -------
     float
-        Mean squared error between `real` and `synth` in correlation
-        ratio scores across all categorical-continuous feature pairs.
+        Mean squared difference between `real` and `synth` in
+        correlation ratio scores across all categorical-continuous
+        feature pairs.
     """
 
     common = real.columns.intersection(synth.columns)
-    categorical_feats = (
-        categorical_feats
+    categorical = (
+        categorical
         or real[common].select_dtypes(include=("object", "category")).columns
     )
-    numerical_feats = numerical_feats or common.difference(categorical_feats)
+    numeric = numeric or common.difference(categorical)
 
-    real_corr_ratio = []
-    synth_corr_ratio = []
-    for cat_feat, num_feat in product(categorical_feats, numerical_feats):
+    real_corr_ratio, synth_corr_ratio = [], []
+    for cat_feat, num_feat in itertools.product(categorical, numeric):
         real_corr_ratio.append(
-            correlation_ratio(real[cat_feat], real[num_feat])
+            _correlation_ratio(real[cat_feat], real[num_feat])
         )
         synth_corr_ratio.append(
-            correlation_ratio(synth[cat_feat], synth[num_feat])
+            _correlation_ratio(synth[cat_feat], synth[num_feat])
         )
 
-    return _mean_squared_error(real_corr_ratio, synth_corr_ratio)
-
-
-if __name__ == "__main__":
-    pass
+    return _mean_squared_difference(real_corr_ratio, synth_corr_ratio)

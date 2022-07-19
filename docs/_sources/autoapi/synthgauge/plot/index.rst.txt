@@ -3,6 +3,11 @@
 
 .. py:module:: synthgauge.plot
 
+.. autoapi-nested-parse::
+
+   Functions for visually evaluating synthetic data.
+
+
 
 Module Contents
 ---------------
@@ -13,8 +18,8 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.plot.suggest_label_rotation
    synthgauge.plot.plot_histograms
+   synthgauge.plot._order_categorical
    synthgauge.plot.plot_joint
    synthgauge.plot.plot_histogram3d
    synthgauge.plot.plot_correlation
@@ -24,85 +29,72 @@ Functions
 
 
 
-.. py:function:: suggest_label_rotation(ax, axis='x', char_lim=5)
-
-   Advise if labels should be rotated.
-
-   For the specifed axis the maximum characters for the
-   labels is calculated. If this is above `char_lim` the function
-   will return `True` to suggest that labels should be rotated
-
-   :param ax: Axes to analyse.
-   :type ax: matplotlib.axes.Axes
-   :param axis: Default is 'x'.
-   :type axis: str, optional
-   :param char_lim: Default is `5`.
-   :type char_lim: int, optional
-
-   :returns: True if labels should be rotated, otherwise False.
-   :rtype: bool
-
-
 .. py:function:: plot_histograms(df, feats=None, groupby=None, figcols=2, figsize=None)
 
    Plot feature distributions.
 
-   Plot a histogram (or countplot for categorical data) for each feature.
-   Where multiple features are provided a grid will be generated to store all
-   plots.
+   Plot a histogram (or countplot for categorical data) for each
+   feature. Where multiple features are provided a grid will be
+   generated to store all the plots.
 
-   Optionally, a groupby feature can be specified to apply a grouping prior
-   to calculating the distribution
+   Optionally, a groupby feature can be specified to apply a grouping
+   prior to calculating the distribution.
 
-   :param df:
+   :param df: Dataframe containing the feature(s) to be plotted.
    :type df: pandas.DataFrame
-   :param feats: Feature(s) to plot. Must be column(s) in `df`.
-   :type feats: str or list of str
-   :param groupby: Feature on which to group data. Default value of ``None`` means no
-                   grouping is used.
-   :type groupby: str, default=None
-   :param figcols: Number of columns to use in figure. Only used when `feats` contains
-                   more than one feature.
-   :type figcols: int, default=2
-   :param figsize: Size of figure in inches (W,H). Defaults to
-                   ``rcParams["figure.figsize"](default: [6.4, 4.8])``.
+   :param feats: Features in to plot. If `None` (default), all features are used.
+   :type feats: list of str or None, default None
+   :param groupby: Feature on which to group data.
+   :type groupby: str, optional
+   :param figcols: Number of columns to use in the figure.
+   :type figcols: int, default 2
+   :param figsize: Size of figure in inches `(width, height)`. Defaults to
+                   `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
 
-   :returns:
    :rtype: matplotlib.figure.Figure
 
 
-.. py:function:: plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=None)
+.. py:function:: _order_categorical(feat)
+
+   Order a feature only if it is categorical.
+
+   :param feat: The feature to be ordered.
+   :type feat: pd.Series
+
+   :returns: The ordered feature.
+   :rtype: pd.Series
+
+
+.. py:function:: plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)
 
    Plot bivariate and univariate graphs.
 
-   Convenience function that leverages seaborn. For more granular control
-   refer to ``seaborn.JointGrid`` and ``seaborn.jointplot``.
+   Convenience function that leverages `seaborn`. For more granular
+   control, refer to `seaborn.JointGrid` and `seaborn.jointplot`.
 
    :param df: DataFrame containing the feature(s) to plot.
    :type df: pandas.DataFrame
-   :param x: Feature to plot on x axis and and margin. Must be column in `df`.
+   :param x: Feature to plot on the x-axis and -margin.
    :type x: str
-   :param y: Feature to plot on y axis and and margin. Must be column in `df`.
+   :param y: Feature to plot on the y-axis and -margin.
    :type y: str
-   :param groupby: Feature on which to group data. Default value of ``None`` means no
-                   grouping is used.
-   :type groupby: str, default=None
-   :param x_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default=``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``.
-   :type x_bins: array_like or int or str, default='auto'
-   :param y_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default=``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``.
-   :type y_bins: array_like or int or str, default='auto'
-   :param figsize: Size of each side of the figure in inches (it will be square). Default
-                   value of ``None`` will use default seaborn setting.
-   :type figsize: int, default=None
+   :param groupby: Feature on which to group data.
+   :type groupby: str, optional
+   :param x_bins: Binning method for axis. If `array_like`, must be sequence of
+                  bin edges. If `int`, specifies the number of bins to use. If
+                  `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+                  Defaults to `"auto"`.
+   :type x_bins: array_like or int or str, default "auto"
+   :param y_bins: Binning method for axis. If `array_like`, must be sequence of
+                  bin edges. If `int`, specifies the number of bins to use. If
+                  `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+                  Defaults to `"auto"`.
+   :type y_bins: array_like or int or str, default "auto"
+   :param figsize: Size of each side of the figure in inches (it will be square).
+                   Defaults to six inches.
+   :type figsize: int, default 6
 
-   :returns:
    :rtype: seaborn.axisgrid.JointGrid
 
 
@@ -111,149 +103,153 @@ Functions
    Plot 3D histogram of two features.
 
    This is similar to a 2D histogram plot with an extra axis added
-   to display the count for each featurewise pair as 3D bars.
+   to display the count for each feature-wise pair as 3D bars.
 
    :param df: DataFrame containing the feature(s) to plot.
    :type df: pandas.DataFrame
-   :param x: Feature to plot on x axis and and margin. Must be column in `df`.
+   :param x: Feature to plot on the x-axis and -margin.
    :type x: str
-   :param y: Feature to plot on y axis and and margin. Must be column in `df`.
+   :param y: Feature to plot on the y-axis and -margin.
    :type y: str
-   :param x_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default= ``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``. If `x` or `y` is categorical
-                  the bins will be set to the cardinality of the feature.
-   :type x_bins: array_like or int or str, default='auto'
-   :param y_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default= ``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``. If `x` or `y` is categorical
-                  the bins will be set to the cardinality of the feature.
-   :type y_bins: array_like or int or str, default='auto'
-   :param figsize: Size of each side of the figure in inches (it will be square). Default
-                   value of ``None`` will use default plot settings.
-   :type figsize: int, default=None
+   :param x_bins: Binning method for axis. If the corresponding feature is
+                  categorical, the bins will be set to the cardinality of that
+                  feature. If `array_like`, must be sequence of bin edges. If
+                  `int`, specifies the number of bins to use. If `str`, can be
+                  anything accepted by `numpy.histogram_bin_edges`. Defaults to
+                  `"auto"`.
+   :type x_bins: array_like or int or str, default "auto"
+   :param y_bins: Binning method for axis. If the corresponding feature is
+                  categorical, the bins will be set to the cardinality of that
+                  feature. If `array_like`, must be sequence of bin edges. If
+                  `int`, specifies the number of bins to use. If `str`, can be
+                  anything accepted by `numpy.histogram_bin_edges`. Defaults to
+                  `"auto"`.
+   :type y_bins: array_like or int or str, default "auto"
+   :param figsize: Size of figure in inches `(width, height)`. Defaults to
+                   `matplotlib.pyplot.rcParams["figure.figsize"]`.
+   :type figsize: tuple of float, optional
 
-   :returns:
    :rtype: matplotlib.figure.Figure
 
 
-.. py:function:: plot_correlation(*df, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)
+.. py:function:: plot_correlation(*dfs, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)
 
-   Plot correlation between features in a DataFrame.
+   Plot correlation between features in a dataframe.
 
    For each dataframe provided a subplot is generated showing a
-   correlation heatmap of the features. For numeric features the method can
-   be any method supported by ``pandas.DataFrame.corr``; for categorical or
-   object feature types ``'cramers_v'`` must be specified. If the method does
-   not match the data type an error is raised.
+   correlation heatmap of the features. For numeric features, the
+   method can be anything supported by `pandas.DataFrame.corr`; for
+   categorical or object feature types `"cramers_v"` must be specified.
+   If the method does not match the data type, an error is raised.
 
-   The `plot_diff` parameter will also include a difference plot i.e.
-   correlation difference between two dataframes. This is only used when
-   two dataframes are provided.
+   The `plot_diff` parameter will also include a difference plot, i.e.
+   correlation difference between two dataframes. This is only used
+   when two dataframes are provided.
 
-   :param \*df: Any number of DataFrame objects to plot.
-   :type \*df: pandas.DataFrame
-   :param feats: Feature(s) to plot. Must be column(s) in `df`.
-   :type feats: str or list of str
-   :param method: Correlation method. See ``pandas.DataFrame.corr`` for more details on
-                  ``'pearson'`` and ``'spearman'``. When ``'cramers_v'`` is specified,
-                  correlation is calculated using
-                  ``synthgauge.metrics.correlation.cramers_v``.
-   :type method: {'pearson'|'spearman'|'cramers_v'}, default='pearson'
-   :param plot_diff: If True and exactly two data frames are provided will also plot
-                     a heatmap of the absolute differences between the respective datasets'
-                     correlations.
-   :type plot_diff: bool, default=False
-   :param figcols: Number of columns to use in figure. Only used when `feats` contains
-                   more than one feature.
-   :type figcols: int, default=2
-   :param figsize: Size of figure in inches (W,H). Defaults to
-                   ``rcParams["figure.figsize"](default: [6.4, 4.8])``.
+   :param \*dfs: Any number of dataframes to plot.
+   :type \*dfs: pandas.DataFrame
+   :param feats: Features to plot. Must be present in all elements of `dfs`.
+                 If `None` (default), uses features common to all dataframes.
+   :type feats: list of str or None, default None
+   :param method: Correlation method. See `pandas.DataFrame.corr` for more details
+                  on `"pearson"` and `"spearman"`. When `"cramers_v"` is
+                  specified, correlation is calculated using
+                  `synthgauge.metrics.correlation.cramers_v`.
+   :type method: {"pearson", "spearman", "cramers_v"}, default "pearson"
+   :param plot_diff: If `True` and exactly two dataframes are provided, will also
+                     plot a heatmap of the absolute differences between the
+                     respective datasets' correlations.
+   :type plot_diff: bool, default False
+   :param figcols: Number of columns to use in the figure. Only used when `feats`
+                   contains more than one feature.
+   :type figcols: int, default 2
+   :param figsize: Size of figure in inches `(width, height)`. Defaults to
+                   `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
-   :param \*\*kwargs: Any other keyword arguments to be passed to ``seaborn.heatmap``. For
-                      example ``annot=True`` will turn on cell annotations. See documentation
-                      for more examples.
+   :param \*\*kwargs: Any other keyword arguments to be passed to `seaborn.heatmap`.
+                      For example `annot=True` will turn on cell annotations. See
+                      documentation for more examples.
    :type \*\*kwargs: dict, optional
 
-   :returns:
+   :raises ValueError: If `method` does not match the data type(s) of `feats`.
+
    :rtype: matplotlib.figure.Figure
 
 
-.. py:function:: plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, **kwargs)
+.. py:function:: plot_crosstab(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, cmap='rocket', **kwargs)
 
-   Plot crosstab heatmap for two features.
+   Plot cross-tabulation heatmap for two features.
 
-   The two-feature crosstab calculation is performed and plotted as a heatmap.
-   One heatmap is shown for the `real` data and one for the `synthetic`.
-   Numeric features are discretised using the corresponding bins argument.
+   The two-feature crosstab calculation is performed and plotted as a
+   heatmap. One heatmap is shown for the real data and one for the
+   synthetic. Numeric features are discretised using the `*_bins`
+   arguments.
 
-   :param real: DataFrame containing the real data.
+   :param real: Dataframe containing the real data.
    :type real: pandas.DataFrame
-   :param synth: DataFrame containing the sythetic data.
+   :param synth: Dataframe containing the synthetic data.
    :type synth: pandas.DataFrame
-   :param x: Feature to plot on x axis. Must be column in `df`.
+   :param x: Feature to plot on the x-axis and -margin.
    :type x: str
-   :param y: Feature to plot on y axis. Must be column in `df`.
+   :param y: Feature to plot on the y-axis and -margin.
    :type y: str
-   :param x_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default= ``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``.
-                  Only used for numeric features.
-   :type x_bins: array_like or int or str, default='auto'
-   :param y_bins: If ``array_like`` must be sequence of bin edges. If ``int``, specifies
-                  the number of bins to use. If ``str``, specifies the method used to
-                  calculate the optimal bin width. Default= ``auto``. For all possible
-                  values see ``numpy.histogram_bin_edges``.
-                  Only used for numeric features.
-   :type y_bins: array_like or int or str, default='auto'
-   :param figsize: Size of figure in inches (W,H). Defaults to
-                   ``rcParams["figure.figsize"](default: [6.4, 4.8])``.
+   :param x_bins: Binning method for axis. If `array_like`, must be sequence of
+                  bin edges. If `int`, specifies the number of bins to use. If
+                  `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+                  Defaults to `"auto"`. Only used for numeric features.
+   :type x_bins: array_like or int or str, default "auto"
+   :param y_bins: Binning method for axis. If `array_like`, must be sequence of
+                  bin edges. If `int`, specifies the number of bins to use. If
+                  `str`, can be anything accepted by `numpy.histogram_bin_edges`.
+                  Defaults to `"auto"`. Only used for numeric features.
+   :type y_bins: array_like or int or str, default "auto"
+   :param figsize: Size of figure in inches `(width, height)`. Defaults to
+                   `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
-   :param \*\*kwargs: Any other keyword arguments to be passed to ``seaborn.heatmap``. For
-                      example ``annot=True`` will turn on cell annotations. See documentation
-                      for more examples.
+   :param cmap: Palette name for heatmap and colour bar. See the documentation
+                for `seaborn.color_palette` on available palette formats.
+                Defaults to `"rocket"`.
+   :type cmap: str, default "rocket"
+   :param \*\*kwargs: Any other keyword arguments to be passed to `seaborn.heatmap`.
+                      For example, `annot=True` will turn on cell annotations. See
+                      documentation for more examples.
    :type \*\*kwargs: dict, optional
 
-   :returns:
    :rtype: matplotlib.figure.Figure
 
 
 .. py:function:: plot_qq(real, synth, feature, n_quantiles=None, figsize=None)
 
-   Plot a Q-Q plot.
+   Generate a Q-Q plot for a feature of real and synthetic data.
 
-   Generate a Quantile-Quantile plot of `feature` for the real and
-   synthetic data. Q-Q plots are used to visualise two datasets
-   to see if they are generated from the same distribution.
+   Quantile-quantile (Q-Q) plots are used to visualise two sets of
+   numeric data to see if they are generated from the same
+   distribution.
 
-   In this case, it is used to provide some insight into the distribution
-   of feature `feature` in the synthetic data versus the real data. If the
-   plot is a straight line then it can be inferred that the two
-   distributions are similar and therefore the synthetically generated
-   data follows the same distribution as the real data.
+   In this case, it is used to provide some insight into the
+   feature distributions for the synthetic and real data. If the
+   scatter plot shows a straight line, then it can be inferred that the
+   two distributions are similar and therefore the synthetically
+   generated data follows the same distribution as the real data.
 
    See `Q-Q Plot <https://en.wikipedia.org/wiki/Q-Q_plot>`_ for more
    information.
 
-   :param real: DataFrame containing the real data.
+   :param real: Dataframe containing the real data.
    :type real: pandas.DataFrame
-   :param synth: DataFrame containing the sythetic data.
+   :param synth: Dataframe containing the synthetic data.
    :type synth: pandas.DataFrame
-   :param feature: Feature to plot.
+   :param feature: Feature to plot. Must be in `real` and `synth`.
    :type feature: str
-   :param n_quantiles: Number of quantiles to calculate. If ``None`` (the default) and
-                       ``real[feature]`` has the same length as ``synth[feature]`` then
-                       `n_quantiles` is set to the number of elements. If the lengths are
-                       different then n_quantiles is set to the length of ``real[feature]``.
-   :type n_quantiles: int, optional
-   :param figsize: Size of figure in inches (W,H). Defaults to
-                   ``rcParams["figure.figsize"](default: [6.4, 4.8])``.
+   :param n_quantiles: Number of quantiles to calculate. If `None` (default), uses the
+                       length of `real`.
+   :type n_quantiles: int or None, default None
+   :param figsize: Size of figure in inches `(width, height)`. Defaults to
+                   `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
 
-   :returns:
+   :raises TypeError: If `feature` is not a numeric data type feature.
+
    :rtype: matplotlib.figure.Figure
 
 
@@ -261,35 +257,34 @@ Functions
 
    Plot real and synth feature density differences.
 
-   For each feature the feature density difference between `real` and
-   `synth` is calculated using ``synthgauge.utils.feature_density_diff``.
+   For each feature, the density difference between `real` and `synth`
+   is calculated using `metrics.density._feature_density_diff`.
 
-   If a single feature is provided the plot shows the raw density
-   differences for each bin.
+   If a single feature is provided in `feats`, the plot shows the raw
+   density differences for each bin in that feature.
 
-   Where multiple feature are provided, the density differences are
-   concatenated into a flattened array and a histogram plotted. The
+   Where multiple features are provided, the density differences are
+   pd.concatenated into a flattened array and a histogram plotted. The
    histogram represents the distribution of differences in densities
    across all features and bins.
 
-   :param real: DataFrame containing the real data.
+   :param real: Dataframe containing the real data.
    :type real: pandas.DataFrame
-   :param synth: DataFrame containing the sythetic data.
+   :param synth: Dataframe containing the synthetic data.
    :type synth: pandas.DataFrame
-   :param feats: The features that will be used to compute the densities. By
-                 default all features in `real` will be used.
-   :type feats: str or list of str, optional.
-   :param feat_bins: Bins to use for computing the feature densities. This value is passed
-                     to ``numpy.histogram_bin_edges`` so can be any value accepted by
-                     that function. The default setting of ``10`` uses 10 bins.
-   :type feat_bins: str or int, optional
-   :param diff_bins: Bins to use for the difference histogram. Only used when
-                     multiple features are provided. This value is passed to
-                     ``numpy.histogram_bin_edges`` so can be any value accepted by
-                     that function. The default setting of ``10`` uses 10 bins.
-   :type diff_bins: str or int, optional
+   :param feats: Features used to compute the densities. If `None` (default), all
+                 common features are used.
+   :type feats: list of str or None, default None
+   :param feat_bins: Bins to use for computing the feature densities. This value is
+                     passed to `numpy.histogram_bin_edges` so can be any value
+                     accepted by that function. By default, uses 10 bins.
+   :type feat_bins: str or int, default 10
+   :param diff_bins: Bins to use when computing the multiple-feature difference
+                     histogram. This value is passed to `numpy.histogram_bin_edges`
+                     so can be any value accepted by that function. By default, uses
+                     10 bins.
+   :type diff_bins: str or int, default 10
 
-   :returns: The matplotlib axes containing the plot.
-   :rtype: matplotlib.axes._subplots.AxesSubplot
+   :rtype: matplotlib.figure.Figure
 
 

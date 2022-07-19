@@ -11,15 +11,15 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
-def _make_preprocessor(data, key):
+def _make_preprocessor(data, feats):
     """Make a pre-processing pipe for transforming numeric and
     categorical columns.
 
     Parameters
     ----------
     data : pandas.DataFrame
-        The dataset containing at the least the columns in `key`.
-    key : list of str
+        The dataset containing at the least the columns in `feats`.
+    feats : list of str
         A list of columns in `data` to be separated by data type.
 
     Returns
@@ -28,36 +28,36 @@ def _make_preprocessor(data, key):
         The pre-processing pipeline.
     """
 
-    numeric_columns = data[key].select_dtypes(include="number").columns
-    categorical_columns = data[key].select_dtypes(exclude="number").columns
+    numeric = data[feats].select_dtypes(include="number").columns
+    categorical = data[feats].select_dtypes(exclude="number").columns
 
     numeric_transformer = Pipeline(steps=[("scaler", StandardScaler())])
     categorical_transformer = Pipeline(steps=[("encoder", OneHotEncoder())])
 
     preprocessor = ColumnTransformer(
         transformers=[
-            ("numeric", numeric_transformer, numeric_columns),
-            ("categorical", categorical_transformer, categorical_columns),
+            ("numeric", numeric_transformer, numeric),
+            ("categorical", categorical_transformer, categorical),
         ]
     )
 
     return preprocessor
 
 
-def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
+def _make_pipeline(classifier, seed, preprocessor, **kwargs):
     """Create the pipeline of data pre-processing and classification.
 
     Parameters
     ----------
     classifier : scikit-learn estimator
         The `scikit-learn`-style class to be used as the classifier.
-    random_state : int
-        The random seed to use for reproducibility. Only used if
+    seed : int
+        Random seed to use for reproducibility. Only used if
         `random_state` is a parameter of `classifier`.
     preprocessor : sklearn.pipeline.Pipeline
         The pre-processing pipeline.
     **kwargs : dict, optinal
-        Keyword arguments for `classifier`.
+        featsword arguments for `classifier`.
 
     Returns
     -------
@@ -67,7 +67,7 @@ def _make_pipeline(classifier, random_state, preprocessor, **kwargs):
 
     classifier_params = inspect.signature(classifier).parameters
     if classifier_params.get("random_state", None):
-        kwargs["random_state"] = random_state
+        kwargs["random_state"] = seed
 
     pipeline = Pipeline(
         steps=[
@@ -85,9 +85,10 @@ def _get_scores(test, pred):
 
     Parameters
     ----------
-    test, pred : array_like
-        Labels from the test set and prediction, respectively, used to
-        calculate the scores.
+    test : array_like
+        Labels from the test set.
+    pred : array_like
+        Predicted labels.
 
     Returns
     -------
@@ -107,11 +108,11 @@ def _get_scores(test, pred):
 def classification_comparison(
     real,
     synth,
-    key,
+    feats,
     target,
-    sklearn_classifier,
-    random_state=None,
+    classifier,
     test_prop=0.2,
+    random_state=None,
     **kwargs
 ):
     """Classification utility metric.
@@ -123,23 +124,25 @@ def classification_comparison(
 
     Parameters
     ----------
-    real, synth : pandas.DataFrame
-        Dataframes containing the real and synthetic data.
-    key : list of str
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    feats : list of str
         List of column names to use as the input in the classification.
     target : str
         Column to use as target in the classification.
-    sklearn_classifier : scikit-learn estimator
-        Classifier with `fit` and `predict` methods.
-    random_state : int, optional
-        Random seed for shuffling during the train-test split, and for
-        the classification algorithm itself.
+    classifier : scikit-learn estimator
+        Classifier class with `fit` and `predict` methods.
     test_prop : float or int, default 0.2
         If `float`, should be between 0.0 and 1.0 and represent the
         proportion of the dataset to include in the test split. If
         `int`, represents the absolute number of test samples.
+    random_state : int, optional
+        Random seed for shuffling during the train-test split, and for
+        the classification algorithm itself.
     **kwargs : dict, optional
-        Keyword arguments passed to the classifier.
+        featsword arguments passed to the classifier.
 
     Returns
     -------
@@ -165,33 +168,34 @@ def classification_comparison(
     """
 
     real_X_train, real_X_test, real_y_train, real_y_test = train_test_split(
-        real[key], real[target], test_size=test_prop, random_state=random_state
+        real[feats],
+        real[target],
+        test_size=test_prop,
+        random_state=random_state,
     )
 
     synth_X_train, _, synth_y_train, _ = train_test_split(
-        synth[key],
+        synth[feats],
         synth[target],
         test_size=test_prop,
         random_state=random_state,
     )
 
     # preprocessing
-    preprocessor = _make_preprocessor(real, key)
+    preprocessor = _make_preprocessor(real, feats)
 
     # train real model, test on real
     real_pipeline = _make_pipeline(
-        sklearn_classifier, random_state, preprocessor, **kwargs
-    )
+        classifier, random_state, preprocessor, **kwargs
+    ).fit(real_X_train, real_y_train.values.ravel())
 
-    real_pipeline.fit(real_X_train, real_y_train.values.ravel())
     y_real_predicts_real = real_pipeline.predict(real_X_test)
 
     # train synth model, test on real
     synth_pipeline = _make_pipeline(
-        sklearn_classifier, random_state, preprocessor, **kwargs
-    )
+        classifier, random_state, preprocessor, **kwargs
+    ).fit(synth_X_train, synth_y_train.values.ravel())
 
-    synth_pipeline.fit(synth_X_train, synth_y_train.values.ravel())
     y_synth_predicts_real = synth_pipeline.predict(real_X_test)
 
     # compare results
@@ -205,7 +209,3 @@ def classification_comparison(
     )
 
     return ClassificationResult(*score_differences)
-
-
-if __name__ == "__main__":
-    pass

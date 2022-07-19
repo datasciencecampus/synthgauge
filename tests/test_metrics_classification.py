@@ -13,7 +13,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from synthgauge.metrics import classification
 
-key = ["age", "height", "weight", "eye_colour", "hair_colour"]
+feats = ["age", "height", "weight", "eye_colour", "hair_colour"]
 target = "blood_type"
 
 
@@ -52,7 +52,7 @@ def toy_test_preds(draw, categories=("A", "B", "C", "D"), nrows=100):
 def test_make_preprocessor(real):
     """Test that a preprocessing pipeline can be created correctly."""
 
-    preprocessor = classification._make_preprocessor(real, key)
+    preprocessor = classification._make_preprocessor(real, feats)
 
     assert isinstance(preprocessor, ColumnTransformer)
     assert len(preprocessor.transformers) == 2
@@ -119,9 +119,9 @@ def test_classification_comparison(real, synth, classifier, seed):
     result = classification.classification_comparison(
         real,
         synth,
-        key,
+        feats,
         target,
-        sklearn_classifier=classifier,
+        classifier=classifier,
         random_state=seed,
         **kwargs,
     )
@@ -144,7 +144,7 @@ def test_classification_identical_data(real, classifier, seed):
     classifier, kwargs = classifier
 
     result = classification.classification_comparison(
-        real, real, key, target, classifier, random_state=seed, **kwargs
+        real, real, feats, target, classifier, random_state=seed, **kwargs
     )
 
     assert all(res == 0 for res in result)

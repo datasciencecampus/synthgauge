@@ -1,0 +1,76 @@
+:py:mod:`synthgauge.metrics.density`
+====================================
+
+.. py:module:: synthgauge.metrics.density
+
+.. autoapi-nested-parse::
+
+   Mean absolute difference in feature densities.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   synthgauge.metrics.density._feature_density_diff
+   synthgauge.metrics.density.feature_density_mad
+
+
+
+.. py:function:: _feature_density_diff(real, synth, feature, bins=10)
+
+   Computes the difference between real and synth feature densities.
+
+   For the specified feature the density is computed across `bins` in
+   both the real and synthetic data. The per-bin difference is computed
+   and returned along with the bin edges that were used.
+
+   Prior to calculating the densities. all values are converted to
+   numeric via `synthgauge.utils.cat_encode`.
+
+   :param real: Dataframe containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: Dataframe containing the synthetic data.
+   :type synth: pandas.DataFrame
+   :param feature: The feature that will be used to compute the density.
+   :type feature: str
+   :param bins: Bins to use for computing the density. This value is passed
+                to `numpy.histogram_bin_edges` so can be any value accepted by
+                that function. Default uses 10 bins.
+   :type bins: str or int, default 10
+
+   :returns: * **hist_diff** (*numpy.ndarray*) -- The difference in feature density for each of the bins.
+             * **bin_edges** (*numpy.ndarray*) -- The edges of the bins.
+
+
+.. py:function:: feature_density_mad(real, synth, feats=None, bins=10)
+
+   Mean absolute difference of feature densities.
+
+   For each feature the difference between the density across the bins
+   within `real` and `synth` is calculated. Finally the MAE across all
+   features and bins is calculated. A value close to 0 indicates that
+   the real and synthetic datasets have a similar set of feature
+   distributions.
+
+   :param real: DataFrame containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: DataFrame containing the sythetic data.
+   :type synth: pandas.DataFrame
+   :param feats: The features that will be used to compute the densities. If
+                 `None` (default), all common features are used.
+   :type feats: list of str or None, default None
+   :param bins: Binning method for discretising the data. Can be anything
+                accepted by `numpy.histogram_bin_edges`. Default uses 10 bins.
+   :type bins: str or int, default 10
+
+   :returns: Mean absolute error of feature densities.
+   :rtype: float
+
+

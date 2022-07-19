@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.utils &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,7 +16,9 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -39,14 +41,17 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Example notebook</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../evaluate/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../evaluator/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluator</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../plot/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.utils</span></code></a></li>
 </ul>
@@ -84,69 +89,83 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-synthgauge.utils">
-<span id="synthgauge-utils"></span><h1><a class="reference internal" href="#module-synthgauge.utils" title="synthgauge.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.utils</span></code></a><a class="headerlink" href="#module-synthgauge.utils" title="Permalink to this headline"></a></h1>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="module-synthgauge.utils">
+<span id="synthgauge-utils"></span><h1><a class="reference internal" href="#module-synthgauge.utils" title="synthgauge.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.utils</span></code></a><a class="headerlink" href="#module-synthgauge.utils" title="Permalink to this heading"></a></h1>
+<p>Utility functions for handling real and synthetic data.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.utils.load_pickle" title="synthgauge.utils.load_pickle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_pickle</span></code></a>(src)</p></td>
-<td><p>Load pickle file into object.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.utils.df_combine" title="synthgauge.utils.df_combine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df_combine</span></code></a>(real, synth, feats=None, source_col_name='source', source_val_real='real', source_val_synth='synth')</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.utils.df_combine" title="synthgauge.utils.df_combine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df_combine</span></code></a>(real, synth, feats=None, source_col_name='source', source_val_real='real', source_val_synth='synth')</p></td>
 <td><p>Combine separate dataframes of real and synthetic data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.utils.df_separate" title="synthgauge.utils.df_separate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df_separate</span></code></a>(data, source_col_name, feats=None, source_val_real='real', source_val_synth='synth', drop_source_col=True)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.utils.df_separate" title="synthgauge.utils.df_separate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">df_separate</span></code></a>(data, source_col_name, feats=None, source_val_real='real', source_val_synth='synth', drop_source_col=True)</p></td>
 <td><p>Separate a dataframe into real and synthetic data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.utils.launder" title="synthgauge.utils.launder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">launder</span></code></a>(real, synth, feats=None, suffix_real='real', suffix_synth='synth')</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.utils.launder" title="synthgauge.utils.launder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">launder</span></code></a>(real, synth, feats=None, suffix_real='real', suffix_synth='synth')</p></td>
 <td><p>Launder feature names and optionally filter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.utils.cat_encode" title="synthgauge.utils.cat_encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cat_encode</span></code></a>(df, feats=None, return_all=False, convert_only=False, force=False)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.utils.cat_encode" title="synthgauge.utils.cat_encode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cat_encode</span></code></a>(df, feats=None, return_all=False, convert_only=False, force=False)</p></td>
 <td><p>Convert object features to categories.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.utils.feature_density_diff" title="synthgauge.utils.feature_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feature_density_diff</span></code></a>(real, synth, feature, bins=10)</p></td>
-<td><p>Computes the difference between real and synth feature densities.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.utils.load_pickle">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.utils.</span></span><span class="sig-name descname"><span class="pre">load_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/utils.html#load_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.utils.load_pickle" title="Permalink to this definition"></a></dt>
-<dd><p>Load pickle file into object.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.utils.df_combine">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.utils.</span></span><span class="sig-name descname"><span class="pre">df_combine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_col_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'source'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_val_real</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'real'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_val_synth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'synth'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/utils.html#df_combine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.utils.df_combine" title="Permalink to this definition"></a></dt>
 <dd><p>Combine separate dataframes of real and synthetic data.</p>
-<p>The dataframes are concatenated along axis=0 and a source column is
-added to distinguish the real data from the sythetic data.</p>
-<p>Optionally, specific features can be selected.</p>
+<p>The dataframes are concatenated along the first axis (rows) and a
+source column is added to distinguish the real data from the
+synthetic data. Optionally, specific features can be selected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real, unsythesised data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the synthesised data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Features to combine. By default all common features are used.</p></li>
-<li><p><strong>source_col_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the source column. This is added to the combined DataFrame
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to combine. If <cite>None</cite> (default), all common features
+are used.</p></li>
+<li><p><strong>source_col_name</strong> (<em>str</em><em>, </em><em>default &quot;source&quot;</em>) – Name of the source column. This is added to the combined dataset
 and filled with the <cite>source_val_real</cite> and <cite>source_val_synth</cite>
 values to signify the real and synthetic data respectively.
-Defaults to “source”.</p></li>
-<li><p><strong>source_val_real</strong> (<em>any</em><em>, </em><em>optional</em>) – Value to use in <cite>source_col_name</cite> column to signify the real data.
-Any value accepted by pandas.DataFrame. Defaults to “real”.</p></li>
-<li><p><strong>source_val_synth</strong> (<em>any</em><em>, </em><em>optional</em>) – Value to use in <cite>source_col_name</cite> column to signify the sythetic
-data. Any value accepted by pandas.DataFrame. Defaults to “synth”.</p></li>
+Defaults to <cite>“source”</cite>.</p></li>
+<li><p><strong>source_val_real</strong> (<em>any</em><em>, </em><em>default &quot;real&quot;</em>) – Value to use in <cite>source_col_name</cite> column to signify the real
+data. Defaults to <cite>“real”</cite>.</p></li>
+<li><p><strong>source_val_synth</strong> (<em>any</em><em>, </em><em>default &quot;synth&quot;</em>) – Value to use in <cite>source_col_name</cite> column to signify the
+synthetic data. Defaults to <cite>“synth”</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The result of the concatenation of the input DataFrame objects.</p>
+<dd class="field-even"><p><strong>combined</strong> – The combined dataframe.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -163,23 +182,23 @@ flags. Optionally, specific features can be selected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – DataFrame to split into real and synthetic components.</p></li>
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – Dataframe to split into real and synthetic components.</p></li>
 <li><p><strong>source_col_name</strong> (<em>str</em>) – Name of the column used to signify real versus synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Features to separate. By default all features are used.</p></li>
-<li><p><strong>source_val_real</strong> (<em>any</em><em>, </em><em>optional</em>) – Value in <cite>source_col_name</cite> column signifying the real data. Any
-value accepted by pandas.DataFrame. Defaults to “real”.</p></li>
-<li><p><strong>source_val_synth</strong> (<em>any</em><em>, </em><em>optional</em>) – Value in <cite>source_col_name</cite> column signifying the synthetic data.
-Any value accepted by pandas.DataFrame. Defaults to “synth”.</p></li>
-<li><p><strong>drop_source_col</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the default, the <cite>source_col_name</cite> column will be dropped
-from the output DataFrames.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to separate. If <cite>None</cite> (default), uses all features.</p></li>
+<li><p><strong>source_val_real</strong> (<em>any</em><em>, </em><em>default &quot;real&quot;</em>) – Value in <cite>source_col_name</cite> column signifying the real data.
+Defaults to <cite>“real”</cite>.</p></li>
+<li><p><strong>source_val_synth</strong> (<em>any</em><em>, </em><em>default &quot;synth&quot;</em>) – Value in <cite>source_col_name</cite> column signifying the synthetic data.
+Defaults to <cite>“synth”</cite>.</p></li>
+<li><p><strong>drop_source_col</strong> (<em>bool</em><em>, </em><em>default True</em>) – Indicates whether the <cite>source_col_name</cite> column should be
+dropped from the outputs (default) or not.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Two DataFrame objects containing the real data and synthetic
-data respectively.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame, pandas.DataFrame</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -189,25 +208,25 @@ data respectively.</p>
 <span class="sig-prename descclassname"><span class="pre">synthgauge.utils.</span></span><span class="sig-name descname"><span class="pre">launder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix_real</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'real'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix_synth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'synth'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/utils.html#launder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.utils.launder" title="Permalink to this definition"></a></dt>
 <dd><p>Launder feature names and optionally filter.</p>
 <p>To provide clear distinction between the real and synthetic
-features, each dataframe is updated to append suffixes to the feature
-names.</p>
-<p>Optionally, specific features can be selected.</p>
+features, each dataframe is updated to append suffixes to the
+feature names. Optionally, specific features can be selected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real, unsythesised data</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the synthesised data</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Features to launder. By default all common features are used.</p></li>
-<li><p><strong>suffix_real</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to append to columns in <cite>real</cite>. Default is “real”.</p></li>
-<li><p><strong>suffix_synth</strong> (<em>str</em><em>, </em><em>optional</em>) – Suffix to append to columns in <cite>synth</cite>. Default is “synth”.</p></li>
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to launder. If <cite>None</cite> (default), all common features
+are used.</p></li>
+<li><p><strong>suffix_real</strong> (<em>str</em><em>, </em><em>default &quot;real&quot;</em>) – Suffix to append to columns in <cite>real</cite>. Default is <cite>“real”</cite>.</p></li>
+<li><p><strong>suffix_synth</strong> (<em>str</em><em>, </em><em>default &quot;synth&quot;</em>) – Suffix to append to columns in <cite>synth</cite>. Default is <cite>“synth”</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Two DataFrame objects containing the real data and synthetic
-data respectively.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame, pandas.DataFrame</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the laundered real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the laundered synthetic data.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -216,69 +235,38 @@ data respectively.</p>
 <dt class="sig sig-object py" id="synthgauge.utils.cat_encode">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.utils.</span></span><span class="sig-name descname"><span class="pre">cat_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/utils.html#cat_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.utils.cat_encode" title="Permalink to this definition"></a></dt>
 <dd><p>Convert object features to categories.</p>
-<p>Generates a new version of the input datframe with the
-specified features categorically encoded with integer labels.
-Optionally, the features can be returned as the ‘category’ type
-with no encoding.</p>
-<p>Before performing the conversion a check is made to identify any
-speficied features that are not ‘object’ type and therefore less
-suited to categorical encoding. A warning is raised for these features
-and they will be ignored from subsequent encoding steps unless
-<cite>force</cite> is <cite>True</cite>.</p>
+<p>Generates a new version of the input dataframe with the specified
+features categorically encoded with integer labels. Optionally, the
+features can be returned as <cite>category</cite> data type with no encoding.</p>
+<p>Before performing the conversion, a check is made to identify any
+speficied features that are not <cite>object</cite>-type and thus less suited
+to categorical encoding. A warning is raised for these features and
+they will be ignored from subsequent encoding steps unless <cite>force</cite>
+is set to <cite>True</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Input dataframe to be converted.</p></li>
-<li><p><strong>feats</strong> (<em>str</em><em> or </em><em>list of str</em><em>, </em><em>optional</em>) – Feature(s) in <cite>df</cite> to convert to category. By default all object
-columns are selected.</p></li>
-<li><p><strong>return_all</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True all features in <cite>df</cite> will be returned with only those
-specified in <cite>feats</cite> converted. Otherwise only the converted
-features are returned. This is the default.</p></li>
-<li><p><strong>convert_only</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True the features will only be converted to the ‘category’
-type and NOT encoded.</p></li>
-<li><p><strong>force</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, all specified features will be encoded regardless of
-data type.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features in <cite>df</cite> to convert to categorical. If <cite>None</cite> (default),
+all object-type columns are selected.</p></li>
+<li><p><strong>return_all</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, all features in <cite>df</cite> will be returned regardless of
+whether they were converted. If <cite>False</cite> (default), only the
+converted features are returned.</p></li>
+<li><p><strong>convert_only</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, the features will only be converted to the <cite>category</cite>
+data-type without being integer-encoded.</p></li>
+<li><p><strong>force</strong> (<em>bool</em><em>, </em><em>default False</em>) – If <cite>True</cite>, all features in <cite>feats</cite> will be encoded regardless of
+their data-type.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>pandas.DataFrame</em> – DataFrame with converted features</p></li>
-<li><p><em>dict or NoneType</em> – A dictionary mapping each encoded feature to its categories. If
-convert_only=True NoneType is returned.</p></li>
-</ul>
-</p>
+<dt class="field-even">Warns</dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – A warning is given if any of the features in <cite>feats</cite> are not of
+an <cite>object</cite> data type.</p>
 </dd>
-<dt class="field-odd">Warns</dt>
-<dd class="field-odd"><p><strong>UserWarning</strong> – A warning is given if any of the specified features for
-conversion are not an ‘object’ type.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.utils.feature_density_diff">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.utils.</span></span><span class="sig-name descname"><span class="pre">feature_density_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/utils.html#feature_density_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.utils.feature_density_diff" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the difference between real and synth feature densities.</p>
-<p>For the specified feature the density is computed across <cite>bins</cite> in both
-the <cite>real</cite> and <cite>synth</cite> data sets. The per-bin difference is computed and
-returned along with the bin edges that were used.</p>
-<p>Prior to calculating the densities all values are converted to numeric
-via <cite>utils.cat_encode</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the sythetic data.</p></li>
-<li><p><strong>feature</strong> (<em>str</em>) – The feature that will be used to compute the density.</p></li>
-<li><p><strong>bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Bins to use for computing the density. This value is passed
-to <cite>numpy.histogram_bin_edges</cite> so can be any value accepted by
-that function. The default setting of 10 uses 10 bins.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>hist_diff</strong> (<em>np.ndarry</em>) – The difference in feature density for each of the bins.</p></li>
-<li><p><strong>bin_edges</strong> (<em>np.ndarray</em>) – The edges of the bins.</p></li>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>out_df</strong> (<em>pandas.DataFrame</em>) – Dataframe with (at least) the converted features.</p></li>
+<li><p><strong>cat_dict</strong> (<em>dict or NoneType</em>) – A dictionary mapping each encoded feature to its categories. If
+<cite>convert_only=True</cite>, returns as <cite>None</cite>.</p></li>
 </ul>
 </p>
 </dd>

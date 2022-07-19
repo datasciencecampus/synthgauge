@@ -28,7 +28,7 @@ def test_get_weap_scores(datasets):
 
 
 @given(datasets(column_spec={col: "object" for col in ("a", "b", "c")}))
-def test_TCAP(datasets):
+def test_tcap_score(datasets):
     """Check that a mean TCAP score can be calculated for a pair of
     datasets."""
 
@@ -37,7 +37,7 @@ def test_TCAP(datasets):
 
     *key, target = ["a", "b", "c"]
 
-    score = privacy.TCAP(real, synth, key, target)
+    score = privacy.tcap_score(real, synth, key, target)
 
     assert isinstance(score, float)
 
@@ -49,7 +49,7 @@ def test_TCAP(datasets):
 
 @given(datasets(column_spec={col: "object" for col in ("a", "b", "c")}))
 @settings(max_examples=20)
-def test_TCAP_no_reduced_synthetic_data(datasets):
+def test_tcap_score_no_reduced_synthetic_data(datasets):
     """Check that the TCAP if-statement can be caught when no synthetic
     row's target variable is absolutely, uniquely identifiable from its
     key variables."""
@@ -62,7 +62,7 @@ def test_TCAP_no_reduced_synthetic_data(datasets):
     synth.loc[:, key] = synth.loc[0, key].values
     synth.loc[:, target] = synth.index.astype(str)
 
-    tcap = privacy.TCAP(real, synth, key, target)
+    tcap = privacy.tcap_score(real, synth, key, target)
 
     assert tcap == 0
 
@@ -103,7 +103,7 @@ def test_find_outliers(datasets, threshold, neighbours):
     st.booleans(),
 )
 @settings(max_examples=50, suppress_health_check=[HealthCheck.filter_too_much])
-def test_min_NN_dist(datasets, outliers_only):
+def test_min_nearest_neighbour(datasets, outliers_only):
     """Check that the minimum Nearest Neighbour distance can be
     calculated properly."""
 
@@ -112,7 +112,7 @@ def test_min_NN_dist(datasets, outliers_only):
         not (real.empty or synth.empty) and (len(real) > 5 and len(synth) > 5)
     )
 
-    distance = privacy.min_NN_dist(real, synth, None, outliers_only)
+    distance = privacy.min_nearest_neighbour(real, synth, None, outliers_only)
 
     assert isinstance(distance, float)
 
@@ -122,6 +122,26 @@ def test_min_NN_dist(datasets, outliers_only):
         assert distance == 0
 
     assert distance >= 0
+
+
+@given(
+    datasets(column_spec={"a": "object", "b": "object"}),
+    st.integers(1, 5),
+    st.integers(0, 100),
+)
+def test_get_sample(datasets, n_samples, seed):
+    """Check that a sample can be taken and processed for calculating
+    the overlap score."""
+
+    data, _ = datasets
+    assume(not data.empty and len(data) >= n_samples)
+
+    sample = privacy._get_sample(data, ["a", "b"], n_samples, seed, "data")
+
+    assert isinstance(sample, pd.DataFrame)
+    assert sample.columns.to_list() == data.columns.to_list() + ["data_count"]
+    assert sample["data_count"].unique()
+    assert sample["data_count"].sum() == n_samples
 
 
 @given(

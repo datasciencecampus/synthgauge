@@ -15,7 +15,9 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -37,8 +39,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+</ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html#Metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo.html#Comparing-with-another-dataset">Comparing with another dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -67,60 +74,55 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<span></span><span class="sd">&quot;&quot;&quot;Utility functions for handling real and synthetic data.&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-
-<div class="viewcode-block" id="load_pickle"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.load_pickle">[docs]</a><span class="k">def</span> <span class="nf">load_pickle</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Load pickle file into object.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pf</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pf</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span></div>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 
-<div class="viewcode-block" id="df_combine"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.df_combine">[docs]</a><span class="k">def</span> <span class="nf">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source_col_name</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
-               <span class="n">source_val_real</span><span class="o">=</span><span class="s1">&#39;real&#39;</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="s1">&#39;synth&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Combine separate dataframes of real and synthetic data.</span>
+<div class="viewcode-block" id="df_combine"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.df_combine">[docs]</a><span class="k">def</span> <span class="nf">df_combine</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">source_col_name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
+    <span class="n">source_val_real</span><span class="o">=</span><span class="s2">&quot;real&quot;</span><span class="p">,</span>
+    <span class="n">source_val_synth</span><span class="o">=</span><span class="s2">&quot;synth&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine separate dataframes of real and synthetic data.</span>
 
-<span class="sd">    The dataframes are concatenated along axis=0 and a source column is</span>
-<span class="sd">    added to distinguish the real data from the sythetic data.</span>
-
-<span class="sd">    Optionally, specific features can be selected.</span>
+<span class="sd">    The dataframes are concatenated along the first axis (rows) and a</span>
+<span class="sd">    source column is added to distinguish the real data from the</span>
+<span class="sd">    synthetic data. Optionally, specific features can be selected.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real, unsythesised data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the synthesised data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Features to combine. By default all common features are used.</span>
-<span class="sd">    source_col_name: str, optional</span>
-<span class="sd">        Name of the source column. This is added to the combined DataFrame</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to combine. If `None` (default), all common features</span>
+<span class="sd">        are used.</span>
+<span class="sd">    source_col_name : str, default &quot;source&quot;</span>
+<span class="sd">        Name of the source column. This is added to the combined dataset</span>
 <span class="sd">        and filled with the `source_val_real` and `source_val_synth`</span>
 <span class="sd">        values to signify the real and synthetic data respectively.</span>
-<span class="sd">        Defaults to &quot;source&quot;.</span>
-<span class="sd">    source_val_real: any, optional</span>
-<span class="sd">        Value to use in `source_col_name` column to signify the real data.</span>
-<span class="sd">        Any value accepted by pandas.DataFrame. Defaults to &quot;real&quot;.</span>
-<span class="sd">    source_val_synth: any, optional</span>
-<span class="sd">        Value to use in `source_col_name` column to signify the sythetic</span>
-<span class="sd">        data. Any value accepted by pandas.DataFrame. Defaults to &quot;synth&quot;.</span>
+<span class="sd">        Defaults to `&quot;source&quot;`.</span>
+<span class="sd">    source_val_real : any, default &quot;real&quot;</span>
+<span class="sd">        Value to use in `source_col_name` column to signify the real</span>
+<span class="sd">        data. Defaults to `&quot;real&quot;`.</span>
+<span class="sd">    source_val_synth : any, default &quot;synth&quot;</span>
+<span class="sd">        Value to use in `source_col_name` column to signify the</span>
+<span class="sd">        synthetic data. Defaults to `&quot;synth&quot;`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas.DataFrame</span>
-<span class="sd">        The result of the concatenation of the input DataFrame objects.</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        The combined dataframe.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
 
     <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">real</span><span class="p">[</span><span class="n">source_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_val_real</span>
@@ -128,232 +130,179 @@
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">synth</span><span class="p">[</span><span class="n">source_col_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_val_synth</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">])</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">])</span>
 
-    <span class="k">return</span> <span class="n">data</span></div>
+    <span class="k">return</span> <span class="n">combined</span></div>
 
 
-<div class="viewcode-block" id="df_separate"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.df_separate">[docs]</a><span class="k">def</span> <span class="nf">df_separate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">source_col_name</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source_val_real</span><span class="o">=</span><span class="s1">&#39;real&#39;</span><span class="p">,</span>
-                <span class="n">source_val_synth</span><span class="o">=</span><span class="s1">&#39;synth&#39;</span><span class="p">,</span> <span class="n">drop_source_col</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Separate a dataframe into real and synthetic data.</span>
+<div class="viewcode-block" id="df_separate"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.df_separate">[docs]</a><span class="k">def</span> <span class="nf">df_separate</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">source_col_name</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">source_val_real</span><span class="o">=</span><span class="s2">&quot;real&quot;</span><span class="p">,</span>
+    <span class="n">source_val_synth</span><span class="o">=</span><span class="s2">&quot;synth&quot;</span><span class="p">,</span>
+    <span class="n">drop_source_col</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Separate a dataframe into real and synthetic data.</span>
 
 <span class="sd">    The dataframe is split using a source column and real and synthetic</span>
 <span class="sd">    flags. Optionally, specific features can be selected.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data: pandas.DataFrame</span>
-<span class="sd">        DataFrame to split into real and synthetic components.</span>
-<span class="sd">    source_col_name: str</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        Dataframe to split into real and synthetic components.</span>
+<span class="sd">    source_col_name : str</span>
 <span class="sd">        Name of the column used to signify real versus synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Features to separate. By default all features are used.</span>
-<span class="sd">    source_val_real: any, optional</span>
-<span class="sd">        Value in `source_col_name` column signifying the real data. Any</span>
-<span class="sd">        value accepted by pandas.DataFrame. Defaults to &quot;real&quot;.</span>
-<span class="sd">    source_val_synth: any, optional</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to separate. If `None` (default), uses all features.</span>
+<span class="sd">    source_val_real : any, default &quot;real&quot;</span>
+<span class="sd">        Value in `source_col_name` column signifying the real data.</span>
+<span class="sd">        Defaults to `&quot;real&quot;`.</span>
+<span class="sd">    source_val_synth : any, default &quot;synth&quot;</span>
 <span class="sd">        Value in `source_col_name` column signifying the synthetic data.</span>
-<span class="sd">        Any value accepted by pandas.DataFrame. Defaults to &quot;synth&quot;.</span>
-<span class="sd">    drop_source_col: bool, optional</span>
-<span class="sd">        If True, the default, the `source_col_name` column will be dropped</span>
-<span class="sd">        from the output DataFrames.</span>
+<span class="sd">        Defaults to `&quot;synth&quot;`.</span>
+<span class="sd">    drop_source_col : bool, default True</span>
+<span class="sd">        Indicates whether the `source_col_name` column should be</span>
+<span class="sd">        dropped from the outputs (default) or not.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas.DataFrame, pandas.DataFrame</span>
-<span class="sd">        Two DataFrame objects containing the real data and synthetic</span>
-<span class="sd">        data respectively.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
+
+    <span class="n">feats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="k">if</span> <span class="n">feats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">feats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source_col_name</span><span class="p">)</span>
 
     <span class="n">real</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">source_col_name</span><span class="p">]</span> <span class="o">==</span> <span class="n">source_val_real</span><span class="p">][</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">synth</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">source_col_name</span><span class="p">]</span> <span class="o">==</span> <span class="n">source_val_synth</span><span class="p">][</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">drop_source_col</span><span class="p">:</span>
-        <span class="n">real</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">source_col_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">synth</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">source_col_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">real</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">source_col_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">synth</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">source_col_name</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">real</span><span class="p">,</span> <span class="n">synth</span></div>
 
 
-<div class="viewcode-block" id="launder"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.launder">[docs]</a><span class="k">def</span> <span class="nf">launder</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">suffix_real</span><span class="o">=</span><span class="s1">&#39;real&#39;</span><span class="p">,</span> <span class="n">suffix_synth</span><span class="o">=</span><span class="s1">&#39;synth&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Launder feature names and optionally filter.</span>
+<div class="viewcode-block" id="launder"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.launder">[docs]</a><span class="k">def</span> <span class="nf">launder</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">suffix_real</span><span class="o">=</span><span class="s2">&quot;real&quot;</span><span class="p">,</span> <span class="n">suffix_synth</span><span class="o">=</span><span class="s2">&quot;synth&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Launder feature names and optionally filter.</span>
 
 <span class="sd">    To provide clear distinction between the real and synthetic</span>
-<span class="sd">    features, each dataframe is updated to append suffixes to the feature</span>
-<span class="sd">    names.</span>
-
-<span class="sd">    Optionally, specific features can be selected.</span>
+<span class="sd">    features, each dataframe is updated to append suffixes to the</span>
+<span class="sd">    feature names. Optionally, specific features can be selected.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real, unsythesised data</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the synthesised data</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Features to launder. By default all common features are used.</span>
-<span class="sd">    suffix_real: str, optional</span>
-<span class="sd">        Suffix to append to columns in `real`. Default is &quot;real&quot;.</span>
-<span class="sd">    suffix_synth: str, optional</span>
-<span class="sd">        Suffix to append to columns in `synth`. Default is &quot;synth&quot;.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features to launder. If `None` (default), all common features</span>
+<span class="sd">        are used.</span>
+<span class="sd">    suffix_real : str, default &quot;real&quot;</span>
+<span class="sd">        Suffix to append to columns in `real`. Default is `&quot;real&quot;`.</span>
+<span class="sd">    suffix_synth : str, default &quot;synth&quot;</span>
+<span class="sd">        Suffix to append to columns in `synth`. Default is `&quot;synth&quot;`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas.DataFrame, pandas.DataFrame</span>
-<span class="sd">        Two DataFrame objects containing the real data and synthetic</span>
-<span class="sd">        data respectively.</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the laundered real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the laundered synthetic data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
 
     <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-    <span class="n">real</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{c}</span><span class="s1">_</span><span class="si">{suffix_real}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
-    <span class="n">synth</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{c}</span><span class="s1">_</span><span class="si">{suffix_synth}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">real</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix_real</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">synth</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix_synth</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">real</span><span class="p">,</span> <span class="n">synth</span></div>
 
 
-<div class="viewcode-block" id="cat_encode"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.cat_encode">[docs]</a><span class="k">def</span> <span class="nf">cat_encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-               <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Convert object features to categories.</span>
+<div class="viewcode-block" id="cat_encode"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.cat_encode">[docs]</a><span class="k">def</span> <span class="nf">cat_encode</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert object features to categories.</span>
 
-<span class="sd">    Generates a new version of the input datframe with the</span>
-<span class="sd">    specified features categorically encoded with integer labels.</span>
-<span class="sd">    Optionally, the features can be returned as the &#39;category&#39; type</span>
-<span class="sd">    with no encoding.</span>
+<span class="sd">    Generates a new version of the input dataframe with the specified</span>
+<span class="sd">    features categorically encoded with integer labels. Optionally, the</span>
+<span class="sd">    features can be returned as `category` data type with no encoding.</span>
 
-<span class="sd">    Before performing the conversion a check is made to identify any</span>
-<span class="sd">    speficied features that are not &#39;object&#39; type and therefore less</span>
-<span class="sd">    suited to categorical encoding. A warning is raised for these features</span>
-<span class="sd">    and they will be ignored from subsequent encoding steps unless</span>
-<span class="sd">    `force` is `True`.</span>
+<span class="sd">    Before performing the conversion, a check is made to identify any</span>
+<span class="sd">    speficied features that are not `object`-type and thus less suited</span>
+<span class="sd">    to categorical encoding. A warning is raised for these features and</span>
+<span class="sd">    they will be ignored from subsequent encoding steps unless `force`</span>
+<span class="sd">    is set to `True`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    df: pandas.DataFrame</span>
+<span class="sd">    df : pandas.DataFrame</span>
 <span class="sd">        Input dataframe to be converted.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Feature(s) in `df` to convert to category. By default all object</span>
-<span class="sd">        columns are selected.</span>
-<span class="sd">    return_all: bool, default=False</span>
-<span class="sd">        If True all features in `df` will be returned with only those</span>
-<span class="sd">        specified in `feats` converted. Otherwise only the converted</span>
-<span class="sd">        features are returned. This is the default.</span>
-<span class="sd">    convert_only: bool, default=False</span>
-<span class="sd">        If True the features will only be converted to the &#39;category&#39;</span>
-<span class="sd">        type and NOT encoded.</span>
-<span class="sd">    force: bool, optional</span>
-<span class="sd">        If true, all specified features will be encoded regardless of</span>
-<span class="sd">        data type.</span>
-
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    pandas.DataFrame</span>
-<span class="sd">        DataFrame with converted features</span>
-<span class="sd">    dict or NoneType</span>
-<span class="sd">        A dictionary mapping each encoded feature to its categories. If</span>
-<span class="sd">        convert_only=True NoneType is returned.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features in `df` to convert to categorical. If `None` (default),</span>
+<span class="sd">        all object-type columns are selected.</span>
+<span class="sd">    return_all : bool, default False</span>
+<span class="sd">        If `True`, all features in `df` will be returned regardless of</span>
+<span class="sd">        whether they were converted. If `False` (default), only the</span>
+<span class="sd">        converted features are returned.</span>
+<span class="sd">    convert_only : bool, default False</span>
+<span class="sd">        If `True`, the features will only be converted to the `category`</span>
+<span class="sd">        data-type without being integer-encoded.</span>
+<span class="sd">    force : bool, default False</span>
+<span class="sd">        If `True`, all features in `feats` will be encoded regardless of</span>
+<span class="sd">        their data-type.</span>
 
 <span class="sd">    Warns</span>
 <span class="sd">    -----</span>
 <span class="sd">    UserWarning</span>
-<span class="sd">        A warning is given if any of the specified features for</span>
-<span class="sd">        conversion are not an &#39;object&#39; type.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">all_obj</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;category&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
-    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">all_obj</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-
-    <span class="c1"># Check for non-object type features</span>
-    <span class="n">non_obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">all_obj</span><span class="p">))</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_obj</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Selected features include non-object types:&#39;</span>
-                      <span class="n">f</span><span class="s1">&#39;</span><span class="si">{non_obj}</span><span class="s1"> Is this intended? If so, rerun and &#39;</span>
-                      <span class="s1">&#39;specify `force_encode=True`. Otherwise they will &#39;</span>
-                      <span class="s1">&#39;be dropped or, if `return_all==True`, passed &#39;</span>
-                      <span class="s1">&#39;through unchanged.&#39;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">return_all</span><span class="p">:</span>
-        <span class="n">out_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">out_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-    <span class="n">cat_dict</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">convert_only</span> <span class="k">else</span> <span class="kc">None</span>
-
-    <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
-        <span class="n">enc_fts</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">enc_fts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">non_obj</span><span class="p">))</span>
-
-    <span class="k">for</span> <span class="n">ft</span> <span class="ow">in</span> <span class="n">enc_fts</span><span class="p">:</span>
-        <span class="n">out_df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">convert_only</span><span class="p">:</span>
-            <span class="n">cat_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">ft</span><span class="p">:</span> <span class="n">out_df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">categories</span><span class="p">})</span>
-            <span class="n">out_df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_df</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span>
-
-    <span class="k">return</span> <span class="n">out_df</span><span class="p">,</span> <span class="n">cat_dict</span></div>
-
-
-<div class="viewcode-block" id="feature_density_diff"><a class="viewcode-back" href="../../autoapi/synthgauge/utils/index.html#synthgauge.utils.feature_density_diff">[docs]</a><span class="k">def</span> <span class="nf">feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Computes the difference between real and synth feature densities.</span>
-
-<span class="sd">    For the specified feature the density is computed across `bins` in both</span>
-<span class="sd">    the `real` and `synth` data sets. The per-bin difference is computed and</span>
-<span class="sd">    returned along with the bin edges that were used.</span>
-
-<span class="sd">    Prior to calculating the densities all values are converted to numeric</span>
-<span class="sd">    via `utils.cat_encode`.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the sythetic data.</span>
-<span class="sd">    feature: str</span>
-<span class="sd">        The feature that will be used to compute the density.</span>
-<span class="sd">    bins: str or int, optional</span>
-<span class="sd">        Bins to use for computing the density. This value is passed</span>
-<span class="sd">        to `numpy.histogram_bin_edges` so can be any value accepted by</span>
-<span class="sd">        that function. The default setting of 10 uses 10 bins.</span>
+<span class="sd">        A warning is given if any of the features in `feats` are not of</span>
+<span class="sd">        an `object` data type.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    hist_diff: np.ndarry</span>
-<span class="sd">        The difference in feature density for each of the bins.</span>
-<span class="sd">    bin_edges: np.ndarray</span>
-<span class="sd">        The edges of the bins.</span>
-
+<span class="sd">    out_df : pandas.DataFrame</span>
+<span class="sd">        Dataframe with (at least) the converted features.</span>
+<span class="sd">    cat_dict : dict or NoneType</span>
+<span class="sd">        A dictionary mapping each encoded feature to its categories. If</span>
+<span class="sd">        `convert_only=True`, returns as `None`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">enc_real</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cat_encode</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
-    <span class="n">enc_synth</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cat_encode</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
 
-    <span class="n">full_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">enc_real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">enc_synth</span><span class="p">[</span><span class="n">feature</span><span class="p">]))</span>
-    <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">full_range</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+    <span class="n">all_cat_cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span> <span class="k">if</span> <span class="n">feats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">all_cat_cols</span>
 
-    <span class="n">real_hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">enc_real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span><span class="p">,</span>
-                                <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">synth_hist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">enc_synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bin_edges</span><span class="p">,</span>
-                                 <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Check for non-object type features</span>
+    <span class="n">non_cat_cols</span> <span class="o">=</span> <span class="n">feats</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">all_cat_cols</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">non_cat_cols</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Selected features include non-object types: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">non_cat_cols</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Is this intended? If so, rerun with `force=True`. &quot;</span>
+            <span class="s2">&quot;If not, they will be dropped, unless `return_all=True`, &quot;</span>
+            <span class="s2">&quot;where they will pass through unchanged.&quot;</span>
+        <span class="p">)</span>
 
-    <span class="n">hist_diff</span> <span class="o">=</span> <span class="n">synth_hist</span> <span class="o">-</span> <span class="n">real_hist</span>
+    <span class="n">cat_dict</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">convert_only</span> <span class="k">else</span> <span class="kc">None</span>
 
-    <span class="k">return</span> <span class="n">hist_diff</span><span class="p">,</span> <span class="n">bin_edges</span></div>
+    <span class="n">feats_to_encode</span> <span class="o">=</span> <span class="n">feats</span> <span class="k">if</span> <span class="n">force</span> <span class="k">else</span> <span class="n">feats</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">non_cat_cols</span><span class="p">)</span>
+    <span class="n">out_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">return_all</span> <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">feats_to_encode</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feats_to_encode</span><span class="p">:</span>
+        <span class="n">out_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">convert_only</span><span class="p">:</span>
+            <span class="n">feature_cat</span> <span class="o">=</span> <span class="n">out_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span>
+            <span class="n">cat_dict</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_cat</span><span class="o">.</span><span class="n">categories</span>
+            <span class="n">out_df</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_cat</span><span class="o">.</span><span class="n">codes</span>
+
+    <span class="k">return</span> <span class="n">out_df</span><span class="p">,</span> <span class="n">cat_dict</span></div>
 </pre></div>
 
            </div>

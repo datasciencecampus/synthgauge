@@ -15,7 +15,9 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -37,8 +39,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Comparing-with-another-dataset">Comparing with another dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -67,113 +74,129 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.metrics.privacy</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">NearestNeighbors</span><span class="p">,</span> <span class="n">LocalOutlierFactor</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span></span><span class="sd">&quot;&quot;&quot;Privacy metrics.&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">cat_encode</span><span class="p">,</span> <span class="n">df_combine</span><span class="p">,</span> <span class="n">df_separate</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">LocalOutlierFactor</span><span class="p">,</span> <span class="n">NearestNeighbors</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">utils</span>
 
 
-<div class="viewcode-block" id="get_WEAP"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.get_WEAP">[docs]</a><span class="k">def</span> <span class="nf">get_WEAP</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the Within Equivalence class Attribution Probabilities WEAP</span>
+<div class="viewcode-block" id="_get_weap_scores"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._get_weap_scores">[docs]</a><span class="k">def</span> <span class="nf">_get_weap_scores</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Within Equivalence class Attribution Probabilities (WEAP).</span>
 
 <span class="sd">    For each record in the synthetic dataset, this function returns the</span>
-<span class="sd">    proportion across the whole dataset that these `key` values are matched</span>
-<span class="sd">    with this `target` value.</span>
+<span class="sd">    proportion across the whole dataset that a set of `key` values are</span>
+<span class="sd">    matched with this `target` value.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">    synth : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    key : list</span>
+<span class="sd">    key : list of str</span>
 <span class="sd">        List of features in `synth` to use as the key.</span>
-<span class="sd">    target : str or list of str</span>
+<span class="sd">    target : str</span>
 <span class="sd">        Feature to use as the target.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pandas.Series</span>
-<span class="sd">        A series object containing the WEAP scores for each record in `synth`.</span>
+<span class="sd">        A series object containing the WEAP scores for each record in</span>
+<span class="sd">        `synth`.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    This function is intended to only be used within `TCAP()` to determine</span>
-<span class="sd">    which synthetic records are most likely to pose an attribution risk.</span>
+<span class="sd">    This function is intended to only be used within `TCAP()` to</span>
+<span class="sd">    determine which synthetic records are most likely to pose an</span>
+<span class="sd">    attribution risk.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">key_target_vc</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">key</span> <span class="o">+</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-    <span class="n">key_target_vc</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="n">target</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;key_target_frequency&#39;</span><span class="p">]</span>
+    <span class="n">key_and_target</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">]</span>
+
+    <span class="n">key_target_vc</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">key_and_target</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">key_target_vc</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">key_and_target</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;key_target_frequency&quot;</span><span class="p">]</span>
     <span class="n">key_vc</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-    <span class="n">key_vc</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;key_frequency&#39;</span><span class="p">]</span>
+    <span class="n">key_vc</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">key</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;key_frequency&quot;</span><span class="p">]</span>
 
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">key_target_vc</span><span class="p">)</span>
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">key_vc</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">synth</span><span class="p">[</span><span class="s1">&#39;key_target_frequency&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">synth</span><span class="p">[</span><span class="s1">&#39;key_frequency&#39;</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_target_frequency&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_frequency&quot;</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="TCAP"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.TCAP">[docs]</a><span class="k">def</span> <span class="nf">TCAP</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Target Correct Attribution Probability TCAP</span>
+<div class="viewcode-block" id="tcap_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.tcap_score">[docs]</a><span class="k">def</span> <span class="nf">tcap_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Target Correct Attribution Probability (TCAP) score.</span>
 
-<span class="sd">    This privacy metric calculates the average chance that the key-target</span>
-<span class="sd">    pairings in the `synth` dataset reveal the true key-target pairings in the</span>
-<span class="sd">    original, `real` dataset.</span>
+<span class="sd">    This privacy metric calculates the average chance that the</span>
+<span class="sd">    key-target pairings in a synthetic dataset reveal the true</span>
+<span class="sd">    key-target pairings in associated real dataset.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
+<span class="sd">    real : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">    synth : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    key : list</span>
+<span class="sd">    key : list of str</span>
 <span class="sd">        List of features in `synth` to use as the key.</span>
-<span class="sd">    target : str or list of str</span>
+<span class="sd">    target : str</span>
 <span class="sd">        Feature to use as the target.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    TCAP : float</span>
-<span class="sd">        The average TCAP across the dataset.</span>
+<span class="sd">    float</span>
+<span class="sd">        The average TCAP score across the dataset.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    This metric provides an estimate of how well an intruder could infer</span>
-<span class="sd">    attributes of groups in the real dataset by studying the synthetic. The</span>
-<span class="sd">    choices for `key` and `target` will vary depending on the dataset in</span>
-<span class="sd">    question but we would suggest the `key` features are those that could be</span>
-<span class="sd">    readily available to an outsider and the `target` feature is one we</span>
-<span class="sd">    wouldn&#39;t want them finding out, such as a protected characteristic.</span>
+<span class="sd">    attributes of groups in the real dataset by studying the synthetic.</span>
+<span class="sd">    The choices for `key` and `target` will vary depending on the</span>
+<span class="sd">    dataset in question but we would suggest the `key` features are</span>
+<span class="sd">    those that could be readily available to an outsider and the</span>
+<span class="sd">    `target` feature is one we wouldn&#39;t want them finding out, such as a</span>
+<span class="sd">    protected characteristic.</span>
 
-<span class="sd">    This method only works with categorical data, so binning of continuous data</span>
-<span class="sd">    may be required.</span>
+<span class="sd">    This method only works with categorical data, so binning of</span>
+<span class="sd">    continuous data may be required.</span>
+
+<span class="sd">    Full details may be found in:</span>
+
+<span class="sd">    Taub and Elliott (2019). The Synthetic Data Challenge. The Hague,</span>
+<span class="sd">    The Netherlands: Joint UNECE/Eurostat Work Session on Statistical</span>
+<span class="sd">    Data Confidentiality, Session 3.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="p">[</span><span class="n">target</span><span class="p">]</span>
-    <span class="n">WEAP_scores</span> <span class="o">=</span> <span class="n">get_WEAP</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">WEAP_scores</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">_get_weap_scores</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">scores</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>
-    <span class="n">synth_reduced</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">WEAP_scores</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][</span><span class="n">key</span><span class="o">+</span><span class="n">target</span><span class="p">]</span>
+
+    <span class="n">synth_reduced</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">scores</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][[</span><span class="o">*</span><span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">]]</span>
     <span class="n">synth_reduced</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">synth_reduced</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-        <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_synthguess&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">target</span><span class="p">:</span> <span class="n">target</span> <span class="o">+</span> <span class="s2">&quot;_synthguess&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
 
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">synth_reduced</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
-    <span class="n">target_matches</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="n">combined</span><span class="p">[</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;_synthguess&#39;</span><span class="p">]</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">synth_reduced</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+    <span class="n">target_matches</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">==</span> <span class="n">combined</span><span class="p">[</span><span class="n">target</span> <span class="o">+</span> <span class="s2">&quot;_synthguess&quot;</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">target_matches</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">target_matches</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">target_matches</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="find_outliers"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.find_outliers">[docs]</a><span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">outlier_factor_threshold</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Find Outliers</span>
-
-<span class="sd">    This function returns whether each row in `data` can be considered an</span>
-<span class="sd">    outlier.</span>
+<div class="viewcode-block" id="_find_outliers"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._find_outliers">[docs]</a><span class="k">def</span> <span class="nf">_find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">n_neighbours</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Identify local outliers using the nearest-neighbour principle.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : pandas dataframe</span>
-<span class="sd">    outlier_factor_threshold : float</span>
-<span class="sd">        Float influencing classification of ouliers. Increasing this threshold</span>
-<span class="sd">        means that fewer points are considered outliers.</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        Dataframe to be assessed for outliers.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Float influencing classification of outliers. Increasing this</span>
+<span class="sd">        threshold means that fewer points are considered outliers.</span>
+<span class="sd">    n_neighbours : int</span>
+<span class="sd">        Number of neighbours to consider in outlier detection.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -182,71 +205,114 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Most inliers will have an outlier factor of less than one, however there</span>
-<span class="sd">    are no clear rules that determine when a data point is an outlier. This</span>
-<span class="sd">    is likely to vary from dataset to dataset and, as such, we recommend</span>
-<span class="sd">    tuning `outlier_factor_threshold` to suit.</span>
+<span class="sd">    Most inliers will have an outlier factor of less than one, however</span>
+<span class="sd">    there are no clear rules that determine when a data point is an</span>
+<span class="sd">    outlier. This is likely to vary from dataset to dataset and, as</span>
+<span class="sd">    such, we recommend tuning `outlier_factor_threshold` to suit.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">lof</span> <span class="o">=</span> <span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">lof</span> <span class="o">=</span> <span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">n_neighbours</span><span class="p">)</span>
     <span class="n">lof</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
     <span class="n">outlier_factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">lof</span><span class="o">.</span><span class="n">negative_outlier_factor_</span>
-    <span class="n">outlier_bool</span> <span class="o">=</span> <span class="n">outlier_factor</span> <span class="o">&lt;</span> <span class="n">outlier_factor_threshold</span>
+    <span class="n">outlier_bool</span> <span class="o">=</span> <span class="n">outlier_factor</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+
     <span class="k">return</span> <span class="n">outlier_bool</span></div>
 
 
-<div class="viewcode-block" id="min_NN_dist"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.min_NN_dist">[docs]</a><span class="k">def</span> <span class="nf">min_NN_dist</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">real_outliers_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">outlier_factor_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Minimum Nearest Neighbour distance</span>
+<div class="viewcode-block" id="min_nearest_neighbour"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.min_nearest_neighbour">[docs]</a><span class="k">def</span> <span class="nf">min_nearest_neighbour</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">outliers_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_neighbours</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Minimum nearest-neighbour distance.</span>
 
-<span class="sd">    This privacy metric returns the smallest distance between any point in</span>
-<span class="sd">    the `real` dataset and any point in the `synth` dataset. There is an</span>
-<span class="sd">    option to only consider the outliers in the real dataset as these perhaps</span>
-<span class="sd">    pose more of a privacy concern.</span>
+<span class="sd">    This privacy metric returns the smallest distance between any point</span>
+<span class="sd">    in the real dataset and any point in the synthetic dataset. There is</span>
+<span class="sd">    an option to only consider the outliers in the real dataset as these</span>
+<span class="sd">    perhaps pose more of a privacy concern.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
+<span class="sd">    real : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">    synth : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional</span>
-<span class="sd">        Features to use. By default all features are used.</span>
-<span class="sd">    real_outliers_only : bool (default True)</span>
-<span class="sd">        Boolean indicating whether to filter out inliers (default) or not.</span>
-<span class="sd">    outlier_factor_threshold : float (default 2)</span>
-<span class="sd">        Float influencing classification of ouliers. Increase to include</span>
-<span class="sd">        fewer real points in nearest neighbour calculations.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        Features in `real` and `synth` to use when calculating</span>
+<span class="sd">        distance. If `None` (default), all common features are used.</span>
+<span class="sd">    outliers_only : bool, default True</span>
+<span class="sd">        Boolean indicating whether to filter out the real data inliers</span>
+<span class="sd">        (default) or not.</span>
+<span class="sd">    threshold : number, default 2</span>
+<span class="sd">        Outlier decision threshold. Increase to include fewer points</span>
+<span class="sd">        from `real` in nearest-neighbour calculations.</span>
+<span class="sd">    n_neighbours : int, default 5</span>
+<span class="sd">        Number of neighbours to consider when identifying local</span>
+<span class="sd">        outliers.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    min_dist : float</span>
-<span class="sd">        Minimum manhattan distance between `real` and `synth` data.</span>
+<span class="sd">    float</span>
+<span class="sd">        Minimum Manhattan distance between `real` and `synth` data.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    This privacy metric provides an insight into whether the synthetic dataset</span>
-<span class="sd">    is too similar to the real dataset. It does this by calculating the</span>
-<span class="sd">    minimum distance between the real records and the synthetic records.</span>
+<span class="sd">    This privacy metric provides an insight into whether the synthetic</span>
+<span class="sd">    dataset is too similar to the real dataset. It does this by</span>
+<span class="sd">    calculating the minimum distance between the real records and the</span>
+<span class="sd">    synthetic records.</span>
 
 <span class="sd">    This metric assumes that categorical data is ordinal during distance</span>
 <span class="sd">    calculations, or that it has already been suitably one-hot-encoded.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="n">feats</span><span class="p">)</span>
-    <span class="n">combined_recode</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cat_encode</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">real</span><span class="p">,</span> <span class="n">synth</span> <span class="o">=</span> <span class="n">df_separate</span><span class="p">(</span><span class="n">combined_recode</span><span class="p">,</span> <span class="n">source_col_name</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span>
-                              <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">real_outliers_only</span><span class="p">:</span>
-        <span class="n">outlier_bool</span> <span class="o">=</span> <span class="n">find_outliers</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">outlier_factor_threshold</span><span class="p">)</span>
-        <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">outlier_bool</span><span class="p">]</span>
-    <span class="n">near_neigh</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">near_neigh</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
-    <span class="n">dist</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">near_neigh</span><span class="o">.</span><span class="n">kneighbors</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">return_distance</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">dist</span><span class="p">))</span></div>
+
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="n">feats</span><span class="p">)</span>
+    <span class="n">combined_recode</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">cat_encode</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">return_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">real</span><span class="p">,</span> <span class="n">synth</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">df_separate</span><span class="p">(</span>
+        <span class="n">combined_recode</span><span class="p">,</span>
+        <span class="n">source_col_name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
+        <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">outliers_only</span><span class="p">:</span>
+        <span class="n">outliers</span> <span class="o">=</span> <span class="n">_find_outliers</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">n_neighbours</span><span class="p">)</span>
+        <span class="n">real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">outliers</span><span class="p">]</span>
+
+    <span class="n">neigh</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
+    <span class="n">distances</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">neigh</span><span class="o">.</span><span class="n">kneighbors</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">return_distance</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="sample_overlap_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.sample_overlap_score">[docs]</a><span class="k">def</span> <span class="nf">sample_overlap_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">runs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                         <span class="n">score_type</span><span class="o">=</span><span class="s1">&#39;unique&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Return percentage of overlap between real and synth data.</span>
+<div class="viewcode-block" id="_get_sample"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._get_sample">[docs]</a><span class="k">def</span> <span class="nf">_get_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Take a sample from the data and count the feature frequencies.&quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="sample_overlap_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.sample_overlap_score">[docs]</a><span class="k">def</span> <span class="nf">sample_overlap_score</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sample_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">runs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">score_type</span><span class="o">=</span><span class="s2">&quot;unique&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return percentage of overlap between real and synth data based on</span>
+<span class="sd">    random sampling.</span>
 
 <span class="sd">    Samples from both the real and synthetic datasets are compared for</span>
 <span class="sd">    similarity. This similarity, or overlap score, is based on the</span>
@@ -254,64 +320,66 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the real data.</span>
-<span class="sd">    synth: pandas.DataFrame</span>
-<span class="sd">        DataFrame containing the synthetic data.</span>
-<span class="sd">    feats: str or list of str, optional.</span>
-<span class="sd">        The features that will be used to match records. By</span>
-<span class="sd">        default all features will be used.</span>
-<span class="sd">    sample_size: float or int, optional</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        The features used to match records. If `None` (default), all</span>
+<span class="sd">        common features are used.</span>
+<span class="sd">    sample_size : float or int, default 0.2</span>
 <span class="sd">        The ratio (if `sample_size` between 0 and 1) or count</span>
-<span class="sd">        (`sample_size` &gt; 1) of records to sample. Default is 0.2 or 20%.</span>
-<span class="sd">    runs: int, optional</span>
-<span class="sd">        The number of times to compute the score. Total score is averaged</span>
-<span class="sd">        across runs.</span>
-<span class="sd">    score_type: {&quot;unique&quot;|&quot;sample&quot;}</span>
-<span class="sd">        Method used for calculating the overlap score. If &quot;unique&quot;, the</span>
-<span class="sd">        default, the score is the percentage of unique records in the real</span>
-<span class="sd">        sample that have a match within the synth data. If &quot;sample&quot; the</span>
-<span class="sd">        score is the percentage of all records within the real sample that</span>
-<span class="sd">        have a match within the synth sample.</span>
+<span class="sd">        (`sample_size` &gt; 1) of records to sample. Default is 0.2 (20%).</span>
+<span class="sd">    runs : int, default 5</span>
+<span class="sd">        The number of sampling runs to use when computing the score.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random number seed used for sampling.</span>
+<span class="sd">    score_type : {&quot;unique&quot;, &quot;sample&quot;}, default &quot;unique&quot;</span>
+<span class="sd">        Method used for calculating the overlap score. If &quot;unique&quot;</span>
+<span class="sd">        (default), the score is the percentage of unique records in the</span>
+<span class="sd">        real sample that have a match within the synthetic data. If</span>
+<span class="sd">        &quot;sample&quot;, the score is the percentage of all records within the</span>
+<span class="sd">        real sample that have a match within the synth sample.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    float:</span>
-<span class="sd">        Overlap score between `real` and `synth`</span>
+<span class="sd">    overlap_score : float</span>
+<span class="sd">        Estimated overlap score between `real` and `synth`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+    <span class="n">min_num_rows</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">synth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">sample_size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sample_size</span><span class="p">)</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">min_num_rows</span> <span class="o">*</span> <span class="n">sample_size</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">sample_size</span> <span class="o">&gt;</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="n">nsamples</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">nsamples</span> <span class="o">=</span> <span class="n">sample_size</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">min_num_rows</span><span class="p">,</span> <span class="n">sample_size</span><span class="p">)</span>
+
     <span class="n">scores</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">runs</span><span class="p">):</span>
-        <span class="n">sample_real</span> <span class="o">=</span> <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nsamples</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">real_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-        <span class="n">sample_synth</span> <span class="o">=</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">nsamples</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">synth_count</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
-            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-        <span class="n">duplicates</span> <span class="o">=</span> <span class="n">sample_real</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sample_synth</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">feats</span><span class="p">,</span>
-                                       <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;_real&#39;</span><span class="p">,</span> <span class="s1">&#39;_synth&#39;</span><span class="p">),</span>
-                                       <span class="n">indicator</span><span class="o">=</span><span class="s1">&#39;_match&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;unique&#39;</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">runs</span><span class="p">):</span>
+
+        <span class="n">sample_real</span> <span class="o">=</span> <span class="n">_get_sample</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="s2">&quot;real&quot;</span><span class="p">)</span>
+        <span class="n">sample_synth</span> <span class="o">=</span> <span class="n">_get_sample</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="s2">&quot;synth&quot;</span><span class="p">)</span>
+
+        <span class="n">duplicates</span> <span class="o">=</span> <span class="n">sample_real</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">sample_synth</span><span class="p">,</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="n">on</span><span class="o">=</span><span class="n">feats</span><span class="p">,</span>
+            <span class="n">suffixes</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;_real&quot;</span><span class="p">,</span> <span class="s2">&quot;_synth&quot;</span><span class="p">),</span>
+            <span class="n">indicator</span><span class="o">=</span><span class="s2">&quot;_match&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s2">&quot;unique&quot;</span><span class="p">:</span>
             <span class="n">score</span> <span class="o">=</span> <span class="n">duplicates</span><span class="o">.</span><span class="n">_match</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">both</span>
-        <span class="k">elif</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span>
-            <span class="n">score</span> <span class="o">=</span> <span class="n">duplicates</span><span class="p">[</span><span class="n">duplicates</span><span class="o">.</span><span class="n">_match</span> <span class="o">==</span>
-                               <span class="s1">&#39;both&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">real_count</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">nsamples</span>
+        <span class="k">if</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s2">&quot;sample&quot;</span><span class="p">:</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">duplicates</span><span class="p">[</span><span class="n">duplicates</span><span class="o">.</span><span class="n">_match</span> <span class="o">==</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">real_count</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="o">/</span> <span class="n">n_samples</span>
+            <span class="p">)</span>
+
         <span class="n">scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="k">pass</span>
 </pre></div>
 
            </div>

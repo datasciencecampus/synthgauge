@@ -15,7 +15,9 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -37,8 +39,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Metrics">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Comparing-with-another-dataset">Comparing with another dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -67,41 +74,99 @@
            <div itemprop="articleBody">
              
   <h1>Source code for synthgauge.metrics.propensity</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="sd">&quot;&quot;&quot;Propensity-based utility metrics.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LogisticRegression</span>
-<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="k">import</span> <span class="n">DecisionTreeClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">PolynomialFeatures</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="k">import</span> <span class="n">df_combine</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">df_combine</span>
 
 
-<div class="viewcode-block" id="propensity_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.propensity_MSE">[docs]</a><span class="k">def</span> <span class="nf">propensity_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Propensity mean-squared error</span>
-
-<span class="sd">    We think of the propensity of an example as the estimated probability it is</span>
-<span class="sd">    classified as being synthetic. For a good synthetic dataset we would expect</span>
-<span class="sd">    this to be the same as the proportion of synthetic examples used in</span>
-<span class="sd">    training. The mean squared error from this proportion is hence a suitable</span>
-<span class="sd">    utility metric.</span>
+<div class="viewcode-block" id="_combine_encode_and_pop"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics._combine_encode_and_pop">[docs]</a><span class="k">def</span> <span class="nf">_combine_encode_and_pop</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the combined, encoded real and synthetic data, and their</span>
+<span class="sd">    origins.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
+<span class="sd">    real : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
+<span class="sd">    synth : pandas.DataFrame</span>
 <span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    method : str, [&#39;CART&#39;, &#39;LogisticRegression&#39;]</span>
-<span class="sd">        Classification method to use.</span>
-<span class="sd">    **kwargs : dict</span>
-<span class="sd">        Keyword arguments passed to classification function.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    MSE_p : float</span>
-<span class="sd">        Propensity score mean squared error.</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        The combined data with categorical columns one-hot encoded.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        An indicator for whether the data is real (0) or synthetic (1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">indicator</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span></div>
+
+
+<div class="viewcode-block" id="_get_propensity_scores"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics._get_propensity_scores">[docs]</a><span class="k">def</span> <span class="nf">_get_propensity_scores</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Fit a propensity model to the data and extract its scores.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : pandas.DataFrame</span>
+<span class="sd">        Dataframe to fit propensity model to.</span>
+<span class="sd">    labels : numpy.ndarray</span>
+<span class="sd">        Indicator for which data are real (0) or synthetic (1).</span>
+<span class="sd">    method : {&quot;cart&quot;, &quot;logr&quot;}</span>
+<span class="sd">        Which propensity model to use.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to propensity model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    scores : numpy.ndarray</span>
+<span class="sd">        Propensity score for each point in `data`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;logr&quot;</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span>
+            <span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_bias</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">data</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">scores</span></div>
+
+
+<div class="viewcode-block" id="pmse"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse">[docs]</a><span class="k">def</span> <span class="nf">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the propensity score mean-squared error (pMSE).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        The combined set of real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        An indicator for which data are real (0) or synthetic (1).</span>
+<span class="sd">    method : {&quot;cart&quot;, &quot;logr&quot;}</span>
+<span class="sd">        Which propensity model to use. Must be either CART (`&quot;cart&quot;`) or</span>
+<span class="sd">        logistic regression with first-order interactions (`&quot;logr&quot;`).</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to propensity model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Propensity score mean-squared error.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -110,416 +175,382 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Propensity scores represent probabilities of group membership. By modelling</span>
-<span class="sd">    whether an example is synthetic or not, we can use propensity scores as a</span>
-<span class="sd">    measure of utility.</span>
+<span class="sd">    Propensity scores represent probabilities of group membership. By</span>
+<span class="sd">    modelling whether an example is synthetic or not, we can use</span>
+<span class="sd">    propensity scores as a measure of utility.</span>
 
 <span class="sd">    This returns zero if the distributions are identical, and is bounded</span>
-<span class="sd">    above by 1-c if they are nothing alike, where c is the proportion of</span>
-<span class="sd">    synthetic data. This method is therefore good for comparing multiple</span>
-<span class="sd">    synthetic datasets. However, as this is not a test, there is no threshold</span>
-<span class="sd">    distance below which we can claim the distributions are statistically the</span>
-<span class="sd">    same.</span>
+<span class="sd">    above by :math:`1 - c` if they are nothing alike, where :math:`c` is</span>
+<span class="sd">    the proportion of the data that is synthetic. This method is</span>
+<span class="sd">    therefore good for comparing multiple synthetic datasets. However,</span>
+<span class="sd">    as this is not a test, there is no threshold distance below which we</span>
+<span class="sd">    can claim the distributions are statistically the same.</span>
 
-<span class="sd">    This function assumes that some preprocessing has been carried out so that</span>
-<span class="sd">    the data is ready to be passed to the classification function. Encoding</span>
-<span class="sd">    of categorical data is performed, but, for example, scaling is not. Without</span>
-<span class="sd">    this erroneous results may be returned. The logistic regression can fail to</span>
-<span class="sd">    converge if many variables are considered. Anecdotally, this doesn&#39;t seem</span>
-<span class="sd">    to drastically impact the propensity scores, although this should be</span>
-<span class="sd">    investigated formally. `**kwargs` are passed to the classification model so</span>
-<span class="sd">    it can be tuned.</span>
+<span class="sd">    This function assumes that some preprocessing has been carried out</span>
+<span class="sd">    so that the data is ready to be passed to the classification</span>
+<span class="sd">    function. Encoding of categorical data is performed, but, for</span>
+<span class="sd">    example, scaling is not. Without this, erroneous results may be</span>
+<span class="sd">    returned. The logistic regression can fail to converge if many</span>
+<span class="sd">    variables are considered. Anecdotally, this doesn&#39;t seem to</span>
+<span class="sd">    drastically impact the propensity scores, although this should be</span>
+<span class="sd">    investigated formally.</span>
 
-<span class="sd">    Using a CART model as a classifier is recommended in the literature however</span>
-<span class="sd">    we also support the use of logistic regression.</span>
-
-<span class="sd">    https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358</span>
+<span class="sd">    Using a CART model as a classifier is recommended in the literature</span>
+<span class="sd">    however we also support the use of logistic regression. For further</span>
+<span class="sd">    details, see: https://doi.org/10.1111/rssa.12358</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;CART&#39;</span><span class="p">,</span> <span class="s1">&#39;LogisticRegression&#39;</span><span class="p">]:</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">_get_propensity_scores</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">ideal</span> <span class="o">=</span> <span class="n">indicator</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">scores</span> <span class="o">-</span> <span class="n">ideal</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="_pmse_logr_statistics"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics._pmse_logr_statistics">[docs]</a><span class="k">def</span> <span class="nf">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the location and scale of pMSE in the null case where</span>
+<span class="sd">    the real and synthetic datasets are formed from identical processes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the combined real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        Indicator for whether data are real (0) or synthetic (1).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    loc : float</span>
+<span class="sd">        Expectation of pMSE in the null case.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Standard deviation of pMSE in the null case.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    It has been shown that the null case is distributed as a multiple of</span>
+<span class="sd">    a :math:`\\chi^2` distribution with :math:`k-1` degrees of freedom.</span>
+
+<span class="sd">    Therefore, its expectation is:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        E(pMSE) = \\frac{(k - 1)(1 - c)^2}{N}</span>
+
+<span class="sd">    and its standard deviation is:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        sd(pMSE) = \\frac{c \\sqrt{2(k - 1)} (1 - c)^2}{N}</span>
+
+<span class="sd">    where :math:`k` is the number of predictors used in the model,</span>
+<span class="sd">    :math:`c` is the proportion of synthetic data, and :math:`N` is the</span>
+<span class="sd">    total number of data points.</span>
+
+<span class="sd">    Here, all features and first-order interactions are used in the</span>
+<span class="sd">    model. Let :math:`m` be the number of features, then:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        k = m + \\binom{m}{2}</span>
+
+<span class="sd">    Further explanation and derivation of these results can be found at:</span>
+<span class="sd">    https://doi.org/10.1111/rssa.12358</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">num_rows</span><span class="p">,</span> <span class="n">num_cols</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">num_predictors</span> <span class="o">=</span> <span class="n">num_cols</span> <span class="o">+</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">binom</span><span class="p">(</span><span class="n">num_cols</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">prop_synth</span> <span class="o">=</span> <span class="n">indicator</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_predictors</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">prop_synth</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">num_rows</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">prop_synth</span>
+        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_predictors</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">prop_synth</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">/</span> <span class="n">num_rows</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span></div>
+
+
+<div class="viewcode-block" id="_pmse_cart_statistics"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics._pmse_cart_statistics">[docs]</a><span class="k">def</span> <span class="nf">_pmse_cart_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Estimate the location and scale of pMSE in the null case by</span>
+<span class="sd">    repeating pMSE calculations on permuations of the indicator column</span>
+<span class="sd">    using a CART model.</span>
+
+<span class="sd">    The set of calculations are then summarised using the mean or</span>
+<span class="sd">    standard deviation, respectively.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the combined real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        Indicator for whether data are real (0) or synthetic (1).</span>
+<span class="sd">    num_perms : int</span>
+<span class="sd">        The number of permutations to consider.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to</span>
+<span class="sd">        `sklearn.tree.DecisionTreeClassifer`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    loc : float</span>
+<span class="sd">        Estimated expectation of pMSE in the null case.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Estimated standard deviation of pMSE in the null case.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    When using a CART propensity model, the number of predictors is</span>
+<span class="sd">    unknown and the results used in `_pmse_logr_statistics` do not</span>
+<span class="sd">    apply.</span>
+
+<span class="sd">    To circumvent this, we repeatedly calculate pMSE using permutations</span>
+<span class="sd">    of the synthetic indicator column. This should approximate the</span>
+<span class="sd">    results for &quot;properly&quot; synthesised data without knowing :math:`k` a</span>
+<span class="sd">    priori.</span>
+
+<span class="sd">    Further details of this approach are available at:</span>
+<span class="sd">    https://doi.org/10.1111/rssa.12358</span>
+
+<span class="sd">    Note that the `random_state` keyword argument is used to</span>
+<span class="sd">    (independently) create the permutations and to fit the CART model.</span>
+<span class="sd">    Without specifying this, the results will not be reproducible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;random_state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+    <span class="n">pmses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_perms</span><span class="p">):</span>
+
+        <span class="n">rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indicator</span><span class="p">)</span>
+        <span class="n">pmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pmses</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pmses</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pmse_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_ratio">[docs]</a><span class="k">def</span> <span class="nf">pmse_ratio</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The propensity score mean-squared error ratio.</span>
+
+<span class="sd">    This is the ratio of observed pMSE to that expected under the null</span>
+<span class="sd">    case, i.e.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        ratio(pMSE) = \\frac{pMSE}{E(pMSE)}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the combined real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        Indicator for whether data are real (0) or synthetic (1).</span>
+<span class="sd">    method : {&quot;cart&quot;, &quot;logr&quot;}</span>
+<span class="sd">        Which propensity model to use. Must be either CART (`&quot;cart&quot;`) or</span>
+<span class="sd">        logistic regression with first-order interactions (`&quot;logr&quot;`).</span>
+<span class="sd">    num_perms : int, optional</span>
+<span class="sd">        Number of permutations to consider when estimating the null case</span>
+<span class="sd">        statistics with a CART model.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to the propensity model classifier.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The observed-to-null pMSE ratio.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The interpretation of this metric makes more sense for synthetic</span>
+<span class="sd">    data. The pMSE alone gives better utility as the value gets closer</span>
+<span class="sd">    to zero, which is only attainable when the datasets are identical.</span>
+<span class="sd">    However, when generating synthetic data, we do not want to produce</span>
+<span class="sd">    identical entries. Rather, we want to achieve similarity between the</span>
+<span class="sd">    distributions of the real and synthetic datasets.</span>
+
+<span class="sd">    This ratio tends towards one when this is achieved, and increases</span>
+<span class="sd">    otherwise.</span>
+
+<span class="sd">    Note that the `random_state` keyword argument is used to</span>
+<span class="sd">    (independently) create the permutations and to fit the model when</span>
+<span class="sd">    using a CART model. Without specifying this, the results will not be</span>
+<span class="sd">    reproducible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;logr&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">observed</span> <span class="o">/</span> <span class="n">loc</span></div>
+
+
+<div class="viewcode-block" id="pmse_standardised"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_standardised">[docs]</a><span class="k">def</span> <span class="nf">pmse_standardised</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The standardised propensity score mean-squared error.</span>
+
+<span class="sd">    This takes the observed pMSE and standardises it against the null</span>
+<span class="sd">    case, i.e.</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        stand(pMSE) = (pMSE - E(pMSE)) / sd(pMSE)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the combined real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        Indicator for whether data are real (0) or synthetic (1).</span>
+<span class="sd">    method : {&quot;cart&quot;, &quot;logr&quot;}</span>
+<span class="sd">        Which propensity model to use. Must be either CART (`&quot;cart&quot;`) or</span>
+<span class="sd">        logistic regression with first-order interactions (`&quot;logr&quot;`).</span>
+<span class="sd">    num_perms : int, optional</span>
+<span class="sd">        Number of permutations to consider when estimating the null case</span>
+<span class="sd">        statistics with a CART model.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to the propensity model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The null-standardised pMSE.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The interpretation of this metric makes more sense for synthetic</span>
+<span class="sd">    data. The pMSE alone indicates better utility as it gets closer to</span>
+<span class="sd">    zero, which is only attainable when the datasets are identical.</span>
+<span class="sd">    However, when generating synthetic data, we do not want to produce</span>
+<span class="sd">    identical entries. Rather, we want to achieve similarity between the</span>
+<span class="sd">    distributions of the real and synthetic datasets.</span>
+
+<span class="sd">    This standardised value tends towards zero when this is achieved,</span>
+<span class="sd">    and increases in magnitude otherwise.</span>
+
+<span class="sd">    Note that the `random_state` keyword argument is used to</span>
+<span class="sd">    (independently) create the permutations and to fit the model when</span>
+<span class="sd">    using a CART model. Without specifying this, the results will not be</span>
+<span class="sd">    reproducible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;logr&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">observed</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span></div>
+
+
+<div class="viewcode-block" id="propensity_metrics"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.propensity_metrics">[docs]</a><span class="k">def</span> <span class="nf">propensity_metrics</span><span class="p">(</span>
+    <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Propensity score-based metrics.</span>
+
+<span class="sd">    This function calculates three metrics based on the propensity score</span>
+<span class="sd">    mean-squared error (pMSE), all of which quantify utility by</span>
+<span class="sd">    measuring the distinguishability of the synthetic data. That is, how</span>
+<span class="sd">    readily real and synthetic data can be identified.</span>
+
+<span class="sd">    To do this, the datasets are combined and their origins tracked by a</span>
+<span class="sd">    boolean indicator. This combined dataset is then used to fit a</span>
+<span class="sd">    binary classification model (CART or logistic regression with</span>
+<span class="sd">    first-order interactions) with the indicator as the target. The</span>
+<span class="sd">    propensity score for each row is then extracted and summarised to</span>
+<span class="sd">    give a metric.</span>
+
+<span class="sd">    The returned metrics are the observed pMSE along with the pMSE ratio</span>
+<span class="sd">    and standardised pMSE. These second two metrics are given relative</span>
+<span class="sd">    to the null case where the real and synthetic data are produced from</span>
+<span class="sd">    identical processes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    method : {&quot;cart&quot;, &quot;logr&quot;}, default &quot;cart&quot;</span>
+<span class="sd">        Which propensity model to use. Must be either CART (`&quot;cart&quot;`) or</span>
+<span class="sd">        logistic regression with first-order interactions (`&quot;logr&quot;`).</span>
+<span class="sd">    feats : list of str or None, default None</span>
+<span class="sd">        List of features in the dataset to be used in the propensity</span>
+<span class="sd">        model. If `None` (default), all common features are used.</span>
+<span class="sd">    num_perms : int, default 20</span>
+<span class="sd">        Number of permutations to consider when estimating the null case</span>
+<span class="sd">        statistics with a CART model.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to the propensity model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    observed : float</span>
+<span class="sd">        The observed pMSE.</span>
+<span class="sd">    standard : float</span>
+<span class="sd">        The null-standardised pMSE.</span>
+<span class="sd">    ratio : float</span>
+<span class="sd">        The observed-null pMSE ratio.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `method` is not one of `&#39;cart&#39;` or `&#39;logr&#39;`.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    sklearn.linear_model.LogisticRegression</span>
+<span class="sd">    sklearn.tree.DecisionTreeClassifier</span>
+<span class="sd">    synthgauge.metrics.propensity.pmse</span>
+<span class="sd">    synthgauge.metrics.propensity.pmse_ratio</span>
+<span class="sd">    synthgauge.metrics.propensity.pmse_standardised</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    For the CART model, `sklearn.tree.DecisionTreeClassifier` is used.</span>
+<span class="sd">    Meanwhile, the logistic regression model uses</span>
+<span class="sd">    `sklearn.linear_model.LogisticRegression`.</span>
+
+<span class="sd">    Note that the `random_state` keyword argument is used to</span>
+<span class="sd">    (independently) create the permutations and to fit the model when</span>
+<span class="sd">    using a CART model. Without specifying this, the results will not be</span>
+<span class="sd">    reproducible.</span>
+
+<span class="sd">    Details on these metrics can be found at:</span>
+<span class="sd">    https://doi.org/10.1111/rssa.12358</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="s2">&quot;logr&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;method must be either &#39;CART&#39; or &#39;LogisticRegression&#39;&quot;</span><span class="p">)</span>
-    <span class="c1"># combine data</span>
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># remove source column</span>
-    <span class="n">synth_bool</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">)</span>
-    <span class="c1"># encode categorical variables</span>
-    <span class="n">combined_encoded</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;LogisticRegression&#39;</span><span class="p">:</span>
-        <span class="c1"># add interactions</span>
-        <span class="n">combined_encoded</span> <span class="o">=</span> <span class="n">PolynomialFeatures</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                              <span class="n">include_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> \
-            <span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">)</span>
-
-        <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CART&#39;</span><span class="p">:</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">,</span> <span class="n">synth_bool</span><span class="p">)</span>
-
-    <span class="c1"># calculate propensity for each example</span>
-    <span class="n">props</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">ideal_prop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">)</span>
-
-    <span class="n">props_square_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">props</span> <span class="o">-</span> <span class="n">ideal_prop</span><span class="p">)</span>
-
-    <span class="n">MSE_p</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">props_square_error</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">props_square_error</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">MSE_p</span></div>
-
-
-<div class="viewcode-block" id="expected_p_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.expected_p_MSE">[docs]</a><span class="k">def</span> <span class="nf">expected_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Expected propensity mean-squared error</span>
-
-<span class="sd">    This is the expected propensity mean-squared error under the null case</span>
-<span class="sd">    that the `real` and `synth` datasets are distributionally similar.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    MSE_p : float</span>
-<span class="sd">        Expected propensity score mean square-squared error.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This expectation is used to standardise `propensity_MSE` to an</span>
-<span class="sd">    interpretable scale.</span>
-
-<span class="sd">    It has been shown that the null case is distributed as a multiple of a</span>
-<span class="sd">    :math:`\\chi^2` distribution with :math:`k-1` degrees of freedom, which has</span>
-<span class="sd">    expectation:</span>
-
-<span class="sd">    .. math::</span>
-
-<span class="sd">        (k-1)(1-c)^2c/N</span>
-
-<span class="sd">    where :math:`k` is the number of predictors in the model, :math:`c` is the</span>
-<span class="sd">    proportion of synthetic data, and :math:`N` is the total number of examples</span>
-<span class="sd">    Further explanation and derivation of this formulation can be found here:</span>
-<span class="sd">    https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358 Appendix A1.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># =(k−1)(1−c)^2*c/N</span>
-    <span class="n">num_vars</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">num_vars_and_interactions</span> <span class="o">=</span> <span class="n">num_vars</span><span class="o">*</span><span class="p">(</span><span class="n">num_vars</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
-    <span class="n">total_num_examples</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">synth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">prop_synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">total_num_examples</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">num_vars_and_interactions</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">prop_synth</span><span class="p">)</span>
-            <span class="o">**</span> <span class="mi">2</span><span class="o">*</span><span class="n">prop_synth</span><span class="o">/</span><span class="n">total_num_examples</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="stdev_p_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.stdev_p_MSE">[docs]</a><span class="k">def</span> <span class="nf">stdev_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Standard deviation propensity mean-squared error</span>
-
-<span class="sd">    This is the standard deviation of the propensity mean-squared error under</span>
-<span class="sd">    the null case that the `real` and `synth` datasets are distributionally</span>
-<span class="sd">    similar.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    st_dev : float</span>
-<span class="sd">        Expected propensity score mean square-squared error standard deviation.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This standard deviation is used to standardise `propensity_MSE` to an</span>
-<span class="sd">    interpretable scale.</span>
-
-<span class="sd">    It has been shown that the null case is distributed as a multiple of a</span>
-<span class="sd">    :math:`\\chi^2` distribution with :math:`k-1` degrees of freedom, which has</span>
-<span class="sd">    standard deviation:</span>
-
-<span class="sd">    .. math::</span>
-
-<span class="sd">        \\sqrt{2(k-1)}(1-c)^2c/N</span>
-
-<span class="sd">    where :math:`k` is the number of predictors in the model, :math:`c` is the</span>
-<span class="sd">    proportion of synthetic data, and :math:`N` is the total number of examples</span>
-<span class="sd">    Further explanation and derivation of this formulation can be found here:</span>
-<span class="sd">    https://rss.onlinelibrary.wiley.com/doi/pdf/10.1111/rssa.12358 Appendix A1.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">num_vars</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">num_vars_and_interactions</span> <span class="o">=</span> <span class="n">num_vars</span><span class="o">*</span><span class="p">(</span><span class="n">num_vars</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
-    <span class="n">total_num_examples</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">synth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">prop_synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">total_num_examples</span>
-    <span class="k">return</span> <span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">num_vars_and_interactions</span><span class="p">))</span>
-            <span class="o">**</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="n">prop_synth</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">prop_synth</span><span class="o">/</span><span class="n">total_num_examples</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="perm_expected_sd_p_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.perm_expected_sd_p_MSE">[docs]</a><span class="k">def</span> <span class="nf">perm_expected_sd_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Permutation Expected and Standard Deviation Propensity Mean Squared Error</span>
-
-<span class="sd">    Repeat pMSE calculation several times but while randomly permutating the</span>
-<span class="sd">    boolean indicator column. This should approximate propensity mean squared</span>
-<span class="sd">    error results for &#39;properly&#39; synthesised datasets when it is not possible</span>
-<span class="sd">    to calculate these directly, in particular when CART is used.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    num_perms : int</span>
-<span class="sd">        The number of times to repeat the process.</span>
-<span class="sd">    **kwargs : dict</span>
-<span class="sd">        Keyword arguments passed to DecisionTreeClassifier function.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    mean : float</span>
-<span class="sd">        Mean of the propensity_MSE scores over all the repititions.</span>
-<span class="sd">    sd : float</span>
-<span class="sd">        Standard deviation of the propensity_MSE scores over all the</span>
-<span class="sd">        repititions.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This function is only intended to be used within `propensity_metrics()`.</span>
-
-<span class="sd">    This function is stochastic so will return a differnet result every time.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">perm_MSEs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_perms</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_perms</span><span class="p">):</span>
-        <span class="n">combined</span> <span class="o">=</span> <span class="n">df_combine</span><span class="p">(</span>
-            <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">source_val_real</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_val_synth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="c1"># remove source column</span>
-        <span class="n">synth_bool</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">synth_bool</span><span class="p">)</span>
-        <span class="c1"># encode categorical variables</span>
-        <span class="n">combined_encoded</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">,</span> <span class="n">synth_bool</span><span class="p">)</span>
-        <span class="c1"># calculate propensity for each example</span>
-        <span class="n">props</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-
-        <span class="n">ideal_prop</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">combined_encoded</span><span class="p">)</span>
-
-        <span class="n">props_square_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">props</span> <span class="o">-</span> <span class="n">ideal_prop</span><span class="p">)</span>
-
-        <span class="n">MSE_p</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">props_square_error</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">props_square_error</span><span class="p">)</span>
-
-        <span class="n">perm_MSEs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">MSE_p</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">perm_MSEs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">perm_MSEs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="p_MSE_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.p_MSE_ratio">[docs]</a><span class="k">def</span> <span class="nf">p_MSE_ratio</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;CART&#39;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Propensity mean-squared error ratio</span>
-
-<span class="sd">    This is the ratio of observed propensity mean-squared error, to that</span>
-<span class="sd">    expected under the null case that the synthetic and real datasets are</span>
-<span class="sd">    similarly distributed.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    method : str, [&#39;CART&#39;, &#39;LogisticRegression&#39;]</span>
-<span class="sd">        Classification method to use.</span>
-<span class="sd">    feats : list of str, optional.</span>
-<span class="sd">        List of features in the dataset that will be used in propensity</span>
-<span class="sd">        calculations. By default all features will be used.</span>
-<span class="sd">    **kwargs : dict</span>
-<span class="sd">        Keyword arguments passed to classifier function.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ratio : float</span>
-<span class="sd">        Ratio of the propensity score mean square-squared error.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This standardisation transforms the scale for the MSE into one that makes</span>
-<span class="sd">    more sense for synthetic data. Before, the MSE score gave better utility</span>
-<span class="sd">    as the value got closer to zero, which is only attainable when the datasets</span>
-<span class="sd">    are identical. However, when generating synthetic data we do not want to</span>
-<span class="sd">    produce identical entries, but to acheive distributional similarity between</span>
-<span class="sd">    the distribution of the observed data and the model used to generate the</span>
-<span class="sd">    synthetic.</span>
-
-<span class="sd">    This ratio tends towards one when the datasets are similar and increases</span>
-<span class="sd">    otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">&quot;p_MSE_ratio is now contained within `propensity_metrics`.&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;Logistic Regression&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span> <span class="o">=</span> <span class="n">expected_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CART&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">perm_expected_sd_p_MSE</span><span class="p">(</span>
-            <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">num_perms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">obs_p_MSE</span> <span class="o">=</span> <span class="n">propensity_MSE</span><span class="p">(</span>
-        <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">obs_p_MSE</span><span class="o">/</span><span class="n">exp_p_MSE</span></div>
-
-
-<div class="viewcode-block" id="standardised_p_MSE"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.standardised_p_MSE">[docs]</a><span class="k">def</span> <span class="nf">standardised_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;CART&#39;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Standardised propensity mean-squared error</span>
-
-<span class="sd">    This is the difference between the observed propensity mean-squared error</span>
-<span class="sd">    and that expected under the null case that the synthetic and real datasets</span>
-<span class="sd">    are similarly distributed, scaled by the standard deviation.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    method : str, [&#39;CART&#39;, &#39;LogisticRegression&#39;]</span>
-<span class="sd">        Classification method to use.</span>
-<span class="sd">    feats : list of str, optional.</span>
-<span class="sd">        List of features in the dataset that will be used in propensity</span>
-<span class="sd">        calculations. By default all features will be used.</span>
-<span class="sd">    **kwargs : dict</span>
-<span class="sd">        Keyword arguments passed to LogisticRegression function.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ratio : float</span>
-<span class="sd">        Standardised propensity score mean square-squared error.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This standardisation transforms the scale for the MSE into one that makes</span>
-<span class="sd">    more sense for synthetic data. Before, the MSE score gave better utility</span>
-<span class="sd">    as the value got closer to zero, which is only attainable when the datasets</span>
-<span class="sd">    are identical. However, when generating synthetic data we do not want to</span>
-<span class="sd">    produce identical entries, but to acheive distributional similarity between</span>
-<span class="sd">    the distribution of the observed data and the model used to generate the</span>
-<span class="sd">    synthetic.</span>
-
-<span class="sd">    This metric tends towards zero when the datasets are similar and increases</span>
-<span class="sd">    otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
-    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-        <span class="s2">&quot;standardised_p_MSE is now contained within `propensity_metrics`.&quot;</span><span class="p">,</span>
-        <span class="ne">DeprecationWarning</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;LogisticRegression&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span> <span class="o">=</span> <span class="n">expected_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
-        <span class="n">std_p_MSE</span> <span class="o">=</span> <span class="n">stdev_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
-
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CART&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span><span class="p">,</span> <span class="n">std_p_MSE</span> <span class="o">=</span> <span class="n">perm_expected_sd_p_MSE</span><span class="p">(</span>
-            <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">obs_p_MSE</span> <span class="o">=</span> <span class="n">propensity_MSE</span><span class="p">(</span>
-        <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">obs_p_MSE</span> <span class="o">-</span> <span class="n">exp_p_MSE</span><span class="p">)</span><span class="o">/</span><span class="n">std_p_MSE</span></div>
-
-
-<div class="viewcode-block" id="propensity_metrics"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.propensity_metrics">[docs]</a><span class="k">def</span> <span class="nf">propensity_metrics</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;CART&#39;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-                       <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Propensity metrics</span>
-
-<span class="sd">    This function calculates three flavours of propensity mean-squared error,</span>
-<span class="sd">    all of which quantify utility by measuring how well a classifier can be</span>
-<span class="sd">    trained to distinguish `real` and `synth`. It returns the raw, observed</span>
-<span class="sd">    value together with this value standardised by the expected value if the</span>
-<span class="sd">    dataset was well synthesised, and also as a ratio of the expected value.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    real : pandas dataframe</span>
-<span class="sd">        Dataframe containing the real data.</span>
-<span class="sd">    synth : pandas dataframe</span>
-<span class="sd">        Dataframe containing the synthetic data.</span>
-<span class="sd">    method : str, [&#39;CART&#39;, &#39;LogisticRegression&#39;]</span>
-<span class="sd">        Classification method to use.</span>
-<span class="sd">    feats : list of str, optional.</span>
-<span class="sd">        List of features in the dataset that will be used in propensity</span>
-<span class="sd">        calculations. By default all features will be used.</span>
-<span class="sd">    num_perms : int</span>
-<span class="sd">        If CART method is used, this is the number of times to repeat process</span>
-<span class="sd">        when calculating the expected mean-squared error.</span>
-<span class="sd">    **kwargs : dict</span>
-<span class="sd">        Keyword arguments passed to LogisticRegression function.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    observed_p_MSE : float</span>
-<span class="sd">        Observed propensity score mean squared error.</span>
-<span class="sd">    standardised_p_MSE : float</span>
-<span class="sd">        Standardised propensity score mean square-squared error.</span>
-<span class="sd">    ratio_p_MSE : float</span>
-<span class="sd">        Ratio of the propensity score mean square-squared error to the</span>
-<span class="sd">        expected value.</span>
-
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    The standardisation and ratio operations transform the scales for the MSE</span>
-<span class="sd">    into ones that make more sense for synthetic data. For the observed</span>
-<span class="sd">    propensity the MSE score gives better utility as the value gets closer to</span>
-<span class="sd">    zero, which is only attainable when the datasets are identical. However,</span>
-<span class="sd">    when generating synthetic data we do not want to produce identical entries,</span>
-<span class="sd">    but to acheive distributional similarity between the distribution of the</span>
-<span class="sd">    observed data and the model used to generate the synthetic.</span>
-
-<span class="sd">    The standardised score tends towards zero when the datasets are similar</span>
-<span class="sd">    and increases otherwise.</span>
-
-<span class="sd">    The ratio tends towards one when the datasets are similar and increases</span>
-<span class="sd">    otherwise.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="p">[</span><span class="n">feats</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;LogisticRegression&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span> <span class="o">=</span> <span class="n">expected_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
-        <span class="n">std_p_MSE</span> <span class="o">=</span> <span class="n">stdev_p_MSE</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
-
-    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;CART&#39;</span><span class="p">:</span>
-        <span class="n">exp_p_MSE</span><span class="p">,</span> <span class="n">std_p_MSE</span> <span class="o">=</span> <span class="n">perm_expected_sd_p_MSE</span><span class="p">(</span>
-            <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">num_perms</span><span class="o">=</span><span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">obs_p_MSE</span> <span class="o">=</span> <span class="n">propensity_MSE</span><span class="p">(</span>
-        <span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">standardised_p_MSE</span> <span class="o">=</span> <span class="p">(</span><span class="n">obs_p_MSE</span> <span class="o">-</span> <span class="n">exp_p_MSE</span><span class="p">)</span><span class="o">/</span><span class="n">std_p_MSE</span>
-    <span class="n">ratio_p_MSE</span> <span class="o">=</span> <span class="n">obs_p_MSE</span><span class="o">/</span><span class="n">exp_p_MSE</span>
-
-    <span class="n">PropensityResult</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;PropensityResult&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;observed_p_MSE&#39;</span><span class="p">,</span>
-                                                       <span class="s1">&#39;standardised_p_MSE&#39;</span><span class="p">,</span>
-                                                       <span class="s1">&#39;ratio_p_MSE&#39;</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">PropensityResult</span><span class="p">(</span><span class="n">obs_p_MSE</span><span class="p">,</span> <span class="n">standardised_p_MSE</span><span class="p">,</span> <span class="n">ratio_p_MSE</span><span class="p">)</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">pass</span>
+            <span class="sa">f</span><span class="s2">&quot;Propensity method must be &#39;cart&#39; or &#39;logr&#39; not </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">feats</span> <span class="o">=</span> <span class="n">feats</span> <span class="ow">or</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span> <span class="o">=</span> <span class="n">_combine_encode_and_pop</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feats</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feats</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;logr&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">standard</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">observed</span> <span class="o">/</span> <span class="n">loc</span>
+
+    <span class="n">PropensityResult</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span>
+        <span class="s2">&quot;PropensityResult&quot;</span><span class="p">,</span>
+        <span class="p">(</span><span class="s2">&quot;pmse&quot;</span><span class="p">,</span> <span class="s2">&quot;pmse_standardised&quot;</span><span class="p">,</span> <span class="s2">&quot;pmse_ratio&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PropensityResult</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">standard</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

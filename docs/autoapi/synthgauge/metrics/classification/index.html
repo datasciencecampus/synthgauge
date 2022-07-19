@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>synthgauge.metrics.classification &mdash; SynthGauge 1.0.0 documentation</title>
@@ -16,7 +16,9 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -40,8 +42,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">Home</a></li>
+</ul>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../demo.html">Example notebook</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
@@ -83,73 +88,166 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-synthgauge.metrics.classification">
-<span id="synthgauge-metrics-classification"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.classification" title="synthgauge.metrics.classification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.classification</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.classification" title="Permalink to this headline"></a></h1>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="module-synthgauge.metrics.classification">
+<span id="synthgauge-metrics-classification"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.classification" title="synthgauge.metrics.classification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.classification</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.classification" title="Permalink to this heading"></a></h1>
+<p>Utility metrics using <cite>scikit-learn</cite>-style classifiers.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, key, target, sklearn_classifier, random_state=None, test_prop=0.2, **kwargs)</p></td>
-<td><p>Classification utility metric</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._make_preprocessor" title="synthgauge.metrics.classification._make_preprocessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_preprocessor</span></code></a>(data, feats)</p></td>
+<td><p>Make a pre-processing pipe for transforming numeric and</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._make_pipeline" title="synthgauge.metrics.classification._make_pipeline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_pipeline</span></code></a>(classifier, seed, preprocessor, **kwargs)</p></td>
+<td><p>Create the pipeline of data pre-processing and classification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._get_scores" title="synthgauge.metrics.classification._get_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_scores</span></code></a>(test, pred)</p></td>
+<td><p>Calculate the precision, recall and f1 scores for a set of</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, feats, target, classifier, test_prop=0.2, random_state=None, **kwargs)</p></td>
+<td><p>Classification utility metric.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.classification.classification_comparison">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">classification_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sklearn_classifier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#classification_comparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification.classification_comparison" title="Permalink to this definition"></a></dt>
-<dd><p>Classification utility metric</p>
-<p>This metric fits two classification models to <cite>real</cite> and <cite>synth</cite>
-respectively, and then tests them both against withheld <cite>real</cite> data. We
-obtain utility scores by subtracting the precision, recall and f1 scores
-of the predictions obtained by the synth model from those obtained by the
-real model.</p>
+<dt class="sig sig-object py" id="synthgauge.metrics.classification._make_preprocessor">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_make_preprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_make_preprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._make_preprocessor" title="Permalink to this definition"></a></dt>
+<dd><p>Make a pre-processing pipe for transforming numeric and
+categorical columns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas dataframe</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas dataframe</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>key</strong> (<em>list of strings</em>) – list of column names to use as the input in the classification.</p></li>
-<li><p><strong>target</strong> (<em>str</em>) – column to use as target in the classification.</p></li>
-<li><p><strong>sklearn_classifier</strong> (<em>scikit-learn estimator</em>) – classifier with fit and predict methods.</p></li>
-<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>RandomState instance</em><em> or </em><em>None</em><em>, </em><em>default=42</em>) – Controls the shuffling steps during the train-test split and the
-classification algorithm itself. Pass an int for reproducible output
-across multiple function calls.</p></li>
-<li><p><strong>test_prop</strong> (<em>float</em><em> or </em><em>int</em><em>, </em><em>default=0.2</em>) – If float, should be between 0.0 and 1.0 and represent the proportion
-of the dataset to include in the test split. If int, represents the
-absolute number of test samples.</p></li>
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – The dataset containing at the least the columns in <cite>feats</cite>.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em>) – A list of columns in <cite>data</cite> to be separated by data type.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p><strong>ClassificationResult</strong> –</p>
-<dl class="simple">
-<dt>precision_difference<span class="classifier">float</span></dt><dd><p>precision of model trained on real data subtracted by precision of
-model trained on synthetic data.</p>
-</dd>
-<dt>recall_difference<span class="classifier">float</span></dt><dd><p>recall of model trained on real data subtracted by recall of
-model trained on synthetic data.</p>
-</dd>
-<dt>f1_difference<span class="classifier">float</span></dt><dd><p>f1 score of model trained on real data subtracted by f1 score of
-model trained on synthetic data.</p>
-</dd>
-</dl>
-</p>
+<dd class="field-even"><p><strong>preprocessor</strong> – The pre-processing pipeline.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>namedtuple</p>
+<dd class="field-odd"><p>sklearn.pipeline.Pipeline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.classification._make_pipeline">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_make_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classifier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocessor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_make_pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._make_pipeline" title="Permalink to this definition"></a></dt>
+<dd><p>Create the pipeline of data pre-processing and classification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifier</strong> (<em>scikit-learn estimator</em>) – The <cite>scikit-learn</cite>-style class to be used as the classifier.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed to use for reproducibility. Only used if
+<cite>random_state</cite> is a parameter of <cite>classifier</cite>.</p></li>
+<li><p><strong>preprocessor</strong> (<em>sklearn.pipeline.Pipeline</em>) – The pre-processing pipeline.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optinal</em>) – featsword arguments for <cite>classifier</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>pipeline</strong> – A complete classification pipeline.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>sklearn.pipeline.Pipeline</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.classification._get_scores">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_get_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_get_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._get_scores" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the precision, recall and f1 scores for a set of
+predicted values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test</strong> (<em>array_like</em>) – Labels from the test set.</p></li>
+<li><p><strong>pred</strong> (<em>array_like</em>) – Predicted labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>scores</strong> – The precision, recall and f1 score given the test set and
+predicted labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.classification.classification_comparison">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">classification_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#classification_comparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification.classification_comparison" title="Permalink to this definition"></a></dt>
+<dd><p>Classification utility metric.</p>
+<p>This metric fits two (identical) classification models to <cite>real</cite> and
+<cite>synth</cite>, and then tests them both against withheld <cite>real</cite> data. We
+obtain utility scores by subtracting the precision, recall and f1
+scores of the “synthetic” model predictions from the “real” model’s.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>feats</strong> (<em>list of str</em>) – List of column names to use as the input in the classification.</p></li>
+<li><p><strong>target</strong> (<em>str</em>) – Column to use as target in the classification.</p></li>
+<li><p><strong>classifier</strong> (<em>scikit-learn estimator</em>) – Classifier class with <cite>fit</cite> and <cite>predict</cite> methods.</p></li>
+<li><p><strong>test_prop</strong> (<em>float</em><em> or </em><em>int</em><em>, </em><em>default 0.2</em>) – If <cite>float</cite>, should be between 0.0 and 1.0 and represent the
+proportion of the dataset to include in the test split. If
+<cite>int</cite>, represents the absolute number of test samples.</p></li>
+<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed for shuffling during the train-test split, and for
+the classification algorithm itself.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – featsword arguments passed to the classifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>precision_difference</strong> (<em>float</em>) – Precision of the real model subtracted by that of the
+synthetic model.</p></li>
+<li><p><strong>recall_difference</strong> (<em>float</em>) – Recall of the real model subtracted by that of the synthetic
+model.</p></li>
+<li><p><strong>f1_difference</strong> (<em>float</em>) – f1 score of the real model subtracted by that of the
+synthetic model.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Some preprocessing is carried out before the models are trained. Numeric
-features are scaled and categorical features are one-hot-encoded.</p>
-<p>A score of zero tells us the synthetic data is just as good as the real at
-training classifier models. Increases in these scores indicate poorer
-utility.</p>
+<p>Some preprocessing is carried out before the models are trained.
+Numeric features are scaled and categorical features are
+one-hot-encoded.</p>
+<p>A score of zero tells us the synthetic data is just as good as the
+real at training the given classification model. Increases in these
+scores indicate poorer utility.</p>
 </dd></dl>
 
 </section>

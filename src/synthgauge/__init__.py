@@ -1,14 +1,8 @@
-""" A library for evaluating synthetic data. """
+"""A library for evaluating synthetic data."""
 
-# flake8: noqa
-import pkg_resources
+from . import datasets, metrics, plot, utils
+from .evaluator import Evaluator
 
-from . import datasets, evaluate, metrics, plot, utils
-from .evaluate import Evaluator
+__version__ = "1.0.0"
 
-try:
-    __version__ = pkg_resources.get_distribution("synthgauge").version
-except pkg_resources.DistributionNotFound:
-    # Raised when package has not been installed e.g. just
-    # src added to path.
-    __version__ = None
+__all__ = ["Evaluator", "datasets", "metrics", "plot", "utils", "__version__"]
