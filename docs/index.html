@@ -18,10 +18,11 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="autoapi/index.html" /> 
+    <link rel="next" title="Example workflow" href="demo.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,8 +41,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Home</a></li>
+</ul>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="demo.html">Example notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -69,11 +73,51 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <img alt="SynthGauge Logo" class="align-center" src="_images/logo.png" />
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<img alt="SynthGauge Logo" class="align-center" src="_images/logo.png" />
 <section id="welcome-to-the-synthgauge-documentation">
 <h1>Welcome to the SynthGauge Documentation<a class="headerlink" href="#welcome-to-the-synthgauge-documentation" title="Permalink to this heading"></a></h1>
-<p>Use the menu on the left to navigate the documentation. <code class="docutils literal notranslate"><span class="pre">synthgauge</span></code> is accessible from the Office For National Statistics Data Science Campus GitHub <a class="reference external" href="https://github.com/datasciencecampus/synthgauge">page</a>.</p>
+<p>SynthGauge is a Python library to evaluate synthetically generated data.</p>
+<p>The library provides a range of metrics and visualisations for assessing and
+comparing distributions of features between real and synthetic data.</p>
+<p>At its core is the <cite>Evaluator</cite> class, which provides a consistent interface for
+applying a range of metrics to the data. By creating several <cite>Evaluator</cite>
+instances, you can easily evaluate synthetic data generated from a range of
+methods in a consistent and comparable manner.</p>
+<hr class="docutils" />
+<p>Use the menu on the left to navigate the documentation. The source code for
+SynthGauge is available on the Office For National Statistics Data Science
+Campus GitHub <a class="reference external" href="https://github.com/datasciencecampus/synthgauge">page</a>.</p>
 <div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo.html">Example notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
 </div>
 </section>
 <section id="indices">
@@ -89,7 +133,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="demo.html" class="btn btn-neutral float-right" title="Example workflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
