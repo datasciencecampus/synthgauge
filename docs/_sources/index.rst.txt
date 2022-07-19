@@ -23,7 +23,7 @@ methods in a consistent and comparable manner.
 -------
 
 Use the menu on the left to navigate the documentation. The source code for
-SynthGauge is available on the Office For National Statistics Data Science
+SynthGauge is available on the Office for National Statistics Data Science
 Campus GitHub `page <https://github.com/datasciencecampus/synthgauge>`_.
 
 .. toctree::
