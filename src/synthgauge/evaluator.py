@@ -55,6 +55,7 @@ class Evaluator:
 
         self.real_data = real
         self.synth_data = synth
+        self.combined_data = utils.df_combine(self.real_data, self.synth_data)
 
     def describe_numeric(self):
         """Summarise numeric features.
@@ -236,12 +237,6 @@ class Evaluator:
         """Return __metrics."""
 
         return self.__metrics
-
-    @property
-    def combined_data(self):
-        """Return combined real and synthetic data."""
-
-        return utils.df_combine(self.real_data, self.synth_data)
 
     def drop_metric(self, metric):
         """Drops the named metric from the metrics dictionary.

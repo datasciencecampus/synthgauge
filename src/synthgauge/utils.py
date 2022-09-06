@@ -54,7 +54,7 @@ def df_combine(
     synth = synth[feats].copy()
     synth[source_col_name] = source_val_synth
 
-    combined = pd.concat([real, synth])
+    combined = pd.concat([real, synth], ignore_index=True)
 
     return combined
 
