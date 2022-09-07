@@ -1,8 +1,8 @@
 """Tests for the NIST 2018 metrics."""
 
-import pandas as pd
 import numpy as np
-from hypothesis import assume, given
+import pandas as pd
+from hypothesis import assume, given, settings
 from hypothesis import strategies as st
 
 from synthgauge.metrics import nist
@@ -12,7 +12,7 @@ from .utils import datasets
 
 @given(
     datasets(
-        column_spec={"a": "float", "b": "float", "c": "object"},
+        column_spec={"a": "int", "b": "int", "c": "object"},
         min_value=0,
         max_value=100,
         allow_nan=False,
@@ -41,7 +41,7 @@ def test_numeric_edges(datasets, bins):
 
 @given(
     datasets(
-        column_spec={"a": "float", "b": "float", "c": "object"},
+        column_spec={"a": "int", "b": "int", "c": "object"},
         min_value=0,
         max_value=100,
         allow_nan=False,
@@ -56,16 +56,10 @@ def test_discretise_datasets(datasets, bins):
 
     disreal, dissynth = nist._discretise_datasets(real, synth, bins)
 
-    numeric = ["a", "b"]
-    for col in numeric:
-        assert np.array_equal(disreal[col].unique(), dissynth[col].unique())
-
     for disc, orig in zip((disreal, dissynth), (real, synth)):
         assert isinstance(disc, pd.DataFrame)
         assert disc.columns.equals(orig.columns)
-        assert disc.drop(numeric, axis=1).equals(
-            orig.select_dtype(exclude="number")
-        )
+        assert disc["c"].equals(orig["c"])
 
 
 @given(
@@ -74,6 +68,7 @@ def test_discretise_datasets(datasets, bins):
         sorted
     ),
 )
+@settings(deadline=400)
 def test_kway_marginal_score(datasets, features):
     """Test that the transformed marginal score can be calculated."""
 
@@ -83,25 +78,26 @@ def test_kway_marginal_score(datasets, features):
     score = nist._kway_marginal_score(real, synth, features)
 
     assert isinstance(score, float)
-    assert score >= 0 and score <= 1
+    assert np.isnan(score) or (score >= 0 and score <= 1)
 
 
 @given(
     datasets(
-        column_spec={"a": "float", "b": "float", "c": "object"},
+        column_spec={"a": "int", "b": "int", "c": "object"},
         min_value=0,
         max_value=100,
         allow_nan=False,
     ),
-    st.sampled_from(["auto", 10, 100]),
+    st.integers(1, 100),
 )
+@settings(deadline=800)
 def test_kway_marginals(datasets, seed):
     """Test that the k-way marginal score can be calculated."""
 
     real, synth = datasets
     assume(not (real.empty or synth.empty))
 
-    score = nist.kway_marginals(real, synth, seed=seed)
+    score = nist.kway_marginals(real, synth, k=2, trials=3, seed=seed)
 
     assert isinstance(score, float)
-    assert score >= 0 and score <= 1
+    assert np.isnan(score) or (score >= 0 and score <= 1)

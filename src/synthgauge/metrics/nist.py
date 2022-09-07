@@ -69,15 +69,15 @@ def kway_marginals(real, synth, k=3, trials=100, bins=100, seed=None):
         tries all. Default uses 100 (as done in the NIST competition).
     bins : int or str, default 100
         Binning method for sampled numeric features. Can be anything
-        accepted by `numpy.histogram_bin_edges`. Default uses 100 bins
-        (as done in the NIST competition).
+        accepted by `numpy.histogram`. Default uses 100 bins (as done in
+        the NIST competition).
     seed : int or None, default None
         Random number seed. If `None`, results will not be reproducible.
 
     Returns
     -------
     score : float
-        The mean transformed summed absolute deviation in k-way densities.
+        The mean transformed sum absolute deviation in k-way densities.
     """
 
     disreal, dissynth = _discretise_datasets(real, synth, bins)
