@@ -96,3 +96,92 @@ def kway_marginals(real, synth, k=3, trials=100, bins=100, seed=None):
     ]
 
     return np.mean(scores)
+
+
+def _make_rule(data, row, column, prng):
+    """Given a column, make a rule for it."""
+
+    values = data[column].unique()
+    observed = row[column].values[0]
+    if pd.api.types.is_numeric_dtype(values):
+        rule = (observed, prng.uniform(0, values.max() - values.min()))
+    else:
+        rule = {observed}
+        while True:
+            new = prng.choice(values)
+            if new in rule:
+                break
+            rule.add(new)
+
+    return rule
+
+
+def _create_test_cases(data, trials=300, prob=0.1, seed=None):
+    """Create a collection of HOC test cases.
+
+    For each test case, sample a row. Iterate over the columns,
+    including them with some probability and generating them a rule for
+    the test case. This rule is determined by the data type of the
+    column:
+
+      - Numeric columns use a random subrange from the whole dataset
+      - Categoric columns use a random subset of the elements in the
+        entire dataset
+
+    Both of these types of rules always include the observed value in
+    the row of the associated column; this means that the test will
+    always be satisfied by at least one row when it comes to evaluation.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        Dataframe containing the "original" data.
+    trials : int, default 300
+        Number of test cases to create. Default of 300 as in the
+        competition.
+    prob : float, default 0.1
+        Probability of any column being included in a test case.
+    seed : int or None, default None
+        Random number seed. If `None`, results will not be reproducible.
+
+    Returns
+    -------
+    cases : list
+        List of column rules for each test case.
+    """
+
+    prng = np.random.default_rng(seed)
+
+    cases = []
+    for _ in range(trials):
+
+        row = data.sample(1, random_state=prng)
+        case = {
+            column: _make_rule(data, row, column, prng)
+            for column in data.columns
+            if prng.random() < prob
+        }
+        cases.append(case)
+
+    return cases
+
+
+def _evaluate_test_cases(data, cases):
+    """Evaluate the test cases on a dataset."""
+
+    results = []
+    for case in cases:
+        if case == {}:
+            results.append(np.nan)
+            continue
+
+        result = pd.DataFrame()
+        for col, rule in case.items():
+            if isinstance(rule, tuple):
+                result[col] = abs(data[col] - rule[0]) < rule[1]
+            else:
+                result[col] = data[col].isin(rule)
+
+        results.append(result.min(axis=1).mean())
+
+    return results

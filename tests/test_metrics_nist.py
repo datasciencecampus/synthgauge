@@ -101,3 +101,78 @@ def test_kway_marginals(datasets, seed):
 
     assert isinstance(score, float)
     assert np.isnan(score) or (score >= 0 and score <= 1)
+
+
+@given(datasets(min_value=0, allow_nan=False), st.integers(1, 100))
+def test_make_rule(datasets, seed):
+    """Test that a valid rule can be made."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    prng = np.random.default_rng(seed)
+    row = data.sample(1, random_state=prng)
+    column = prng.choice(data.columns)
+    observed = row[column].values[0]
+    values = data[column].unique()
+
+    parts = nist._make_rule(data, row, column, prng)
+
+    if pd.api.types.is_numeric_dtype(data[column]):
+        assert isinstance(parts, tuple)
+        assert len(parts) == 2
+        assert parts[0] == observed
+        assert parts[1] >= 0 and parts[1] <= values.max() - values.min()
+    else:
+        assert isinstance(parts, set)
+        assert observed in parts
+        assert parts.issubset(values)
+
+
+@given(
+    datasets(min_value=0, allow_nan=False),
+    st.sampled_from([1, 5, 10]),
+    st.floats(0.1, 1.0),
+    st.integers(1, 100),
+)
+def test_create_test_cases(datasets, trials, prob, seed):
+    """Test that a collection of HOC tests can be created."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    columns = data.columns
+    cases = nist._create_test_cases(data, trials, prob, seed)
+
+    assert isinstance(cases, list)
+    assert len(cases) == trials
+
+    for case in cases:
+        assert isinstance(case, dict)
+        assert len(case) <= len(columns)
+        for col, rule in case.items():
+            assert col in columns
+            if pd.api.types.is_numeric_dtype(data[col]):
+                assert isinstance(rule, tuple)
+            else:
+                assert isinstance(rule, set)
+
+
+@given(datasets(min_value=0, allow_nan=False), st.integers(1, 100))
+def test_evaluate_test_cases(datasets, seed):
+    """Test that a collection of HOC tests can be evaluated."""
+
+    data, _ = datasets
+    assume(not data.empty)
+
+    cases = nist._create_test_cases(data, 10, 1, seed)
+    results = nist._evaluate_test_cases(data, cases)
+
+    assert isinstance(results, list)
+    assert len(results) == len(cases)
+
+    for result, case in zip(results, cases):
+        if case == {}:
+            assert np.isnan(result)
+        else:
+            assert result >= 0 and result <= 1
