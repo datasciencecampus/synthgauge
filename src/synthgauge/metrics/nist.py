@@ -171,10 +171,6 @@ def _evaluate_test_cases(data, cases):
 
     results = []
     for case in cases:
-        if case == {}:
-            results.append(np.nan)
-            continue
-
         result = pd.DataFrame()
         for col, rule in case.items():
             if isinstance(rule, tuple):
