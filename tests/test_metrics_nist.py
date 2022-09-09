@@ -175,4 +175,17 @@ def test_evaluate_test_cases(datasets, seed):
         if case == {}:
             assert np.isnan(result)
         else:
-            assert result >= 0 and result <= 1
+            assert result >= 1 / len(data) and result <= 1
+
+
+@given(datasets(min_value=0, allow_nan=False), st.integers(1, 100))
+def test_hoc(datasets, seed):
+    """Test that the HOC score can be evaluated."""
+
+    real, synth = datasets
+    assume(not (real.empty or synth.empty))
+
+    score = nist.hoc(real, synth, 10, 1, seed)
+
+    assert isinstance(score, (float, int))
+    assert score >= 0 and score <= 1
