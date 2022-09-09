@@ -175,7 +175,8 @@
     <span class="sd">&quot;&quot;&quot;Given a column, make a rule for it.&quot;&quot;&quot;</span>
 
     <span class="n">values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
-    <span class="n">observed</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
     <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
         <span class="n">rule</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">prng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -210,7 +211,7 @@
 
     <span class="n">cases</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trials</span><span class="p">):</span>
-        <span class="n">row</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">prng</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">prng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)),</span> <span class="p">:]</span>
         <span class="n">case</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">column</span><span class="p">:</span> <span class="n">_make_rule</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">prng</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
