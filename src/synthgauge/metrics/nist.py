@@ -102,7 +102,8 @@ def _make_rule(data, row, column, prng):
     """Given a column, make a rule for it."""
 
     values = data[column].unique()
-    observed = row[column].values[0]
+    observed = row[column]
+
     if pd.api.types.is_numeric_dtype(values):
         rule = (observed, prng.uniform(0, values.max() - values.min()))
     else:
@@ -137,7 +138,7 @@ def _create_test_cases(data, trials, prob, seed):
 
     cases = []
     for _ in range(trials):
-        row = data.sample(1, random_state=prng)
+        row = data.iloc[prng.integers(0, len(data)), :]
         case = {
             column: _make_rule(data, row, column, prng)
             for column in data.columns

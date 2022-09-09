@@ -111,9 +111,9 @@ def test_make_rule(datasets, seed):
     assume(not data.empty)
 
     prng = np.random.default_rng(seed)
-    row = data.sample(1, random_state=prng)
+    row = data.iloc[prng.integers(0, len(data)), :]
     column = prng.choice(data.columns)
-    observed = row[column].values[0]
+    observed = row[column]
     values = data[column].unique()
 
     parts = nist._make_rule(data, row, column, prng)
