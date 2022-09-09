@@ -52,6 +52,7 @@ Functions
                    `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 
@@ -95,6 +96,7 @@ Functions
                    Defaults to six inches.
    :type figsize: int, default 6
 
+   :returns:
    :rtype: seaborn.axisgrid.JointGrid
 
 
@@ -129,6 +131,7 @@ Functions
                    `matplotlib.pyplot.rcParams["figure.figsize"]`.
    :type figsize: tuple of float, optional
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 
@@ -173,6 +176,7 @@ Functions
 
    :raises ValueError: If `method` does not match the data type(s) of `feats`.
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 
@@ -215,6 +219,7 @@ Functions
                       documentation for more examples.
    :type \*\*kwargs: dict, optional
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 
@@ -250,6 +255,7 @@ Functions
 
    :raises TypeError: If `feature` is not a numeric data type feature.
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 
@@ -285,6 +291,7 @@ Functions
                      10 bins.
    :type diff_bins: str or int, default 10
 
+   :returns:
    :rtype: matplotlib.figure.Figure
 
 

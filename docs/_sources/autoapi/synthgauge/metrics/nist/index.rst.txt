@@ -1,0 +1,182 @@
+:py:mod:`synthgauge.metrics.nist`
+=================================
+
+.. py:module:: synthgauge.metrics.nist
+
+.. autoapi-nested-parse::
+
+   Functions for the generic measures from the 2018 NIST competition.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   synthgauge.metrics.nist._numeric_edges
+   synthgauge.metrics.nist._discretise_datasets
+   synthgauge.metrics.nist._kway_marginal_score
+   synthgauge.metrics.nist.kway_marginals
+   synthgauge.metrics.nist._make_rule
+   synthgauge.metrics.nist._create_test_cases
+   synthgauge.metrics.nist._evaluate_test_cases
+   synthgauge.metrics.nist.hoc
+
+
+
+.. py:function:: _numeric_edges(real, synth, bins)
+
+   Find the bin edges for the numeric features.
+
+
+.. py:function:: _discretise_datasets(real, synth, bins)
+
+   Discretise the numeric features of each dataset.
+
+
+.. py:function:: _kway_marginal_score(real, synth, features)
+
+   Get the transformed score for a single set of features.
+
+   Note that the datasets should have their numeric features
+   discretised already.
+
+
+.. py:function:: kway_marginals(real, synth, k=3, trials=100, bins=100, seed=None)
+
+   The first generic measure based on similarity of k-way marginals.
+
+   In essence, calculate the summed absolute difference in density
+   across an array of randomly sampled k-way marginals. Transform and
+   summarise these deviations to give a single score between 0 and 1.
+   These extremes represent the worst and best case scenarios,
+   respectively.
+
+   The NIST competition utilised 3-way marginals only. Details can be
+   found at https://doi.org/10.6028/NIST.TN.2151.
+
+   :param real: Dataframe containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: Dataframe containing the synthetic data.
+   :type synth: pandas.DataFrame
+   :param k: Number of features to include in each k-way marginal. Default
+             uses 3 (as done in the NIST competition).
+   :type k: int, default 3
+   :param trials: Maximum number of marginals to consider to estimate the overall
+                  score. If there are fewer `k`-way combinations than `trials`,
+                  tries all. Default uses 100 (as done in the NIST competition).
+   :type trials: int, default 100
+   :param bins: Binning method for sampled numeric features. Can be anything
+                accepted by `numpy.histogram`. Default uses 100 bins (as done in
+                the NIST competition).
+   :type bins: int or str, default 100
+   :param seed: Random number seed. If `None`, results will not be reproducible.
+   :type seed: int or None, default None
+
+   :returns: **score** -- The mean transformed sum absolute deviation in k-way densities.
+   :rtype: float
+
+
+.. py:function:: _make_rule(data, row, column, prng)
+
+   Given a column, make a rule for it.
+
+
+.. py:function:: _create_test_cases(data, trials, prob, seed)
+
+   Create a collection of HOC test cases.
+
+   For each test case, sample a row. Iterate over the columns,
+   including them with some probability and generating them a rule for
+   the test case. This rule is determined by the data type of the
+   column:
+
+     - Numeric columns use a random subrange from the whole dataset
+     - Categoric columns use a random subset of the elements in the
+       entire dataset
+
+   Both of these types of rules always include the observed value in
+   the row of the associated column; this means that the test will
+   always be satisfied by at least one row when it comes to evaluation.
+
+
+.. py:function:: _evaluate_test_cases(data, cases)
+
+   Evaluate the test cases on a dataset.
+
+   Each test case's score is set as the proportion of the dataset for
+   which all rules in the test case are satisfied. Each type of rule is
+   satisfied differently:
+
+     - Numeric rules are satisfied if the observed value lies within
+       the rule's subrange
+     - Categoric rules are satisfied if the observed value lies in the
+       rule's subset
+
+
+.. py:function:: hoc(real, synth, trials=300, prob=0.1, seed=None)
+
+   A measure based on Higher Order Conjunctions (HOC).
+
+   This measure compares the relative sizes of randomly selected pools
+   of "similar" rows in the real and synthetic data. This measure of
+   similarity is defined across a set of randomly genereated test
+   cases applied to each dataset. Each test case consists of a set of
+   rules.
+
+   The :math:`i`-th test calculates the fraction of records satisfying
+   its rules in the real data, :math:`f_{ri}`, and the synthetic,
+   denoted :math:`f_{si}`. Their dissimilarity in test :math:`i` is
+   quantified as:
+
+   .. math::
+
+       d_i = \ln\left(\max(f_{si}, 10^{-6})\right) - \ln(f_{ri})
+
+   These dissimilarities are summarised as:
+
+   .. math::
+
+       \Delta = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2}
+
+   where :math:`N` is the number of test cases. Finally, this is
+   transformed to a HOC score:
+
+   .. math::
+
+       HOC = \max \left(0, 1 + \frac{\Delta}{\ln(10^{-3})}\right)
+
+   This measure is bounded between 0 and 1, indicating whether the
+   datasets are nothing alike or identical based on the test cases,
+   respectively. In the original text this score is multiplied by 1000
+   to make it human-readable. Full details are available in
+   https://doi.org/10.6028/NIST.TN.2151.
+
+   :param real: Dataframe containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: Dataframe containing the synthetic data.
+   :type synth: pandas.DataFrame
+   :param trials: Number of test cases to create. Default of 300 as in the
+                  competition.
+   :type trials: int, default 300
+   :param prob: Probability of any column being included in a test case. Default
+                of 0.1 as in the competition.
+   :type prob: float, default 0.1
+   :param seed: Random number seed. If `None`, results will not be reproducible.
+   :type seed: int or None, default None
+
+   :returns: **score** -- The overall HOC score.
+   :rtype: float
+
+   .. rubric:: Notes
+
+   It is possible that some test cases will be "empty", i.e. when no
+   columns are selected. In this scenario, the score for that case will
+   be `np.nan` rather than it being resampled.
+
+
