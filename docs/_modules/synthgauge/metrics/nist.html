@@ -79,7 +79,7 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 
-<div class="viewcode-block" id="_numeric_edges"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._numeric_edges">[docs]</a><span class="k">def</span> <span class="nf">_numeric_edges</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_numeric_edges</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find the bin edges for the numeric features.&quot;&quot;&quot;</span>
 
     <span class="n">numeric</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
@@ -87,10 +87,10 @@
     <span class="p">)</span>
     <span class="n">edges</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">bins</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">numeric</span><span class="p">}</span>
 
-    <span class="k">return</span> <span class="n">edges</span></div>
+    <span class="k">return</span> <span class="n">edges</span>
 
 
-<div class="viewcode-block" id="_discretise_datasets"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._discretise_datasets">[docs]</a><span class="k">def</span> <span class="nf">_discretise_datasets</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_discretise_datasets</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Discretise the numeric features of each dataset.&quot;&quot;&quot;</span>
 
     <span class="n">rout</span><span class="p">,</span> <span class="n">sout</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">synth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -99,10 +99,10 @@
         <span class="n">rout</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">rout</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">edge</span><span class="p">)</span>
         <span class="n">sout</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">sout</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">edge</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rout</span><span class="p">,</span> <span class="n">sout</span></div>
+    <span class="k">return</span> <span class="n">rout</span><span class="p">,</span> <span class="n">sout</span>
 
 
-<div class="viewcode-block" id="_kway_marginal_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._kway_marginal_score">[docs]</a><span class="k">def</span> <span class="nf">_kway_marginal_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_kway_marginal_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get the transformed score for a single set of features.</span>
 
 <span class="sd">    Note that the datasets should have their numeric features</span>
@@ -112,7 +112,7 @@
     <span class="n">rmarg</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
     <span class="n">smarg</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rmarg</span> <span class="o">-</span> <span class="n">smarg</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span></div>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rmarg</span> <span class="o">-</span> <span class="n">smarg</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span>
 
 
 <div class="viewcode-block" id="kway_marginals"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist.kway_marginals">[docs]</a><span class="k">def</span> <span class="nf">kway_marginals</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">trials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -171,7 +171,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="_make_rule"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._make_rule">[docs]</a><span class="k">def</span> <span class="nf">_make_rule</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">prng</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_rule</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">prng</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Given a column, make a rule for it.&quot;&quot;&quot;</span>
 
     <span class="n">values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
@@ -187,10 +187,10 @@
                 <span class="k">break</span>
             <span class="n">rule</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rule</span></div>
+    <span class="k">return</span> <span class="n">rule</span>
 
 
-<div class="viewcode-block" id="_create_test_cases"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._create_test_cases">[docs]</a><span class="k">def</span> <span class="nf">_create_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_create_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create a collection of HOC test cases.</span>
 
 <span class="sd">    For each test case, sample a row. Iterate over the columns,</span>
@@ -219,10 +219,10 @@
         <span class="p">}</span>
         <span class="n">cases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">case</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">cases</span></div>
+    <span class="k">return</span> <span class="n">cases</span>
 
 
-<div class="viewcode-block" id="_evaluate_test_cases"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._evaluate_test_cases">[docs]</a><span class="k">def</span> <span class="nf">_evaluate_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cases</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_evaluate_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cases</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Evaluate the test cases on a dataset.</span>
 
 <span class="sd">    Each test case&#39;s score is set as the proportion of the dataset for</span>
@@ -246,7 +246,7 @@
 
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 
-    <span class="k">return</span> <span class="n">results</span></div>
+    <span class="k">return</span> <span class="n">results</span>
 
 
 <div class="viewcode-block" id="hoc"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist.hoc">[docs]</a><span class="k">def</span> <span class="nf">hoc</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">trials</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

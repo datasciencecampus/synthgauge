@@ -18,7 +18,6 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.univariate._get_bin_counts
    synthgauge.metrics.univariate.kullback_leibler
    synthgauge.metrics.univariate.jensen_shannon_divergence
    synthgauge.metrics.univariate.jensen_shannon_distance
@@ -28,27 +27,6 @@ Functions
    synthgauge.metrics.univariate.mann_whitney
    synthgauge.metrics.univariate.wilcoxon
 
-
-
-.. py:function:: _get_bin_counts(real, synth, feature, bins)
-
-   Discretise real and synthetic features, and return the bin counts
-   for each. Used by the Kullback-Leibler and Jensen-Shannon functions.
-
-   :param real: Dataframe containing the real data.
-   :type real: pandas.DataFrame
-   :param synth: Dataframe containing the synthetic data. respectively.
-   :type synth: pandas.DataFrame
-   :param feature: Feature to be processed into bin counts. Must be continuous.
-   :type feature: str
-   :param bins: The binning method to use. If `int`, is the number of bins. If
-                `str`, must be a method accepted by `numpy.histogram_bin_edges`.
-                If `None`, the feature is assumed to be categorical and counts
-                are taken for every value that appears in either dataset.
-   :type bins: int or str or None
-
-   :returns: **real_counts, synth_counts** -- The bin counts for the real and synthetic data, respectively.
-   :rtype: np.ndarray
 
 
 .. py:function:: kullback_leibler(real, synth, feature, bins='auto', **kwargs)

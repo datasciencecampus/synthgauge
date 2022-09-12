@@ -129,25 +129,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histograms" title="synthgauge.plot.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histograms</span></code></a>(df, feats=None, groupby=None, figcols=2, figsize=None)</p></td>
 <td><p>Plot feature distributions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot._order_categorical" title="synthgauge.plot._order_categorical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_order_categorical</span></code></a>(feat)</p></td>
-<td><p>Order a feature only if it is categorical.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)</p></td>
 <td><p>Plot bivariate and univariate graphs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histogram3d" title="synthgauge.plot.plot_histogram3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram3d</span></code></a>(df, x, y, x_bins='auto', y_bins='auto', figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histogram3d" title="synthgauge.plot.plot_histogram3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram3d</span></code></a>(df, x, y, x_bins='auto', y_bins='auto', figsize=None)</p></td>
 <td><p>Plot 3D histogram of two features.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*dfs, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*dfs, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)</p></td>
 <td><p>Plot correlation between features in a dataframe.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, cmap='rocket', **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, cmap='rocket', **kwargs)</p></td>
 <td><p>Plot cross-tabulation heatmap for two features.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_qq" title="synthgauge.plot.plot_qq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_qq</span></code></a>(real, synth, feature, n_quantiles=None, figsize=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_qq" title="synthgauge.plot.plot_qq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_qq</span></code></a>(real, synth, feature, n_quantiles=None, figsize=None)</p></td>
 <td><p>Generate a Q-Q plot for a feature of real and synthetic data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_feat_density_diff" title="synthgauge.plot.plot_feat_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feat_density_diff</span></code></a>(real, synth, feats=None, feat_bins=10, diff_bins=10, figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_feat_density_diff" title="synthgauge.plot.plot_feat_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feat_density_diff</span></code></a>(real, synth, feats=None, feat_bins=10, diff_bins=10, figsize=None)</p></td>
 <td><p>Plot real and synth feature density differences.</p></td>
 </tr>
 </tbody>
@@ -177,23 +174,6 @@ prior to calculating the distribution.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>matplotlib.figure.Figure</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.plot._order_categorical">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.plot.</span></span><span class="sig-name descname"><span class="pre">_order_categorical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/plot.html#_order_categorical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.plot._order_categorical" title="Permalink to this definition"></a></dt>
-<dd><p>Order a feature only if it is categorical.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>feat</strong> (<em>pd.Series</em>) – The feature to be ordered.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The ordered feature.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pd.Series</p>
 </dd>
 </dl>
 </dd></dl>

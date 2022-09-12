@@ -124,86 +124,11 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._make_preprocessor" title="synthgauge.metrics.classification._make_preprocessor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_preprocessor</span></code></a>(data, feats)</p></td>
-<td><p>Make a pre-processing pipe for transforming numeric and</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._make_pipeline" title="synthgauge.metrics.classification._make_pipeline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_pipeline</span></code></a>(classifier, seed, preprocessor, **kwargs)</p></td>
-<td><p>Create the pipeline of data pre-processing and classification.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification._get_scores" title="synthgauge.metrics.classification._get_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_scores</span></code></a>(test, pred)</p></td>
-<td><p>Calculate the precision, recall and f1 scores for a set of</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, feats, target, classifier, test_prop=0.2, random_state=None, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, feats, target, classifier, test_prop=0.2, random_state=None, **kwargs)</p></td>
 <td><p>Classification utility metric.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.classification._make_preprocessor">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_make_preprocessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_make_preprocessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._make_preprocessor" title="Permalink to this definition"></a></dt>
-<dd><p>Make a pre-processing pipe for transforming numeric and
-categorical columns.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – The dataset containing at the least the columns in <cite>feats</cite>.</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em>) – A list of columns in <cite>data</cite> to be separated by data type.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>preprocessor</strong> – The pre-processing pipeline.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>sklearn.pipeline.Pipeline</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.classification._make_pipeline">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_make_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classifier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preprocessor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_make_pipeline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._make_pipeline" title="Permalink to this definition"></a></dt>
-<dd><p>Create the pipeline of data pre-processing and classification.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>classifier</strong> (<em>scikit-learn estimator</em>) – The <cite>scikit-learn</cite>-style class to be used as the classifier.</p></li>
-<li><p><strong>seed</strong> (<em>int</em>) – Random seed to use for reproducibility. Only used if
-<cite>random_state</cite> is a parameter of <cite>classifier</cite>.</p></li>
-<li><p><strong>preprocessor</strong> (<em>sklearn.pipeline.Pipeline</em>) – The pre-processing pipeline.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optinal</em>) – featsword arguments for <cite>classifier</cite>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>pipeline</strong> – A complete classification pipeline.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>sklearn.pipeline.Pipeline</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.classification._get_scores">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">_get_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#_get_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification._get_scores" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the precision, recall and f1 scores for a set of
-predicted values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>test</strong> (<em>array_like</em>) – Labels from the test set.</p></li>
-<li><p><strong>pred</strong> (<em>array_like</em>) – Predicted labels.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>scores</strong> – The precision, recall and f1 score given the test set and
-predicted labels.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.classification.classification_comparison">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.classification.</span></span><span class="sig-name descname"><span class="pre">classification_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/classification.html#classification_comparison"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.classification.classification_comparison" title="Permalink to this definition"></a></dt>

@@ -124,55 +124,17 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy._get_weap_scores" title="synthgauge.metrics.privacy._get_weap_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_weap_scores</span></code></a>(synth, key, target)</p></td>
-<td><p>Within Equivalence class Attribution Probabilities (WEAP).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy.tcap_score" title="synthgauge.metrics.privacy.tcap_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tcap_score</span></code></a>(real, synth, key, target)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy.tcap_score" title="synthgauge.metrics.privacy.tcap_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tcap_score</span></code></a>(real, synth, key, target)</p></td>
 <td><p>Target Correct Attribution Probability (TCAP) score.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy._find_outliers" title="synthgauge.metrics.privacy._find_outliers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_find_outliers</span></code></a>(data, threshold, n_neighbours)</p></td>
-<td><p>Identify local outliers using the nearest-neighbour principle.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy.min_nearest_neighbour" title="synthgauge.metrics.privacy.min_nearest_neighbour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_nearest_neighbour</span></code></a>(real, synth, feats=None, outliers_only=True, threshold=2, n_neighbours=5)</p></td>
 <td><p>Minimum nearest-neighbour distance.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy._get_sample" title="synthgauge.metrics.privacy._get_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_sample</span></code></a>(data, feats, n_samples, seed, label)</p></td>
-<td><p>Take a sample from the data and count the feature frequencies.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy.sample_overlap_score" title="synthgauge.metrics.privacy.sample_overlap_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_overlap_score</span></code></a>(real, synth, feats=None, sample_size=0.2, runs=5, seed=None, score_type='unique')</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.privacy.sample_overlap_score" title="synthgauge.metrics.privacy.sample_overlap_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sample_overlap_score</span></code></a>(real, synth, feats=None, sample_size=0.2, runs=5, seed=None, score_type='unique')</p></td>
 <td><p>Return percentage of overlap between real and synth data based on</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.privacy._get_weap_scores">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.privacy.</span></span><span class="sig-name descname"><span class="pre">_get_weap_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/privacy.html#_get_weap_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.privacy._get_weap_scores" title="Permalink to this definition"></a></dt>
-<dd><p>Within Equivalence class Attribution Probabilities (WEAP).</p>
-<p>For each record in the synthetic dataset, this function returns the
-proportion across the whole dataset that a set of <cite>key</cite> values are
-matched with this <cite>target</cite> value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>key</strong> (<em>list of str</em>) – List of features in <cite>synth</cite> to use as the key.</p></li>
-<li><p><strong>target</strong> (<em>str</em>) – Feature to use as the target.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A series object containing the WEAP scores for each record in
-<cite>synth</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.Series</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>This function is intended to only be used within <cite>TCAP()</cite> to
-determine which synthetic records are most likely to pose an
-attribution risk.</p>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.privacy.tcap_score">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.privacy.</span></span><span class="sig-name descname"><span class="pre">tcap_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/privacy.html#tcap_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.privacy.tcap_score" title="Permalink to this definition"></a></dt>
@@ -213,33 +175,6 @@ Data Confidentiality, Session 3.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.privacy._find_outliers">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.privacy.</span></span><span class="sig-name descname"><span class="pre">_find_outliers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbours</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/privacy.html#_find_outliers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.privacy._find_outliers" title="Permalink to this definition"></a></dt>
-<dd><p>Identify local outliers using the nearest-neighbour principle.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – Dataframe to be assessed for outliers.</p></li>
-<li><p><strong>threshold</strong> (<em>float</em>) – Float influencing classification of outliers. Increasing this
-threshold means that fewer points are considered outliers.</p></li>
-<li><p><strong>n_neighbours</strong> (<em>int</em>) – Number of neighbours to consider in outlier detection.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>outlier_bool</strong> – List indicating which rows of <cite>data</cite> are outliers.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of bool</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>Most inliers will have an outlier factor of less than one, however
-there are no clear rules that determine when a data point is an
-outlier. This is likely to vary from dataset to dataset and, as
-such, we recommend tuning <cite>outlier_factor_threshold</cite> to suit.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.privacy.min_nearest_neighbour">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.privacy.</span></span><span class="sig-name descname"><span class="pre">min_nearest_neighbour</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outliers_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbours</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/privacy.html#min_nearest_neighbour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.privacy.min_nearest_neighbour" title="Permalink to this definition"></a></dt>
 <dd><p>Minimum nearest-neighbour distance.</p>
@@ -276,12 +211,6 @@ calculating the minimum distance between the real records and the
 synthetic records.</p>
 <p>This metric assumes that categorical data is ordinal during distance
 calculations, or that it has already been suitably one-hot-encoded.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.privacy._get_sample">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.privacy.</span></span><span class="sig-name descname"><span class="pre">_get_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/privacy.html#_get_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.privacy._get_sample" title="Permalink to this definition"></a></dt>
-<dd><p>Take a sample from the data and count the feature frequencies.</p>
 </dd></dl>
 
 <dl class="py function">

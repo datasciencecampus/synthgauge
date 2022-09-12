@@ -19,7 +19,6 @@ Functions
 .. autoapisummary::
 
    synthgauge.plot.plot_histograms
-   synthgauge.plot._order_categorical
    synthgauge.plot.plot_joint
    synthgauge.plot.plot_histogram3d
    synthgauge.plot.plot_correlation
@@ -54,17 +53,6 @@ Functions
 
    :returns:
    :rtype: matplotlib.figure.Figure
-
-
-.. py:function:: _order_categorical(feat)
-
-   Order a feature only if it is categorical.
-
-   :param feat: The feature to be ordered.
-   :type feat: pd.Series
-
-   :returns: The ordered feature.
-   :rtype: pd.Series
 
 
 .. py:function:: plot_joint(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)
