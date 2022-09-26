@@ -135,7 +135,7 @@
     <span class="k">return</span> <span class="n">fig</span></div>
 
 
-<div class="viewcode-block" id="_order_categorical"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot._order_categorical">[docs]</a><span class="k">def</span> <span class="nf">_order_categorical</span><span class="p">(</span><span class="n">feat</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_order_categorical</span><span class="p">(</span><span class="n">feat</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Order a feature only if it is categorical.</span>
 
 <span class="sd">    Parameters</span>
@@ -149,7 +149,7 @@
 <span class="sd">        The ordered feature.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="n">feat</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_ordered</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">feat</span></div>
+    <span class="k">return</span> <span class="n">feat</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">as_ordered</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">feat</span>
 
 
 <div class="viewcode-block" id="plot_joint"><a class="viewcode-back" href="../../autoapi/synthgauge/plot/index.html#synthgauge.plot.plot_joint">[docs]</a><span class="k">def</span> <span class="nf">plot_joint</span><span class="p">(</span>

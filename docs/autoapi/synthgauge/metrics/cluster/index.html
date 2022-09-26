@@ -126,61 +126,11 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster._get_cluster_labels" title="synthgauge.metrics.cluster._get_cluster_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_cluster_labels</span></code></a>(combined, method, k, random_state)</p></td>
-<td><p>Apply the chosen clustering method to a dataset and return its</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster._get_cluster_proportions" title="synthgauge.metrics.cluster._get_cluster_proportions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_cluster_proportions</span></code></a>(labels, indicator)</p></td>
-<td><p>Calculate the proportion of each cluster that is synthetic.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.cluster.clustered_msd" title="synthgauge.metrics.cluster.clustered_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustered_msd</span></code></a>(real, synth, feats=None, method='kmeans', k_min=2, k_max=10, random_state=None)</p></td>
 <td><p>(Multiple) clustered mean-squared difference (MSD).</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.cluster._get_cluster_labels">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">_get_cluster_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#_get_cluster_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster._get_cluster_labels" title="Permalink to this definition"></a></dt>
-<dd><p>Apply the chosen clustering method to a dataset and return its
-final labels.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>combined</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real and synthetic data.</p></li>
-<li><p><strong>method</strong> (<em>{&quot;kmeans&quot;</em><em>, </em><em>&quot;kprototypes&quot;}</em>) – Which clustering method to use.</p></li>
-<li><p><strong>k</strong> (<em>int</em>) – Number of clusters to fit.</p></li>
-<li><p><strong>random_state</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed for fitting clusters.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>labels</strong> – Integer labels indicating cluster membership for each point in
-<cite>combined</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.cluster._get_cluster_proportions">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">_get_cluster_proportions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#_get_cluster_proportions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster._get_cluster_proportions" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the proportion of each cluster that is synthetic.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>labels</strong> (<em>array_like</em>) – Cluster membership array.</p></li>
-<li><p><strong>indicator</strong> (<em>array_like</em>) – Indicator of which data are real and which are synthetic.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>proportions</strong> – Array with synthetic data proportion of each cluster.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.cluster.clustered_msd">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.cluster.</span></span><span class="sig-name descname"><span class="pre">clustered_msd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'kmeans'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/cluster.html#clustered_msd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.cluster.clustered_msd" title="Permalink to this definition"></a></dt>

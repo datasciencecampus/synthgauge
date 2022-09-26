@@ -124,44 +124,11 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.density._feature_density_diff" title="synthgauge.metrics.density._feature_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_feature_density_diff</span></code></a>(real, synth, feature, bins=10)</p></td>
-<td><p>Computes the difference between real and synth feature densities.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.density.feature_density_mad" title="synthgauge.metrics.density.feature_density_mad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feature_density_mad</span></code></a>(real, synth, feats=None, bins=10)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.density.feature_density_mad" title="synthgauge.metrics.density.feature_density_mad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feature_density_mad</span></code></a>(real, synth, feats=None, bins=10)</p></td>
 <td><p>Mean absolute difference of feature densities.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.density._feature_density_diff">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.density.</span></span><span class="sig-name descname"><span class="pre">_feature_density_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/density.html#_feature_density_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.density._feature_density_diff" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the difference between real and synth feature densities.</p>
-<p>For the specified feature the density is computed across <cite>bins</cite> in
-both the real and synthetic data. The per-bin difference is computed
-and returned along with the bin edges that were used.</p>
-<p>Prior to calculating the densities. all values are converted to
-numeric via <cite>synthgauge.utils.cat_encode</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feature</strong> (<em>str</em>) – The feature that will be used to compute the density.</p></li>
-<li><p><strong>bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>default 10</em>) – Bins to use for computing the density. This value is passed
-to <cite>numpy.histogram_bin_edges</cite> so can be any value accepted by
-that function. Default uses 10 bins.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>hist_diff</strong> (<em>numpy.ndarray</em>) – The difference in feature density for each of the bins.</p></li>
-<li><p><strong>bin_edges</strong> (<em>numpy.ndarray</em>) – The edges of the bins.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.density.feature_density_mad">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.density.</span></span><span class="sig-name descname"><span class="pre">feature_density_mad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/density.html#feature_density_mad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.density.feature_density_mad" title="Permalink to this definition"></a></dt>

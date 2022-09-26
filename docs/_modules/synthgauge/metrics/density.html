@@ -78,7 +78,7 @@
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">utils</span>
 
 
-<div class="viewcode-block" id="_feature_density_diff"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/density/index.html#synthgauge.metrics.density._feature_density_diff">[docs]</a><span class="k">def</span> <span class="nf">_feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_feature_density_diff</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Computes the difference between real and synth feature densities.</span>
 
 <span class="sd">    For the specified feature the density is computed across `bins` in</span>
@@ -124,7 +124,7 @@
 
     <span class="n">hist_diff</span> <span class="o">=</span> <span class="n">synth_hist</span> <span class="o">-</span> <span class="n">real_hist</span>
 
-    <span class="k">return</span> <span class="n">hist_diff</span><span class="p">,</span> <span class="n">bin_edges</span></div>
+    <span class="k">return</span> <span class="n">hist_diff</span><span class="p">,</span> <span class="n">bin_edges</span>
 
 
 <div class="viewcode-block" id="feature_density_mad"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.density.feature_density_mad">[docs]</a><span class="k">def</span> <span class="nf">feature_density_mad</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>

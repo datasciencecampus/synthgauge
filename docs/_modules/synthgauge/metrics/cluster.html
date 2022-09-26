@@ -81,7 +81,7 @@
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">df_combine</span>
 
 
-<div class="viewcode-block" id="_get_cluster_labels"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/cluster/index.html#synthgauge.metrics.cluster._get_cluster_labels">[docs]</a><span class="k">def</span> <span class="nf">_get_cluster_labels</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_cluster_labels</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">random_state</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Apply the chosen clustering method to a dataset and return its</span>
 <span class="sd">    final labels.</span>
 
@@ -125,10 +125,10 @@
             <span class="sa">f</span><span class="s1">&#39;`&quot;kprototypes&quot;` not </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1">.&#39;</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">labels_</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="_get_cluster_proportions"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/cluster/index.html#synthgauge.metrics.cluster._get_cluster_proportions">[docs]</a><span class="k">def</span> <span class="nf">_get_cluster_proportions</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">indicator</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_cluster_proportions</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">indicator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calculate the proportion of each cluster that is synthetic.</span>
 
 <span class="sd">    Parameters</span>
@@ -150,7 +150,7 @@
             <span class="nb">sum</span><span class="p">(</span><span class="n">indicator</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">])</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="n">cluster</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">proportions</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">proportions</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="clustered_msd"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.cluster.clustered_msd">[docs]</a><span class="k">def</span> <span class="nf">clustered_msd</span><span class="p">(</span>

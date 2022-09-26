@@ -38,7 +38,16 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
 ]
+
+# sphinx-autoapi configuration
 autoapi_dirs = ["../../src"]
+autoapi_options = [
+    "members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "imported-members",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

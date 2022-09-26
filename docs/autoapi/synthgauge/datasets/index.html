@@ -126,41 +126,11 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.datasets._adjust_data_elements" title="synthgauge.datasets._adjust_data_elements"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_adjust_data_elements</span></code></a>(data, labels, noise, nan_prop, seed)</p></td>
-<td><p>Adjust the given data and put it into a dataframe.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.datasets.make_blood_types_df" title="synthgauge.datasets.make_blood_types_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_blood_types_df</span></code></a>(noise=0, nan_prop=0, seed=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.datasets.make_blood_types_df" title="synthgauge.datasets.make_blood_types_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_blood_types_df</span></code></a>(noise=0, nan_prop=0, seed=None)</p></td>
 <td><p>Create a toy dataset about blood types and physical atrtibutes.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.datasets._adjust_data_elements">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.datasets.</span></span><span class="sig-name descname"><span class="pre">_adjust_data_elements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_prop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/datasets.html#_adjust_data_elements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.datasets._adjust_data_elements" title="Permalink to this definition"></a></dt>
-<dd><p>Adjust the given data and put it into a dataframe.
-This function is not intended to be used directly by users.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – The data array to be adjusted.</p></li>
-<li><p><strong>labels</strong> (<em>numpy.ndarray</em>) – A set of labels for classifying the rows of <cite>data</cite>.</p></li>
-<li><p><strong>noise</strong> (<em>float</em>) – The amount of noise to inject into the data. Specifically,
-this controls the <cite>scale</cite> parameter of a zero-centred normal
-distribution.</p></li>
-<li><p><strong>nan_prop</strong> (<em>float</em>) – The proportion of elements to replace with missing values.</p></li>
-<li><p><strong>seed</strong> (<em>int</em>) – A random seed used to choose missing element indices and sample
-noise.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The adjusted, combined dataframe.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.datasets.make_blood_types_df">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.datasets.</span></span><span class="sig-name descname"><span class="pre">make_blood_types_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_prop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/datasets.html#make_blood_types_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.datasets.make_blood_types_df" title="Permalink to this definition"></a></dt>

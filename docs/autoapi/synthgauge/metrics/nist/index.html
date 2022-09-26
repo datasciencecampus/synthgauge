@@ -126,52 +126,14 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._numeric_edges" title="synthgauge.metrics.nist._numeric_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_numeric_edges</span></code></a>(real, synth, bins)</p></td>
-<td><p>Find the bin edges for the numeric features.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._discretise_datasets" title="synthgauge.metrics.nist._discretise_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_discretise_datasets</span></code></a>(real, synth, bins)</p></td>
-<td><p>Discretise the numeric features of each dataset.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._kway_marginal_score" title="synthgauge.metrics.nist._kway_marginal_score"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_kway_marginal_score</span></code></a>(real, synth, features)</p></td>
-<td><p>Get the transformed score for a single set of features.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.kway_marginals" title="synthgauge.metrics.nist.kway_marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kway_marginals</span></code></a>(real, synth, k=3, trials=100, bins=100, seed=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.kway_marginals" title="synthgauge.metrics.nist.kway_marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kway_marginals</span></code></a>(real, synth, k=3, trials=100, bins=100, seed=None)</p></td>
 <td><p>The first generic measure based on similarity of k-way marginals.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._make_rule" title="synthgauge.metrics.nist._make_rule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_rule</span></code></a>(data, row, column, prng)</p></td>
-<td><p>Given a column, make a rule for it.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._create_test_cases" title="synthgauge.metrics.nist._create_test_cases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_test_cases</span></code></a>(data, trials, prob, seed)</p></td>
-<td><p>Create a collection of HOC test cases.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist._evaluate_test_cases" title="synthgauge.metrics.nist._evaluate_test_cases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_evaluate_test_cases</span></code></a>(data, cases)</p></td>
-<td><p>Evaluate the test cases on a dataset.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.hoc" title="synthgauge.metrics.nist.hoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hoc</span></code></a>(real, synth, trials=300, prob=0.1, seed=None)</p></td>
 <td><p>A measure based on Higher Order Conjunctions (HOC).</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._numeric_edges">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_numeric_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_numeric_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._numeric_edges" title="Permalink to this definition"></a></dt>
-<dd><p>Find the bin edges for the numeric features.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._discretise_datasets">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_discretise_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_discretise_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._discretise_datasets" title="Permalink to this definition"></a></dt>
-<dd><p>Discretise the numeric features of each dataset.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._kway_marginal_score">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_kway_marginal_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_kway_marginal_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._kway_marginal_score" title="Permalink to this definition"></a></dt>
-<dd><p>Get the transformed score for a single set of features.</p>
-<p>Note that the datasets should have their numeric features
-discretised already.</p>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.nist.kway_marginals">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">kway_marginals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#kway_marginals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist.kway_marginals" title="Permalink to this definition"></a></dt>
@@ -206,49 +168,6 @@ the NIST competition).</p></li>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._make_rule">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_make_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_make_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._make_rule" title="Permalink to this definition"></a></dt>
-<dd><p>Given a column, make a rule for it.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._create_test_cases">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_create_test_cases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_create_test_cases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._create_test_cases" title="Permalink to this definition"></a></dt>
-<dd><p>Create a collection of HOC test cases.</p>
-<p>For each test case, sample a row. Iterate over the columns,
-including them with some probability and generating them a rule for
-the test case. This rule is determined by the data type of the
-column:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Numeric columns use a random subrange from the whole dataset</p></li>
-<li><p>Categoric columns use a random subset of the elements in the
-entire dataset</p></li>
-</ul>
-</div></blockquote>
-<p>Both of these types of rules always include the observed value in
-the row of the associated column; this means that the test will
-always be satisfied by at least one row when it comes to evaluation.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.nist._evaluate_test_cases">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.nist.</span></span><span class="sig-name descname"><span class="pre">_evaluate_test_cases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cases</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/nist.html#_evaluate_test_cases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.nist._evaluate_test_cases" title="Permalink to this definition"></a></dt>
-<dd><p>Evaluate the test cases on a dataset.</p>
-<p>Each test case’s score is set as the proportion of the dataset for
-which all rules in the test case are satisfied. Each type of rule is
-satisfied differently:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Numeric rules are satisfied if the observed value lies within
-the rule’s subrange</p></li>
-<li><p>Categoric rules are satisfied if the observed value lies in the
-rule’s subset</p></li>
-</ul>
-</div></blockquote>
 </dd></dl>
 
 <dl class="py function">

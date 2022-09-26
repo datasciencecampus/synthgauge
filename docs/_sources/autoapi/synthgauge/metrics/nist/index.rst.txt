@@ -18,33 +18,9 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.nist._numeric_edges
-   synthgauge.metrics.nist._discretise_datasets
-   synthgauge.metrics.nist._kway_marginal_score
    synthgauge.metrics.nist.kway_marginals
-   synthgauge.metrics.nist._make_rule
-   synthgauge.metrics.nist._create_test_cases
-   synthgauge.metrics.nist._evaluate_test_cases
    synthgauge.metrics.nist.hoc
 
-
-
-.. py:function:: _numeric_edges(real, synth, bins)
-
-   Find the bin edges for the numeric features.
-
-
-.. py:function:: _discretise_datasets(real, synth, bins)
-
-   Discretise the numeric features of each dataset.
-
-
-.. py:function:: _kway_marginal_score(real, synth, features)
-
-   Get the transformed score for a single set of features.
-
-   Note that the datasets should have their numeric features
-   discretised already.
 
 
 .. py:function:: kway_marginals(real, synth, k=3, trials=100, bins=100, seed=None)
@@ -80,43 +56,6 @@ Functions
 
    :returns: **score** -- The mean transformed sum absolute deviation in k-way densities.
    :rtype: float
-
-
-.. py:function:: _make_rule(data, row, column, prng)
-
-   Given a column, make a rule for it.
-
-
-.. py:function:: _create_test_cases(data, trials, prob, seed)
-
-   Create a collection of HOC test cases.
-
-   For each test case, sample a row. Iterate over the columns,
-   including them with some probability and generating them a rule for
-   the test case. This rule is determined by the data type of the
-   column:
-
-     - Numeric columns use a random subrange from the whole dataset
-     - Categoric columns use a random subset of the elements in the
-       entire dataset
-
-   Both of these types of rules always include the observed value in
-   the row of the associated column; this means that the test will
-   always be satisfied by at least one row when it comes to evaluation.
-
-
-.. py:function:: _evaluate_test_cases(data, cases)
-
-   Evaluate the test cases on a dataset.
-
-   Each test case's score is set as the proportion of the dataset for
-   which all rules in the test case are satisfied. Each type of rule is
-   satisfied differently:
-
-     - Numeric rules are satisfied if the observed value lies within
-       the rule's subrange
-     - Categoric rules are satisfied if the observed value lies in the
-       rule's subset
 
 
 .. py:function:: hoc(real, synth, trials=300, prob=0.1, seed=None)

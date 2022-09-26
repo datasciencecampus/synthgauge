@@ -18,46 +18,11 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.propensity._combine_encode_and_pop
-   synthgauge.metrics.propensity._get_propensity_scores
    synthgauge.metrics.propensity.pmse
-   synthgauge.metrics.propensity._pmse_logr_statistics
-   synthgauge.metrics.propensity._pmse_cart_statistics
    synthgauge.metrics.propensity.pmse_ratio
    synthgauge.metrics.propensity.pmse_standardised
    synthgauge.metrics.propensity.propensity_metrics
 
-
-
-.. py:function:: _combine_encode_and_pop(real, synth)
-
-   Get the combined, encoded real and synthetic data, and their
-   origins.
-
-   :param real: Dataframe containing the real data.
-   :type real: pandas.DataFrame
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas.DataFrame
-
-   :returns: * **combined** (*pandas.DataFrame*) -- The combined data with categorical columns one-hot encoded.
-             * **indicator** (*numpy.ndarray*) -- An indicator for whether the data is real (0) or synthetic (1).
-
-
-.. py:function:: _get_propensity_scores(data, labels, method, **kwargs)
-
-   Fit a propensity model to the data and extract its scores.
-
-   :param data: Dataframe to fit propensity model to.
-   :type data: pandas.DataFrame
-   :param labels: Indicator for which data are real (0) or synthetic (1).
-   :type labels: numpy.ndarray
-   :param method: Which propensity model to use.
-   :type method: {"cart", "logr"}
-   :param \*\*kwargs: Keyword arguments passed to propensity model.
-   :type \*\*kwargs: dict, optional
-
-   :returns: **scores** -- Propensity score for each point in `data`.
-   :rtype: numpy.ndarray
 
 
 .. py:function:: pmse(combined, indicator, method, **kwargs)
@@ -104,92 +69,6 @@ Functions
    Using a CART model as a classifier is recommended in the literature
    however we also support the use of logistic regression. For further
    details, see: https://doi.org/10.1111/rssa.12358
-
-
-.. py:function:: _pmse_logr_statistics(combined, indicator)
-
-   Calculate the location and scale of pMSE in the null case where
-   the real and synthetic datasets are formed from identical processes.
-
-   :param combined: Dataframe containing the combined real and synthetic data.
-   :type combined: pandas.DataFrame
-   :param indicator: Indicator for whether data are real (0) or synthetic (1).
-   :type indicator: numpy.ndarray
-
-   :returns: * **loc** (*float*) -- Expectation of pMSE in the null case.
-             * **scale** (*float*) -- Standard deviation of pMSE in the null case.
-
-   .. rubric:: Notes
-
-   It has been shown that the null case is distributed as a multiple of
-   a :math:`\chi^2` distribution with :math:`k-1` degrees of freedom.
-
-   Therefore, its expectation is:
-
-   .. math::
-
-       E(pMSE) = \frac{(k - 1)(1 - c)^2}{N}
-
-   and its standard deviation is:
-
-   .. math::
-
-       sd(pMSE) = \frac{c \sqrt{2(k - 1)} (1 - c)^2}{N}
-
-   where :math:`k` is the number of predictors used in the model,
-   :math:`c` is the proportion of synthetic data, and :math:`N` is the
-   total number of data points.
-
-   Here, all features and first-order interactions are used in the
-   model. Let :math:`m` be the number of features, then:
-
-   .. math::
-
-       k = m + \binom{m}{2}
-
-   Further explanation and derivation of these results can be found at:
-   https://doi.org/10.1111/rssa.12358
-
-
-.. py:function:: _pmse_cart_statistics(combined, indicator, num_perms, **kwargs)
-
-   Estimate the location and scale of pMSE in the null case by
-   repeating pMSE calculations on permuations of the indicator column
-   using a CART model.
-
-   The set of calculations are then summarised using the mean or
-   standard deviation, respectively.
-
-   :param combined: Dataframe containing the combined real and synthetic data.
-   :type combined: pandas.DataFrame
-   :param indicator: Indicator for whether data are real (0) or synthetic (1).
-   :type indicator: numpy.ndarray
-   :param num_perms: The number of permutations to consider.
-   :type num_perms: int
-   :param \*\*kwargs: Keyword arguments passed to
-                      `sklearn.tree.DecisionTreeClassifer`.
-   :type \*\*kwargs: dict, optional
-
-   :returns: * **loc** (*float*) -- Estimated expectation of pMSE in the null case.
-             * **scale** (*float*) -- Estimated standard deviation of pMSE in the null case.
-
-   .. rubric:: Notes
-
-   When using a CART propensity model, the number of predictors is
-   unknown and the results used in `_pmse_logr_statistics` do not
-   apply.
-
-   To circumvent this, we repeatedly calculate pMSE using permutations
-   of the synthetic indicator column. This should approximate the
-   results for "properly" synthesised data without knowing :math:`k` a
-   priori.
-
-   Further details of this approach are available at:
-   https://doi.org/10.1111/rssa.12358
-
-   Note that the `random_state` keyword argument is used to
-   (independently) create the permutations and to fit the CART model.
-   Without specifying this, the results will not be reproducible.
 
 
 .. py:function:: pmse_ratio(combined, indicator, method, num_perms=None, **kwargs)

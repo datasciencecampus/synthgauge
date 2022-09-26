@@ -18,42 +18,8 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.cluster._get_cluster_labels
-   synthgauge.metrics.cluster._get_cluster_proportions
    synthgauge.metrics.cluster.clustered_msd
 
-
-
-.. py:function:: _get_cluster_labels(combined, method, k, random_state)
-
-   Apply the chosen clustering method to a dataset and return its
-   final labels.
-
-   :param combined: Dataframe containing the real and synthetic data.
-   :type combined: pandas.DataFrame
-   :param method: Which clustering method to use.
-   :type method: {"kmeans", "kprototypes"}
-   :param k: Number of clusters to fit.
-   :type k: int
-   :param random_state: Random seed for fitting clusters.
-   :type random_state: int, optional
-
-   :returns: **labels** -- Integer labels indicating cluster membership for each point in
-             `combined`.
-   :rtype: np.ndarray
-
-
-.. py:function:: _get_cluster_proportions(labels, indicator)
-
-   Calculate the proportion of each cluster that is synthetic.
-
-   :param labels: Cluster membership array.
-   :type labels: array_like
-   :param indicator: Indicator of which data are real and which are synthetic.
-   :type indicator: array_like
-
-   :returns: **proportions** -- Array with synthetic data proportion of each cluster.
-   :rtype: numpy.ndarray
 
 
 .. py:function:: clustered_msd(real, synth, feats=None, method='kmeans', k_min=2, k_max=10, random_state=None)

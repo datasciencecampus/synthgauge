@@ -18,39 +18,10 @@ Functions
 
 .. autoapisummary::
 
-   synthgauge.metrics.privacy._get_weap_scores
    synthgauge.metrics.privacy.tcap_score
-   synthgauge.metrics.privacy._find_outliers
    synthgauge.metrics.privacy.min_nearest_neighbour
-   synthgauge.metrics.privacy._get_sample
    synthgauge.metrics.privacy.sample_overlap_score
 
-
-
-.. py:function:: _get_weap_scores(synth, key, target)
-
-   Within Equivalence class Attribution Probabilities (WEAP).
-
-   For each record in the synthetic dataset, this function returns the
-   proportion across the whole dataset that a set of `key` values are
-   matched with this `target` value.
-
-   :param synth: Dataframe containing the synthetic data.
-   :type synth: pandas.DataFrame
-   :param key: List of features in `synth` to use as the key.
-   :type key: list of str
-   :param target: Feature to use as the target.
-   :type target: str
-
-   :returns: A series object containing the WEAP scores for each record in
-             `synth`.
-   :rtype: pandas.Series
-
-   .. rubric:: Notes
-
-   This function is intended to only be used within `TCAP()` to
-   determine which synthetic records are most likely to pose an
-   attribution risk.
 
 
 .. py:function:: tcap_score(real, synth, key, target)
@@ -93,29 +64,6 @@ Functions
    Data Confidentiality, Session 3.
 
 
-.. py:function:: _find_outliers(data, threshold, n_neighbours)
-
-   Identify local outliers using the nearest-neighbour principle.
-
-   :param data: Dataframe to be assessed for outliers.
-   :type data: pandas.DataFrame
-   :param threshold: Float influencing classification of outliers. Increasing this
-                     threshold means that fewer points are considered outliers.
-   :type threshold: float
-   :param n_neighbours: Number of neighbours to consider in outlier detection.
-   :type n_neighbours: int
-
-   :returns: **outlier_bool** -- List indicating which rows of `data` are outliers.
-   :rtype: list of bool
-
-   .. rubric:: Notes
-
-   Most inliers will have an outlier factor of less than one, however
-   there are no clear rules that determine when a data point is an
-   outlier. This is likely to vary from dataset to dataset and, as
-   such, we recommend tuning `outlier_factor_threshold` to suit.
-
-
 .. py:function:: min_nearest_neighbour(real, synth, feats=None, outliers_only=True, threshold=2, n_neighbours=5)
 
    Minimum nearest-neighbour distance.
@@ -154,11 +102,6 @@ Functions
 
    This metric assumes that categorical data is ordinal during distance
    calculations, or that it has already been suitably one-hot-encoded.
-
-
-.. py:function:: _get_sample(data, feats, n_samples, seed, label)
-
-   Take a sample from the data and count the feature frequencies.
 
 
 .. py:function:: sample_overlap_score(real, synth, feats=None, sample_size=0.2, runs=5, seed=None, score_type='unique')

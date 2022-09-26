@@ -84,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
 
 
-<div class="viewcode-block" id="_make_preprocessor"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/classification/index.html#synthgauge.metrics.classification._make_preprocessor">[docs]</a><span class="k">def</span> <span class="nf">_make_preprocessor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_preprocessor</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Make a pre-processing pipe for transforming numeric and</span>
 <span class="sd">    categorical columns.</span>
 
@@ -114,10 +114,10 @@
         <span class="p">]</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">preprocessor</span></div>
+    <span class="k">return</span> <span class="n">preprocessor</span>
 
 
-<div class="viewcode-block" id="_make_pipeline"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/classification/index.html#synthgauge.metrics.classification._make_pipeline">[docs]</a><span class="k">def</span> <span class="nf">_make_pipeline</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_make_pipeline</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Create the pipeline of data pre-processing and classification.</span>
 
 <span class="sd">    Parameters</span>
@@ -149,10 +149,10 @@
         <span class="p">]</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">pipeline</span></div>
+    <span class="k">return</span> <span class="n">pipeline</span>
 
 
-<div class="viewcode-block" id="_get_scores"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/classification/index.html#synthgauge.metrics.classification._get_scores">[docs]</a><span class="k">def</span> <span class="nf">_get_scores</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">pred</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_scores</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">pred</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Calculate the precision, recall and f1 scores for a set of</span>
 <span class="sd">    predicted values.</span>
 
@@ -175,7 +175,7 @@
         <span class="k">for</span> <span class="n">score_func</span> <span class="ow">in</span> <span class="p">(</span><span class="n">precision_score</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">)</span>
     <span class="p">]</span>
 
-    <span class="k">return</span> <span class="n">scores</span></div>
+    <span class="k">return</span> <span class="n">scores</span>
 
 
 <div class="viewcode-block" id="classification_comparison"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/index.html#synthgauge.metrics.classification.classification_comparison">[docs]</a><span class="k">def</span> <span class="nf">classification_comparison</span><span class="p">(</span>
