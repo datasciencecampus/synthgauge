@@ -19,6 +19,7 @@ Submodules
    cluster/index.rst
    correlation/index.rst
    density/index.rst
+   nist/index.rst
    privacy/index.rst
    propensity/index.rst
    univariate/index.rst

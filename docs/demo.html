@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example workflow &mdash; SynthGauge 1.0.0 documentation</title>
+  <title>Example workflow &mdash; SynthGauge 2.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
@@ -16,11 +16,10 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -360,7 +359,7 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="Example-workflow">
-<h1>Example workflow<a class="headerlink" href="#Example-workflow" title="Permalink to this heading"></a></h1>
+<h1>Example workflow<a class="headerlink" href="#Example-workflow" title="Permalink to this headline"></a></h1>
 <p>This notebook provides a basic example workflow for using <code class="docutils literal notranslate"><span class="pre">synthgauge</span></code>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -612,7 +611,7 @@ div.rendered_html tbody tr:hover {
 </div></div>
 </div>
 <section id="Plotting">
-<h2>Plotting<a class="headerlink" href="#Plotting" title="Permalink to this heading"></a></h2>
+<h2>Plotting<a class="headerlink" href="#Plotting" title="Permalink to this headline"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">Evaluator</span></code> class has several methods to visually compare the real and synthetic data. Below are a few examples.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">plot_histograms()</span></code> method allows us to look at the univariate distribution of the features.</p>
 <div class="nbinput docutils container">
@@ -679,7 +678,7 @@ div.rendered_html tbody tr:hover {
 <p>From this plot, we can see that there are some particular two-way counts throwing our correlation coefficients off. For instance, brown-eyed blondes are oversampled and blue-eyed brunettes are undersampled in the synthetic data.</p>
 </section>
 <section id="Metrics">
-<h2>Metrics<a class="headerlink" href="#Metrics" title="Permalink to this heading"></a></h2>
+<h2>Metrics<a class="headerlink" href="#Metrics" title="Permalink to this headline"></a></h2>
 <p>We can also evaluate the synthetic data empirically using metrics.</p>
 <p>These first need to be added to the evaluator before running the <code class="docutils literal notranslate"><span class="pre">evaluate()</span></code> method. To add these metrics, we use the <code class="docutils literal notranslate"><span class="pre">add_metric()</span></code> method, specifying the metric name (and optional alias) followed by keyword arguments that will be passed to the metric function.</p>
 <p>We can use for-loops to add several similar metrics efficiently, like the feature-specific Wasserstein and Jensen-Shannon distances below.</p>
@@ -975,7 +974,7 @@ wasserstein(real, synth, feature, **kwargs)
 </div>
 </section>
 <section id="Comparing-with-another-dataset">
-<h2>Comparing with another dataset<a class="headerlink" href="#Comparing-with-another-dataset" title="Permalink to this heading"></a></h2>
+<h2>Comparing with another dataset<a class="headerlink" href="#Comparing-with-another-dataset" title="Permalink to this headline"></a></h2>
 <p>The functionality of <code class="docutils literal notranslate"><span class="pre">synthgauge</span></code> makes it easy to compare different synthetic datasets.</p>
 <p>It’s as simple as:</p>
 <ol class="arabic simple">

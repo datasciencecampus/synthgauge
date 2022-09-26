@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>synthgauge.metrics.nist &mdash; SynthGauge 2.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> SynthGauge
+            <img src="../../../_static/favicon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Example notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">SynthGauge</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>synthgauge.metrics.nist</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for synthgauge.metrics.nist</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Functions for the generic measures from the 2018 NIST competition.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="_numeric_edges"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._numeric_edges">[docs]</a><span class="k">def</span> <span class="nf">_numeric_edges</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the bin edges for the numeric features.&quot;&quot;&quot;</span>
+
+    <span class="n">numeric</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+        <span class="n">synth</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">bins</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">numeric</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">edges</span></div>
+
+
+<div class="viewcode-block" id="_discretise_datasets"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._discretise_datasets">[docs]</a><span class="k">def</span> <span class="nf">_discretise_datasets</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Discretise the numeric features of each dataset.&quot;&quot;&quot;</span>
+
+    <span class="n">rout</span><span class="p">,</span> <span class="n">sout</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">synth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">_numeric_edges</span><span class="p">(</span><span class="n">rout</span><span class="p">,</span> <span class="n">sout</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">rout</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">rout</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">edge</span><span class="p">)</span>
+        <span class="n">sout</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">sout</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">edge</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rout</span><span class="p">,</span> <span class="n">sout</span></div>
+
+
+<div class="viewcode-block" id="_kway_marginal_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._kway_marginal_score">[docs]</a><span class="k">def</span> <span class="nf">_kway_marginal_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the transformed score for a single set of features.</span>
+
+<span class="sd">    Note that the datasets should have their numeric features</span>
+<span class="sd">    discretised already.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rmarg</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">real</span><span class="p">)</span>
+    <span class="n">smarg</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">synth</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rmarg</span> <span class="o">-</span> <span class="n">smarg</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="kway_marginals"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist.kway_marginals">[docs]</a><span class="k">def</span> <span class="nf">kway_marginals</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">trials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The first generic measure based on similarity of k-way marginals.</span>
+
+<span class="sd">    In essence, calculate the summed absolute difference in density</span>
+<span class="sd">    across an array of randomly sampled k-way marginals. Transform and</span>
+<span class="sd">    summarise these deviations to give a single score between 0 and 1.</span>
+<span class="sd">    These extremes represent the worst and best case scenarios,</span>
+<span class="sd">    respectively.</span>
+
+<span class="sd">    The NIST competition utilised 3-way marginals only. Details can be</span>
+<span class="sd">    found at https://doi.org/10.6028/NIST.TN.2151.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    k : int, default 3</span>
+<span class="sd">        Number of features to include in each k-way marginal. Default</span>
+<span class="sd">        uses 3 (as done in the NIST competition).</span>
+<span class="sd">    trials : int, default 100</span>
+<span class="sd">        Maximum number of marginals to consider to estimate the overall</span>
+<span class="sd">        score. If there are fewer `k`-way combinations than `trials`,</span>
+<span class="sd">        tries all. Default uses 100 (as done in the NIST competition).</span>
+<span class="sd">    bins : int or str, default 100</span>
+<span class="sd">        Binning method for sampled numeric features. Can be anything</span>
+<span class="sd">        accepted by `numpy.histogram`. Default uses 100 bins (as done in</span>
+<span class="sd">        the NIST competition).</span>
+<span class="sd">    seed : int or None, default None</span>
+<span class="sd">        Random number seed. If `None`, results will not be reproducible.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    score : float</span>
+<span class="sd">        The mean transformed sum absolute deviation in k-way densities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">disreal</span><span class="p">,</span> <span class="n">dissynth</span> <span class="o">=</span> <span class="n">_discretise_datasets</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="n">prng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">choices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">synth</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">r</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">marginals</span> <span class="o">=</span> <span class="n">prng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+        <span class="n">choices</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">trials</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">choices</span><span class="p">)),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_kway_marginal_score</span><span class="p">(</span><span class="n">disreal</span><span class="p">,</span> <span class="n">dissynth</span><span class="p">,</span> <span class="n">marginal</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">marginal</span> <span class="ow">in</span> <span class="n">marginals</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_make_rule"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._make_rule">[docs]</a><span class="k">def</span> <span class="nf">_make_rule</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">prng</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given a column, make a rule for it.&quot;&quot;&quot;</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+    <span class="n">observed</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">prng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">values</span><span class="o">.</span><span class="n">min</span><span class="p">()))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="p">{</span><span class="n">observed</span><span class="p">}</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">new</span> <span class="o">=</span> <span class="n">prng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">rule</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rule</span></div>
+
+
+<div class="viewcode-block" id="_create_test_cases"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._create_test_cases">[docs]</a><span class="k">def</span> <span class="nf">_create_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a collection of HOC test cases.</span>
+
+<span class="sd">    For each test case, sample a row. Iterate over the columns,</span>
+<span class="sd">    including them with some probability and generating them a rule for</span>
+<span class="sd">    the test case. This rule is determined by the data type of the</span>
+<span class="sd">    column:</span>
+
+<span class="sd">      - Numeric columns use a random subrange from the whole dataset</span>
+<span class="sd">      - Categoric columns use a random subset of the elements in the</span>
+<span class="sd">        entire dataset</span>
+
+<span class="sd">    Both of these types of rules always include the observed value in</span>
+<span class="sd">    the row of the associated column; this means that the test will</span>
+<span class="sd">    always be satisfied by at least one row when it comes to evaluation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">cases</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trials</span><span class="p">):</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">prng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)),</span> <span class="p">:]</span>
+        <span class="n">case</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">column</span><span class="p">:</span> <span class="n">_make_rule</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">prng</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+            <span class="k">if</span> <span class="n">prng</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">prob</span>
+        <span class="p">}</span>
+        <span class="n">cases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">case</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cases</span></div>
+
+
+<div class="viewcode-block" id="_evaluate_test_cases"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist._evaluate_test_cases">[docs]</a><span class="k">def</span> <span class="nf">_evaluate_test_cases</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cases</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Evaluate the test cases on a dataset.</span>
+
+<span class="sd">    Each test case&#39;s score is set as the proportion of the dataset for</span>
+<span class="sd">    which all rules in the test case are satisfied. Each type of rule is</span>
+<span class="sd">    satisfied differently:</span>
+
+<span class="sd">      - Numeric rules are satisfied if the observed value lies within</span>
+<span class="sd">        the rule&#39;s subrange</span>
+<span class="sd">      - Categoric rules are satisfied if the observed value lies in the</span>
+<span class="sd">        rule&#39;s subset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">case</span> <span class="ow">in</span> <span class="n">cases</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">case</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">-</span> <span class="n">rule</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">rule</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="hoc"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist.hoc">[docs]</a><span class="k">def</span> <span class="nf">hoc</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">trials</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A measure based on Higher Order Conjunctions (HOC).</span>
+
+<span class="sd">    This measure compares the relative sizes of randomly selected pools</span>
+<span class="sd">    of &quot;similar&quot; rows in the real and synthetic data. This measure of</span>
+<span class="sd">    similarity is defined across a set of randomly genereated test</span>
+<span class="sd">    cases applied to each dataset. Each test case consists of a set of</span>
+<span class="sd">    rules.</span>
+
+<span class="sd">    The :math:`i`-th test calculates the fraction of records satisfying</span>
+<span class="sd">    its rules in the real data, :math:`f_{ri}`, and the synthetic,</span>
+<span class="sd">    denoted :math:`f_{si}`. Their dissimilarity in test :math:`i` is</span>
+<span class="sd">    quantified as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        d_i = \ln\left(\max(f_{si}, 10^{-6})\right) - \ln(f_{ri})</span>
+
+<span class="sd">    These dissimilarities are summarised as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \Delta = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2}</span>
+
+<span class="sd">    where :math:`N` is the number of test cases. Finally, this is</span>
+<span class="sd">    transformed to a HOC score:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        HOC = \max \left(0, 1 + \frac{\Delta}{\ln(10^{-3})}\right)</span>
+
+<span class="sd">    This measure is bounded between 0 and 1, indicating whether the</span>
+<span class="sd">    datasets are nothing alike or identical based on the test cases,</span>
+<span class="sd">    respectively. In the original text this score is multiplied by 1000</span>
+<span class="sd">    to make it human-readable. Full details are available in</span>
+<span class="sd">    https://doi.org/10.6028/NIST.TN.2151.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    trials : int, default 300</span>
+<span class="sd">        Number of test cases to create. Default of 300 as in the</span>
+<span class="sd">        competition.</span>
+<span class="sd">    prob : float, default 0.1</span>
+<span class="sd">        Probability of any column being included in a test case. Default</span>
+<span class="sd">        of 0.1 as in the competition.</span>
+<span class="sd">    seed : int or None, default None</span>
+<span class="sd">        Random number seed. If `None`, results will not be reproducible.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    score : float</span>
+<span class="sd">        The overall HOC score.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    It is possible that some test cases will be &quot;empty&quot;, i.e. when no</span>
+<span class="sd">    columns are selected. In this scenario, the score for that case will</span>
+<span class="sd">    be `np.nan` rather than it being resampled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cases</span> <span class="o">=</span> <span class="n">_create_test_cases</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+    <span class="n">real_scores</span> <span class="o">=</span> <span class="n">_evaluate_test_cases</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">cases</span><span class="p">)</span>
+    <span class="n">synth_scores</span> <span class="o">=</span> <span class="n">_evaluate_test_cases</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">cases</span><span class="p">)</span>
+
+    <span class="n">dissims</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">si</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ri</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ri</span><span class="p">,</span> <span class="n">si</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">real_scores</span><span class="p">,</span> <span class="n">synth_scores</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dissims</span><span class="p">)</span> <span class="o">/</span> <span class="n">trials</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">score</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Data Science Campus.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
