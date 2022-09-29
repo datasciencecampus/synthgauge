@@ -325,7 +325,7 @@ def test_plot_histograms(real, synth, size):
     fig = evaluator.plot_histograms(figsize=size)
 
     assert isinstance(fig, plt.Figure)
-    assert np.array_equal(fig.get_size_inches(), size)
+    assert np.allclose(fig.get_size_inches(), size, atol=0.01)
 
 
 @given(
