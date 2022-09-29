@@ -193,24 +193,30 @@ surprise we might expect seeing an example from the real data,
 relative to the distribution of the synthetic.</p>
 <p>The divergence is zero if the distributions are identical, and
 larger values indicate that the two discretised distributions are
-further from one another.</p>
+further from one another. Note that the KL divergence may be
+infinite - the most common case where this happens is when the
+synthetic data does not contain any data in at least one bin.</p>
 <p>An optimal ‘bins’ value has not been suggested.</p>
-<p>BUG: returns <cite>inf</cite> if no real data falls in any one of the bins -
-dividing by zero error.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;emu&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first feature appears to be more similar than the second across
-datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.03389133708660097 # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.58739109417064730 # random</span>
+<p>The first feature is replicated up to a re-ordering in the synthetic
+data, so its KL divergence is zero:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+<p>However, the second feature does not include the <code class="docutils literal notranslate"><span class="pre">&quot;emu&quot;</span></code> category
+in the synthetic data, so the divergence is infinite:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">inf</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -268,18 +274,20 @@ which we can claim the distributions are statistically the same.</p>
 <p>An optimal ‘bins’ value has not been suggested.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;emu&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first feature appears to be more similar than the second across
-datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_divergence</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.11006632967333475 # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_divergence</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.43556476029981644 # random</span>
+<p>The second feature appears to be more similar than the first across
+datasets:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_divergence</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">0.1732867951399863</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_divergence</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">0.10788077716941784</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -332,18 +340,20 @@ which we can claim the distributions are statistically the same.</p>
 <p>An optimal ‘bins’ value has not been suggested.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;emu&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cow&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first feature appears to be more similar than the second across
-datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.11006632967333475 # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">0.43556476029981644 # random</span>
+<p>The second feature appears to be more similar than the first across
+datasets:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">0.41627730557884884</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jensen_shannon_distance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">0.328452092654953</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -394,18 +404,20 @@ not a test, there is no threshold distance below which we can claim
 the distributions are statistically the same.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The first feature appears to be more similar than the second across
-datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wasserstein</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">)</span>
-<span class="go">0.0688192355094602 # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wasserstein</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">)</span>
-<span class="go">0.8172329918412307 # random</span>
+datasets:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wasserstein</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">0.6666666666666667</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wasserstein</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+<span class="go">1.166666666666667</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -449,22 +461,24 @@ documentation further suggests this method works best when one of
 the samples has a size of only a few thousand.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The first feature appears to come from the same distribution in both
 datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kolmogorov_smirnov</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">)</span>
-<span class="go">KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kolmogorov_smirnov</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">KstestResult(statistic=0.3333333333333333, pvalue=0.9307359307359307)</span>
 </pre></div>
 </div>
 <p>The second feature appears to come from different distributions in
 the datasets.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kolmogorov_smirnov</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">)</span>
-<span class="go">KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kolmogorov_smirnov</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+<span class="go">KstestResult(statistic=0.8333333333333334, pvalue=0.025974025974025972)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -509,21 +523,24 @@ suggests that the medians could be equal and says nothing else about
 how the data are distributed.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If we were to choose our p-value threshold as 0.05, we would reach
-the conclusion that the distributions of the first feature are
-similar but the distributions of the second feature are not.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kruskal_wallis</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)</span>
-<span class="go"># random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">kruskal_wallis</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)</span>
-<span class="go"># random</span>
+<p>The test for the first feature suggests that the data are similarly
+distributed according to their medians.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kruskal_wallis</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">KruskalResult(statistic=0.5646387832699667, pvalue=0.45239722100817814)</span>
+</pre></div>
+</div>
+<p>The second feature test is much clearer that the data are drawn from
+distributions with different medians.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kruskal_wallis</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+<span class="go">KruskalResult(statistic=4.877737226277376, pvalue=0.02720526089960062)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -567,19 +584,21 @@ would in turn suggest that the synthetic and real data are not
 similarly distributed.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If we were to choose our p-value threshold as 0.05, we would reach
 the conclusion that the distributions of the first feature are
 similar but the distributions of the second feature are not.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mann_whitney</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">MannwhitneyuResult(statistic=126910.0, pvalue=0.6758436855431454) # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mann_whitney</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">MannwhitneyuResult(statistic=134107.0, pvalue=0.04613704446362845) # random</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mann_whitney</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">MannwhitneyuResult(statistic=22.5, pvalue=0.5041764308016705)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mann_whitney</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+<span class="go">MannwhitneyuResult(statistic=31.5, pvalue=0.033439907088311766)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -624,19 +643,15 @@ paired. That is, each synthetic datum is matched to a real one. In
 which case, it is required that data are ordered to reflect this.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_real</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">get_synth</span><span class="p">(</span><span class="mi">500</span><span class="p">),</span>
-<span class="gp">... </span>                     <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="s1">&#39;feat3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">real</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">synth</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
 </pre></div>
 </div>
-<p>If we were to choose our p-value threshold as 0.05, we would reach
-the conclusion that the distributions of the first feature are
-similar but of the second feature are not.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wilcoxon</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat1&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">WilcoxonResult(statistic=58917.0, pvalue=0.25131501183065175) # random</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wilcoxon</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s1">&#39;feat2&#39;</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-<span class="go">WilcoxonResult(statistic=54474.0, pvalue=0.011678503879013464) # random</span>
+<p>By eye, you might think these distributions are quite different from
+one another. However, the Wilcoxon test suggests that these two
+datasets were drawn from similar distributions.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wilcoxon</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+<span class="go">WilcoxonResult(statistic=17.0, pvalue=0.9453125)</span>
 </pre></div>
 </div>
 </dd></dl>
