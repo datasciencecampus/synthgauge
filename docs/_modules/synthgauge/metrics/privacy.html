@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.metrics.privacy &mdash; SynthGauge 1.0.0 documentation</title>
+  <title>synthgauge.metrics.privacy &mdash; SynthGauge 2.0.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -15,7 +15,6 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -43,9 +42,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Metrics">Metrics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Comparing-with-another-dataset">Comparing with another dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Example notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -82,7 +79,7 @@
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">utils</span>
 
 
-<div class="viewcode-block" id="_get_weap_scores"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._get_weap_scores">[docs]</a><span class="k">def</span> <span class="nf">_get_weap_scores</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_weap_scores</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Within Equivalence class Attribution Probabilities (WEAP).</span>
 
 <span class="sd">    For each record in the synthetic dataset, this function returns the</span>
@@ -122,7 +119,7 @@
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">key_target_vc</span><span class="p">)</span>
     <span class="n">synth</span> <span class="o">=</span> <span class="n">synth</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">key_vc</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_target_frequency&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_frequency&quot;</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_target_frequency&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">synth</span><span class="p">[</span><span class="s2">&quot;key_frequency&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="tcap_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.tcap_score">[docs]</a><span class="k">def</span> <span class="nf">tcap_score</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
@@ -185,7 +182,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">target_matches</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="_find_outliers"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._find_outliers">[docs]</a><span class="k">def</span> <span class="nf">_find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">n_neighbours</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">n_neighbours</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Identify local outliers using the nearest-neighbour principle.</span>
 
 <span class="sd">    Parameters</span>
@@ -217,7 +214,7 @@
     <span class="n">outlier_factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">lof</span><span class="o">.</span><span class="n">negative_outlier_factor_</span>
     <span class="n">outlier_bool</span> <span class="o">=</span> <span class="n">outlier_factor</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 
-    <span class="k">return</span> <span class="n">outlier_bool</span></div>
+    <span class="k">return</span> <span class="n">outlier_bool</span>
 
 
 <div class="viewcode-block" id="min_nearest_neighbour"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.min_nearest_neighbour">[docs]</a><span class="k">def</span> <span class="nf">min_nearest_neighbour</span><span class="p">(</span>
@@ -289,7 +286,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="_get_sample"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics._get_sample">[docs]</a><span class="k">def</span> <span class="nf">_get_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Take a sample from the data and count the feature frequencies.&quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="p">(</span>
@@ -299,7 +296,7 @@
         <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
         <span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="sample_overlap_score"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/privacy/index.html#synthgauge.metrics.sample_overlap_score">[docs]</a><span class="k">def</span> <span class="nf">sample_overlap_score</span><span class="p">(</span>

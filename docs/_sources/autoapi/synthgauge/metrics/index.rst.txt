@@ -19,6 +19,7 @@ Submodules
    cluster/index.rst
    correlation/index.rst
    density/index.rst
+   nist/index.rst
    privacy/index.rst
    propensity/index.rst
    univariate/index.rst
@@ -472,18 +473,20 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 4], "b": ["cat", "cow", "dog", "emu"]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [3, 3, 2, 0], "b": ["cat", "cat", "cow", "dog"]}
+   ... )
 
-   The first feature appears to be more similar than the second across
-   datasets.
+   The second feature appears to be more similar than the first across
+   datasets:
 
-   >>> jensen_shannon_distance(real, synth, 'feat1', bins = 20)
-   0.11006632967333475 # random
-   >>> jensen_shannon_distance(real, synth, 'feat2', bins = 20)
-   0.43556476029981644 # random
+   >>> jensen_shannon_distance(real, synth, "a")
+   0.41627730557884884
+   >>> jensen_shannon_distance(real, synth, "b", bins=None)
+   0.328452092654953
 
 
 .. py:function:: jensen_shannon_divergence(real, synth, feature, bins='auto', **kwargs)
@@ -542,18 +545,20 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 4], "b": ["cat", "cow", "dog", "emu"]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [3, 3, 2, 0], "b": ["cat", "cat", "cow", "dog"]}
+   ... )
 
-   The first feature appears to be more similar than the second across
-   datasets.
+   The second feature appears to be more similar than the first across
+   datasets:
 
-   >>> jensen_shannon_divergence(real, synth, 'feat1', bins = 20)
-   0.11006632967333475 # random
-   >>> jensen_shannon_divergence(real, synth, 'feat2', bins = 20)
-   0.43556476029981644 # random
+   >>> jensen_shannon_divergence(real, synth, "a")
+   0.1732867951399863
+   >>> jensen_shannon_divergence(real, synth, "b", bins=None)
+   0.10788077716941784
 
 
 .. py:function:: kolmogorov_smirnov(real, synth, feature, **kwargs)
@@ -594,22 +599,24 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns = ['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns = ['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 3, 4, 4], "b": [1, 4, 5, 6, 7, 7]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [0, 2, 2, 3, 3, 3], "b": [1, 1, 1, 2, 2, 3]}
+   ... )
 
    The first feature appears to come from the same distribution in both
    datasets.
 
-   >>> kolmogorov_smirnov(real, synth, 'feat1')
-   KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random
+   >>> kolmogorov_smirnov(real, synth, "a")
+   KstestResult(statistic=0.3333333333333333, pvalue=0.9307359307359307)
 
    The second feature appears to come from different distributions in
    the datasets.
 
-   >>> kolmogorov_smirnov(real, synth, 'feat2')
-   KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random
+   >>> kolmogorov_smirnov(real, synth, "b")
+   KstestResult(statistic=0.8333333333333334, pvalue=0.025974025974025972)
 
 
 .. py:function:: kruskal_wallis(real, synth, feature, **kwargs)
@@ -651,21 +658,24 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 3, 4, 4], "b": [1, 4, 5, 6, 7, 7]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [0, 2, 2, 3, 3, 3], "b": [1, 1, 1, 2, 2, 3]}
+   ... )
 
-   If we were to choose our p-value threshold as 0.05, we would reach
-   the conclusion that the distributions of the first feature are
-   similar but the distributions of the second feature are not.
+   The test for the first feature suggests that the data are similarly
+   distributed according to their medians.
 
-   >>> kruskal_wallis(real, synth, 'feat1', bins = 20)
-   KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)
-   # random
-   >>> kruskal_wallis(real, synth, 'feat2', bins = 20)
-   KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)
-   # random
+   >>> kruskal_wallis(real, synth, "a")
+   KruskalResult(statistic=0.5646387832699667, pvalue=0.45239722100817814)
+
+   The second feature test is much clearer that the data are drawn from
+   distributions with different medians.
+
+   >>> kruskal_wallis(real, synth, "b")
+   KruskalResult(statistic=4.877737226277376, pvalue=0.02720526089960062)
 
 
 .. py:function:: kullback_leibler(real, synth, feature, bins='auto', **kwargs)
@@ -708,28 +718,33 @@ Functions
 
    The divergence is zero if the distributions are identical, and
    larger values indicate that the two discretised distributions are
-   further from one another.
+   further from one another. Note that the KL divergence may be
+   infinite - the most common case where this happens is when the
+   synthetic data does not contain any data in at least one bin.
 
    An optimal 'bins' value has not been suggested.
-
-   BUG: returns `inf` if no real data falls in any one of the bins -
-   dividing by zero error.
 
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 2, 3], "b": ["cat", "cow", "dog", "emu"]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [3, 1, 2, 0], "b": ["cat", "cat", "cow", "dog"]}
+   ... )
 
-   The first feature appears to be more similar than the second across
-   datasets.
+   The first feature is replicated up to a re-ordering in the synthetic
+   data, so its KL divergence is zero:
 
-   >>> kullback_leibler(real, synth, 'feat1', bins = 20)
-   0.03389133708660097 # random
-   >>> kullback_leibler(real, synth, 'feat2', bins = 20)
-   0.58739109417064730 # random
+   >>> kullback_leibler(real, synth, "a")
+   0.0
+
+   However, the second feature does not include the ``"emu"`` category
+   in the synthetic data, so the divergence is infinite:
+
+   >>> kullback_leibler(real, synth, "b", bins=None)
+   inf
 
 
 .. py:function:: mann_whitney(real, synth, feature, **kwargs)
@@ -770,19 +785,21 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 3, 4, 4], "b": [1, 4, 5, 6, 7, 7]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [0, 2, 2, 3, 3, 3], "b": [1, 1, 1, 2, 2, 3]}
+   ... )
 
    If we were to choose our p-value threshold as 0.05, we would reach
    the conclusion that the distributions of the first feature are
    similar but the distributions of the second feature are not.
 
-   >>> mann_whitney(real, synth, 'feat1', bins = 20)
-   MannwhitneyuResult(statistic=126910.0, pvalue=0.6758436855431454) # random
-   >>> mann_whitney(real, synth, 'feat2', bins = 20)
-   MannwhitneyuResult(statistic=134107.0, pvalue=0.04613704446362845) # random
+   >>> mann_whitney(real, synth, "a")
+   MannwhitneyuResult(statistic=22.5, pvalue=0.5041764308016705)
+   >>> mann_whitney(real, synth, "b")
+   MannwhitneyuResult(statistic=31.5, pvalue=0.033439907088311766)
 
 
 .. py:function:: wasserstein(real, synth, feature, **kwargs)
@@ -833,18 +850,20 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns = ['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns = ['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame(
+   ...     {"a": [0, 1, 3, 4, 3, 4], "b": [3, 7, 2, 1, 7, 4]}
+   ... )
+   >>> synth = pd.DataFrame(
+   ...     {"a": [3, 3, 2, 0, 2, 3], "b": [1, 5, 1, 1, 6, 3]}
+   ... )
 
    The first feature appears to be more similar than the second across
-   datasets.
+   datasets:
 
-   >>> wasserstein(real, synth, 'feat1')
-   0.0688192355094602 # random
-   >>> wasserstein(real, synth, 'feat2')
-   0.8172329918412307 # random
+   >>> wasserstein(real, synth, "a")
+   0.6666666666666667
+   >>> wasserstein(real, synth, "b")
+   1.166666666666667
 
 
 .. py:function:: wilcoxon(real, synth, feature, **kwargs)
@@ -886,18 +905,14 @@ Functions
    .. rubric:: Examples
 
    >>> import pandas as pd
-   >>> real = pd.DataFrame(get_real(500),
-   ...                     columns=['feat1', 'feat2', 'feat3'])
-   >>> synth = pd.DataFrame(get_synth(500),
-   ...                      columns=['feat1', 'feat2', 'feat3'])
+   >>> real = pd.DataFrame({"a": [0, 1, 2, 3, 4, 5, 8, 9]})
+   >>> synth = pd.DataFrame({"a": [2, 0, 3, 7, 7, 4, 2, 1]})
 
-   If we were to choose our p-value threshold as 0.05, we would reach
-   the conclusion that the distributions of the first feature are
-   similar but of the second feature are not.
+   By eye, you might think these distributions are quite different from
+   one another. However, the Wilcoxon test suggests that these two
+   datasets were drawn from similar distributions.
 
-   >>> wilcoxon(real, synth, 'feat1', bins = 20)
-   WilcoxonResult(statistic=58917.0, pvalue=0.25131501183065175) # random
-   >>> wilcoxon(real, synth, 'feat2', bins = 20)
-   WilcoxonResult(statistic=54474.0, pvalue=0.011678503879013464) # random
+   >>> wilcoxon(real, synth, "a")
+   WilcoxonResult(statistic=17.0, pvalue=0.9453125)
 
 

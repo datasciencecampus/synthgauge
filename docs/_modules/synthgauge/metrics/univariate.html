@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.metrics.univariate &mdash; SynthGauge 1.0.0 documentation</title>
+  <title>synthgauge.metrics.univariate &mdash; SynthGauge 2.0.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -15,7 +15,6 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -43,9 +42,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../index.html">Home</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Plotting</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Metrics">Metrics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../demo.html#Comparing-with-another-dataset">Comparing with another dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demo.html">Example notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -81,7 +78,7 @@
 <span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">jensenshannon</span>
 
 
-<div class="viewcode-block" id="_get_bin_counts"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate/index.html#synthgauge.metrics._get_bin_counts">[docs]</a><span class="k">def</span> <span class="nf">_get_bin_counts</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_bin_counts</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Discretise real and synthetic features, and return the bin counts</span>
 <span class="sd">    for each. Used by the Kullback-Leibler and Jensen-Shannon functions.</span>
 
@@ -117,7 +114,7 @@
         <span class="n">real_counts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
         <span class="n">synth_counts</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">synth</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">real_counts</span><span class="p">,</span> <span class="n">synth_counts</span></div>
+    <span class="k">return</span> <span class="n">real_counts</span><span class="p">,</span> <span class="n">synth_counts</span>
 
 
 <div class="viewcode-block" id="kullback_leibler"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/univariate/index.html#synthgauge.metrics.kullback_leibler">[docs]</a><span class="k">def</span> <span class="nf">kullback_leibler</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -165,28 +162,33 @@
 
 <span class="sd">    The divergence is zero if the distributions are identical, and</span>
 <span class="sd">    larger values indicate that the two discretised distributions are</span>
-<span class="sd">    further from one another.</span>
+<span class="sd">    further from one another. Note that the KL divergence may be</span>
+<span class="sd">    infinite - the most common case where this happens is when the</span>
+<span class="sd">    synthetic data does not contain any data in at least one bin.</span>
 
 <span class="sd">    An optimal &#39;bins&#39; value has not been suggested.</span>
-
-<span class="sd">    BUG: returns `inf` if no real data falls in any one of the bins -</span>
-<span class="sd">    dividing by zero error.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 2, 3], &quot;b&quot;: [&quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;, &quot;emu&quot;]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [3, 1, 2, 0], &quot;b&quot;: [&quot;cat&quot;, &quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;]}</span>
+<span class="sd">    ... )</span>
 
-<span class="sd">    The first feature appears to be more similar than the second across</span>
-<span class="sd">    datasets.</span>
+<span class="sd">    The first feature is replicated up to a re-ordering in the synthetic</span>
+<span class="sd">    data, so its KL divergence is zero:</span>
 
-<span class="sd">    &gt;&gt;&gt; kullback_leibler(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    0.03389133708660097 # random</span>
-<span class="sd">    &gt;&gt;&gt; kullback_leibler(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    0.58739109417064730 # random</span>
+<span class="sd">    &gt;&gt;&gt; kullback_leibler(real, synth, &quot;a&quot;)</span>
+<span class="sd">    0.0</span>
+
+<span class="sd">    However, the second feature does not include the ``&quot;emu&quot;`` category</span>
+<span class="sd">    in the synthetic data, so the divergence is infinite:</span>
+
+<span class="sd">    &gt;&gt;&gt; kullback_leibler(real, synth, &quot;b&quot;, bins=None)</span>
+<span class="sd">    inf</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -257,18 +259,20 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 4], &quot;b&quot;: [&quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;, &quot;emu&quot;]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [3, 3, 2, 0], &quot;b&quot;: [&quot;cat&quot;, &quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;]}</span>
+<span class="sd">    ... )</span>
 
-<span class="sd">    The first feature appears to be more similar than the second across</span>
-<span class="sd">    datasets.</span>
+<span class="sd">    The second feature appears to be more similar than the first across</span>
+<span class="sd">    datasets:</span>
 
-<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    0.11006632967333475 # random</span>
-<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    0.43556476029981644 # random</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real, synth, &quot;a&quot;)</span>
+<span class="sd">    0.1732867951399863</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_divergence(real, synth, &quot;b&quot;, bins=None)</span>
+<span class="sd">    0.10788077716941784</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -331,18 +335,20 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 4], &quot;b&quot;: [&quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;, &quot;emu&quot;]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [3, 3, 2, 0], &quot;b&quot;: [&quot;cat&quot;, &quot;cat&quot;, &quot;cow&quot;, &quot;dog&quot;]}</span>
+<span class="sd">    ... )</span>
 
-<span class="sd">    The first feature appears to be more similar than the second across</span>
-<span class="sd">    datasets.</span>
+<span class="sd">    The second feature appears to be more similar than the first across</span>
+<span class="sd">    datasets:</span>
 
-<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    0.11006632967333475 # random</span>
-<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    0.43556476029981644 # random</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real, synth, &quot;a&quot;)</span>
+<span class="sd">    0.41627730557884884</span>
+<span class="sd">    &gt;&gt;&gt; jensen_shannon_distance(real, synth, &quot;b&quot;, bins=None)</span>
+<span class="sd">    0.328452092654953</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -404,18 +410,20 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 4, 3, 4], &quot;b&quot;: [3, 7, 2, 1, 7, 4]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [3, 3, 2, 0, 2, 3], &quot;b&quot;: [1, 5, 1, 1, 6, 3]}</span>
+<span class="sd">    ... )</span>
 
 <span class="sd">    The first feature appears to be more similar than the second across</span>
-<span class="sd">    datasets.</span>
+<span class="sd">    datasets:</span>
 
-<span class="sd">    &gt;&gt;&gt; wasserstein(real, synth, &#39;feat1&#39;)</span>
-<span class="sd">    0.0688192355094602 # random</span>
-<span class="sd">    &gt;&gt;&gt; wasserstein(real, synth, &#39;feat2&#39;)</span>
-<span class="sd">    0.8172329918412307 # random</span>
+<span class="sd">    &gt;&gt;&gt; wasserstein(real, synth, &quot;a&quot;)</span>
+<span class="sd">    0.6666666666666667</span>
+<span class="sd">    &gt;&gt;&gt; wasserstein(real, synth, &quot;b&quot;)</span>
+<span class="sd">    1.166666666666667</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -467,22 +475,25 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns = [&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 3, 4, 4], &quot;b&quot;: [1, 4, 5, 6, 7, 7]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 2, 2, 3, 3, 3], &quot;b&quot;: [1, 1, 1, 2, 2, 3]}</span>
+<span class="sd">    ... )</span>
 
 <span class="sd">    The first feature appears to come from the same distribution in both</span>
 <span class="sd">    datasets.</span>
 
-<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real, synth, &#39;feat1&#39;)</span>
-<span class="sd">    KstestResult(statistic=0.062, pvalue=0.2919248807417811) # random</span>
+<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real, synth, &quot;a&quot;)</span>
+<span class="sd">    KstestResult(statistic=0.3333333333333333, pvalue=0.9307359307359307)</span>
 
 <span class="sd">    The second feature appears to come from different distributions in</span>
 <span class="sd">    the datasets.</span>
 
-<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real, synth, &#39;feat2&#39;)</span>
-<span class="sd">    KstestResult(statistic=0.274, pvalue=6.383314923658339e-17) # random</span>
+<span class="sd">    &gt;&gt;&gt; kolmogorov_smirnov(real, synth, &quot;b&quot;)</span>
+<span class="sd">    KstestResult(statistic=0.8333333333333334, pvalue=0.025974025974025972)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">ks_2samp</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -534,21 +545,25 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 3, 4, 4], &quot;b&quot;: [1, 4, 5, 6, 7, 7]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 2, 2, 3, 3, 3], &quot;b&quot;: [1, 1, 1, 2, 2, 3]}</span>
+<span class="sd">    ... )</span>
 
-<span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach</span>
-<span class="sd">    the conclusion that the distributions of the first feature are</span>
-<span class="sd">    similar but the distributions of the second feature are not.</span>
+<span class="sd">    The test for the first feature suggests that the data are similarly</span>
+<span class="sd">    distributed according to their medians.</span>
 
-<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    KruskalResult(statistic=1.4447530549450676, pvalue=0.22937173881858086)</span>
-<span class="sd">    # random</span>
-<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    KruskalResult(statistic=5.1566145854149, pvalue=0.023157995217201643)</span>
-<span class="sd">    # random</span>
+<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real, synth, &quot;a&quot;)</span>
+<span class="sd">    KruskalResult(statistic=0.5646387832699667, pvalue=0.45239722100817814)</span>
+
+<span class="sd">    The second feature test is much clearer that the data are drawn from</span>
+<span class="sd">    distributions with different medians.</span>
+
+<span class="sd">    &gt;&gt;&gt; kruskal_wallis(real, synth, &quot;b&quot;)</span>
+<span class="sd">    KruskalResult(statistic=4.877737226277376, pvalue=0.02720526089960062)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">kruskal</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -599,19 +614,22 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 1, 3, 3, 4, 4], &quot;b&quot;: [1, 4, 5, 6, 7, 7]}</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(</span>
+<span class="sd">    ...     {&quot;a&quot;: [0, 2, 2, 3, 3, 3], &quot;b&quot;: [1, 1, 1, 2, 2, 3]}</span>
+<span class="sd">    ... )</span>
 
 <span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach</span>
 <span class="sd">    the conclusion that the distributions of the first feature are</span>
 <span class="sd">    similar but the distributions of the second feature are not.</span>
 
-<span class="sd">    &gt;&gt;&gt; mann_whitney(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    MannwhitneyuResult(statistic=126910.0, pvalue=0.6758436855431454) # random</span>
-<span class="sd">    &gt;&gt;&gt; mann_whitney(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    MannwhitneyuResult(statistic=134107.0, pvalue=0.04613704446362845) # random</span>
+<span class="sd">    &gt;&gt;&gt; mann_whitney(real, synth, &quot;a&quot;)</span>
+<span class="sd">    MannwhitneyuResult(statistic=22.5, pvalue=0.5041764308016705)</span>
+<span class="sd">    &gt;&gt;&gt; mann_whitney(real, synth, &quot;b&quot;)</span>
+<span class="sd">    MannwhitneyuResult(statistic=31.5, pvalue=0.033439907088311766)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">mannwhitneyu</span><span class="p">(</span>
@@ -665,19 +683,16 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame(get_real(500),</span>
-<span class="sd">    ...                     columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame(get_synth(500),</span>
-<span class="sd">    ...                      columns=[&#39;feat1&#39;, &#39;feat2&#39;, &#39;feat3&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; real = pd.DataFrame({&quot;a&quot;: [0, 1, 2, 3, 4, 5, 8, 9]})</span>
+<span class="sd">    &gt;&gt;&gt; synth = pd.DataFrame({&quot;a&quot;: [2, 0, 3, 7, 7, 4, 2, 1]})</span>
 
-<span class="sd">    If we were to choose our p-value threshold as 0.05, we would reach</span>
-<span class="sd">    the conclusion that the distributions of the first feature are</span>
-<span class="sd">    similar but of the second feature are not.</span>
+<span class="sd">    By eye, you might think these distributions are quite different from</span>
+<span class="sd">    one another. However, the Wilcoxon test suggests that these two</span>
+<span class="sd">    datasets were drawn from similar distributions.</span>
 
-<span class="sd">    &gt;&gt;&gt; wilcoxon(real, synth, &#39;feat1&#39;, bins = 20)</span>
-<span class="sd">    WilcoxonResult(statistic=58917.0, pvalue=0.25131501183065175) # random</span>
-<span class="sd">    &gt;&gt;&gt; wilcoxon(real, synth, &#39;feat2&#39;, bins = 20)</span>
-<span class="sd">    WilcoxonResult(statistic=54474.0, pvalue=0.011678503879013464) # random</span>
+<span class="sd">    &gt;&gt;&gt; wilcoxon(real, synth, &quot;a&quot;)</span>
+<span class="sd">    WilcoxonResult(statistic=17.0, pvalue=0.9453125)</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">stats</span><span class="o">.</span><span class="n">wilcoxon</span><span class="p">(</span><span class="n">real</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="n">synth</span><span class="p">[</span><span class="n">feature</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.metrics.propensity &mdash; SynthGauge 1.0.0 documentation</title>
+  <title>synthgauge.metrics.propensity &mdash; SynthGauge 2.0.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -16,11 +16,10 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -115,32 +114,20 @@
 }
 </style>
 <section id="module-synthgauge.metrics.propensity">
-<span id="synthgauge-metrics-propensity"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.propensity" title="synthgauge.metrics.propensity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.propensity" title="Permalink to this heading"></a></h1>
+<span id="synthgauge-metrics-propensity"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.propensity" title="synthgauge.metrics.propensity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.propensity" title="Permalink to this headline"></a></h1>
 <p>Propensity-based utility metrics.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
-<table class="autosummary longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity._combine_encode_and_pop" title="synthgauge.metrics.propensity._combine_encode_and_pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_combine_encode_and_pop</span></code></a>(real, synth)</p></td>
-<td><p>Get the combined, encoded real and synthetic data, and their</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity._get_propensity_scores" title="synthgauge.metrics.propensity._get_propensity_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_propensity_scores</span></code></a>(data, labels, method, **kwargs)</p></td>
-<td><p>Fit a propensity model to the data and extract its scores.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse" title="synthgauge.metrics.propensity.pmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse</span></code></a>(combined, indicator, method, **kwargs)</p></td>
 <td><p>Calculate the propensity score mean-squared error (pMSE).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity._pmse_logr_statistics" title="synthgauge.metrics.propensity._pmse_logr_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pmse_logr_statistics</span></code></a>(combined, indicator)</p></td>
-<td><p>Calculate the location and scale of pMSE in the null case where</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity._pmse_cart_statistics" title="synthgauge.metrics.propensity._pmse_cart_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pmse_cart_statistics</span></code></a>(combined, indicator, num_perms, **kwargs)</p></td>
-<td><p>Estimate the location and scale of pMSE in the null case by</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_ratio" title="synthgauge.metrics.propensity.pmse_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_ratio</span></code></a>(combined, indicator, method, num_perms=None, **kwargs)</p></td>
 <td><p>The propensity score mean-squared error ratio.</p></td>
@@ -153,50 +140,6 @@
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.propensity._combine_encode_and_pop">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">_combine_encode_and_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#_combine_encode_and_pop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity._combine_encode_and_pop" title="Permalink to this definition"></a></dt>
-<dd><p>Get the combined, encoded real and synthetic data, and their
-origins.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
-<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>combined</strong> (<em>pandas.DataFrame</em>) – The combined data with categorical columns one-hot encoded.</p></li>
-<li><p><strong>indicator</strong> (<em>numpy.ndarray</em>) – An indicator for whether the data is real (0) or synthetic (1).</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.propensity._get_propensity_scores">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">_get_propensity_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#_get_propensity_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity._get_propensity_scores" title="Permalink to this definition"></a></dt>
-<dd><p>Fit a propensity model to the data and extract its scores.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) – Dataframe to fit propensity model to.</p></li>
-<li><p><strong>labels</strong> (<em>numpy.ndarray</em>) – Indicator for which data are real (0) or synthetic (1).</p></li>
-<li><p><strong>method</strong> (<em>{&quot;cart&quot;</em><em>, </em><em>&quot;logr&quot;}</em>) – Which propensity model to use.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments passed to propensity model.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>scores</strong> – Propensity score for each point in <cite>data</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.propensity.pmse">
 <span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">pmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#pmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.pmse" title="Permalink to this definition"></a></dt>
@@ -243,87 +186,6 @@ investigated formally.</p>
 <p>Using a CART model as a classifier is recommended in the literature
 however we also support the use of logistic regression. For further
 details, see: <a class="reference external" href="https://doi.org/10.1111/rssa.12358">https://doi.org/10.1111/rssa.12358</a></p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.propensity._pmse_logr_statistics">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">_pmse_logr_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#_pmse_logr_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity._pmse_logr_statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the location and scale of pMSE in the null case where
-the real and synthetic datasets are formed from identical processes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>combined</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the combined real and synthetic data.</p></li>
-<li><p><strong>indicator</strong> (<em>numpy.ndarray</em>) – Indicator for whether data are real (0) or synthetic (1).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>loc</strong> (<em>float</em>) – Expectation of pMSE in the null case.</p></li>
-<li><p><strong>scale</strong> (<em>float</em>) – Standard deviation of pMSE in the null case.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>It has been shown that the null case is distributed as a multiple of
-a <span class="math notranslate nohighlight">\(\chi^2\)</span> distribution with <span class="math notranslate nohighlight">\(k-1\)</span> degrees of freedom.</p>
-<p>Therefore, its expectation is:</p>
-<div class="math notranslate nohighlight">
-\[E(pMSE) = \frac{(k - 1)(1 - c)^2}{N}\]</div>
-<p>and its standard deviation is:</p>
-<div class="math notranslate nohighlight">
-\[sd(pMSE) = \frac{c \sqrt{2(k - 1)} (1 - c)^2}{N}\]</div>
-<p>where <span class="math notranslate nohighlight">\(k\)</span> is the number of predictors used in the model,
-<span class="math notranslate nohighlight">\(c\)</span> is the proportion of synthetic data, and <span class="math notranslate nohighlight">\(N\)</span> is the
-total number of data points.</p>
-<p>Here, all features and first-order interactions are used in the
-model. Let <span class="math notranslate nohighlight">\(m\)</span> be the number of features, then:</p>
-<div class="math notranslate nohighlight">
-\[k = m + \binom{m}{2}\]</div>
-<p>Further explanation and derivation of these results can be found at:
-<a class="reference external" href="https://doi.org/10.1111/rssa.12358">https://doi.org/10.1111/rssa.12358</a></p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="synthgauge.metrics.propensity._pmse_cart_statistics">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">_pmse_cart_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#_pmse_cart_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity._pmse_cart_statistics" title="Permalink to this definition"></a></dt>
-<dd><p>Estimate the location and scale of pMSE in the null case by
-repeating pMSE calculations on permuations of the indicator column
-using a CART model.</p>
-<p>The set of calculations are then summarised using the mean or
-standard deviation, respectively.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>combined</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the combined real and synthetic data.</p></li>
-<li><p><strong>indicator</strong> (<em>numpy.ndarray</em>) – Indicator for whether data are real (0) or synthetic (1).</p></li>
-<li><p><strong>num_perms</strong> (<em>int</em>) – The number of permutations to consider.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments passed to
-<cite>sklearn.tree.DecisionTreeClassifer</cite>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>loc</strong> (<em>float</em>) – Estimated expectation of pMSE in the null case.</p></li>
-<li><p><strong>scale</strong> (<em>float</em>) – Estimated standard deviation of pMSE in the null case.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>When using a CART propensity model, the number of predictors is
-unknown and the results used in <cite>_pmse_logr_statistics</cite> do not
-apply.</p>
-<p>To circumvent this, we repeatedly calculate pMSE using permutations
-of the synthetic indicator column. This should approximate the
-results for “properly” synthesised data without knowing <span class="math notranslate nohighlight">\(k\)</span> a
-priori.</p>
-<p>Further details of this approach are available at:
-<a class="reference external" href="https://doi.org/10.1111/rssa.12358">https://doi.org/10.1111/rssa.12358</a></p>
-<p>Note that the <cite>random_state</cite> keyword argument is used to
-(independently) create the permutations and to fit the CART model.
-Without specifying this, the results will not be reproducible.</p>
 </dd></dl>
 
 <dl class="py function">

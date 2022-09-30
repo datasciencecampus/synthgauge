@@ -10,9 +10,9 @@ synthetically generated data.
 The library provides a range of metrics and visualisations for assessing and
 comparing distributions of features between real and synthetic data. At its
 core is the `Evaluator` class, which provides a consistent interface for
-applying a range of metrics to the data. By creating several `Evaluator`
-instances, you can easily evaluate synthetic data generated from a range of
-methods in a consistent and comparable manner.
+assessing two sets of data. By creating several `Evaluator` instances, you can
+easily evaluate synthetic data generated from a range of methods in a
+consistent and comparable manner.
 
 ## Privacy vs. Utility
 :lock: vs. :bar_chart:
@@ -39,67 +39,79 @@ Simply, SynthGauge is a **decision-support tool**, not a decision-making tool.
 
 ### Install
 
-The ``synthgauge`` package is not currently available on PyPI. However it can
-be installed directly from GitHub. The package is configured using
-`pyproject.toml` and `setup.cfg` files which require newer versions of `pip`,
-`setuptools` and `wheel`. Be sure to update these if you havent for a while!
+The `synthgauge` package is available on PyPI and can be installed via
+`pip` in the standard way:
 
 ```bash
+$ python -m pip install synthgauge
+```
+
+If you'd rather install the package from source, you can do so by first cloning
+this repository from GitHub. The `synthgauge` package is configured using
+`setup.cfg`, which requires newer versions of `pip`, `setuptools` and `wheel`.
+Be sure to update these if you haven't for a while.
+
+```bash
+$ cd /path/to/synthgauge
 $ python -m pip install --upgrade pip setuptools wheel
-$ python -m pip install git+https://github.com/datasciencecampus/synthgauge
+$ python -m pip install .
 ```
 
-Import the package and check the version:
+Now you're ready to start using the package!
 
-```python
->>> import synthgauge
->>> print(synthgauge.__version__)
-1.0.0
-
-```
 ### Usage
-To help users get acquainted example Jupyter Notebooks are included in the
-:open_file_folder: `synthgauge/examples` directory. New users are encouraged to
-work through `demo_notebook.ipynb`.
 
-The following shows an example workflow for evaluating a single real/synthetic
-data pair.
+To help users get acquainted with the package, an example Jupyter Notebook is
+included in the :open_file_folder: `examples` directory. This notebook is
+also available in the [package documentation](https://datasciencecampus.github.io/synthgauge/demo.html).
+
+The following shows an example workflow for evaluating a single real-synthetic
+dataset pair.
 
 ```python
->>> import pandas as pd
 >>> import synthgauge as sg
-
->>> # 1. Load real data into a Pandas DataFrame
->>> real = pd.read_csv('synth_eval/real.csv')
 >>>
->>> # 2. Load corresponding synthetic data into Pandas Dataframe
->>> synth = pd.read_csv('synth_eval/synth.csv')
+>>> # 1. Create or read in some data as a `pandas.DataFrame`
+>>> real = sg.datasets.make_blood_types_df(noise=0, nan_prop=0, seed=0)
+>>> synth = sg.datasets.make_blood_types_df(noise=1, nan_prop=0, seed=0)
 >>>
->>> # 3. Instantiate an Evaluator object
+>>> # 2. Instantiate an Evaluator object
 >>> ev = sg.Evaluator(real, synth)
 >>>
->>> # 4. Explore the data
+>>> # 3. Explore the data
+>>> ev.describe_numeric()
+               count     mean        std    min    25%    50%    75%    max
+age_real      1000.0   41.745   7.073472   22.0   37.0   41.0   48.0   62.0
+age_synth     1000.0   41.536   9.195829   18.0   35.0   41.0   48.0   68.0
+height_real   1000.0  174.976   7.771346  153.0  169.0  176.0  181.0  194.0
+height_synth  1000.0  175.266   9.633070  147.0  168.0  176.0  182.0  205.0
+weight_real   1000.0   80.014   9.455115   56.0   74.0   80.0   86.0  114.0
+weight_synth  1000.0   80.117  11.113452   50.0   72.0   80.0   88.0  118.0
 >>> ev.describe_categorical()
-[...]
->>> ev.plot_histograms(figsize=(12,12));
-[...]
->>> # 5. Add metrics to compute
+                  count unique most_frequent freq
+blood_type_real    1000      4             O  384
+blood_type_synth   1000      4             A  535
+eye_colour_real    1000      3         Brown  577
+eye_colour_synth   1000      3         Brown  664
+hair_colour_real   1000      4         Brown  435
+hair_colour_synth  1000      4         Brown  480
+>>> ev.plot_histograms(figsize=(12,12))
+<Figure size 1200x1200 with 6 Axes>
+>>>
+>>> # 4. Add metrics to compute
 >>> ev.add_metric('wasserstein', 'wass-age', feature='age')
 >>>
->>> # 6. Evaluate the metrics
->>> eval_results = ev.evaluate()
->>>
->>> # 7. Review results dictionary
->>> print(eval_results)
-{'wass-age': 1.46}
+>>> # 5. Evaluate the metrics and review the results
+>>> results = ev.evaluate()
+>>> print(results)
+{'wass-age': 1.7610000000000001}
 
 ```
 
 ## Further Help
 
-The API is desribed in detail in the reference documentation available
-[here](https://datasciencecampus.github.io/synthgauge/). Please direct any
-questions to [datacampus@ons.gov.uk](mailto:datacampus@ons.gov.uk).
+The API is described in the [reference documentation](https://datasciencecampus.github.io/synthgauge/autoapi/index.html).
+Please direct any questions to [datacampus@ons.gov.uk](mailto:datacampus@ons.gov.uk).
 
 ## Contributing
 

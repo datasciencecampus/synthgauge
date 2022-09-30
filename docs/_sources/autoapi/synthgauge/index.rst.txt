@@ -179,12 +179,6 @@ Attributes
       Return __metrics.
 
 
-   .. py:method:: combined_data(self)
-      :property:
-
-      Return combined real and synthetic data.
-
-
    .. py:method:: drop_metric(self, metric)
 
       Drops the named metric from the metrics dictionary.
@@ -272,8 +266,4 @@ Attributes
 
 
 
-.. py:data:: __version__
-   :annotation: = 1.0.0
-
-   
 

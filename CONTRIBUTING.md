@@ -33,30 +33,31 @@ generation and these should be placed in `synthgauge.utils` and
 ### Installation
 
 To contribute to `synthgauge`, you should fork the repository, clone it
-locally, and checkout a new branch. You should install the library as editable
-as well:
+locally, and checkout a new branch.
+
+Once you have your local copy, you need to install the library as editable
+and with the extra development dependencies:
 
 ```bash
 $ cd /path/to/synthgauge
-$ python -m pip install -e .
+$ python -m pip install -e .[dev]
 ```
 
-We use several tools to ensure the reproducibility and consistency of the
-`synthgauge` codebase, and your code will have to adhere to these principles as
-well. To install these tools along with the other development requirements, run
-the following:
-
-```bash
-$ python -m pip install -r requirements.dev.txt
-```
+In addition to the dependencies for testing and documentation, we use several
+tools to ensure the reproducibility and consistency of the `synthgauge`
+codebase. Any code contributions will have to adhere to these principles.
 
 ### Testing
 
 Within `synthgauge`, we make use of property-based and example regression tests
 to ensure our code works as it should. Any new functions you implement must
 have tests to accompany them. We use `pytest`, `hypothesis` and `coverage` to
-run our testing suit. You can find examples of tests in their documentation and
-in the `tests` directory of the repository.
+run our testing suite. You can find examples of tests in their documentation
+and in the `tests` directory of the repository.
+
+If your contribution addresses an issue listed as a bug, please include a small
+example test to ensure the broken behaviour does not resurface in a future
+release.
 
 Please ensure that all tests pass and that you have 100% coverage before you
 open a pull request:
@@ -89,12 +90,12 @@ All contributions must be documented using the
 [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html) format.
 
 The `synthgauge` documentation is hosted on GitHub Pages, and an important part
-of that is the API reference material. So, any new additions to the API
-(functions, modules, etc.) will require updated reference material. We use
-`sphinx` for our documentation. To update the reference material, first delete
-everything in the `docs` directory except the empty `.nojekyll` file. This file
-ensures that the documentation renders properly online. Now, render new copies
-of the documentation like so:
+of that is the API reference material. So, any changes to the API (functions,
+modules, etc.) will require updated reference material. We use `sphinx` for our
+documentation. To update the reference material, first delete everything in the
+`docs` directory except the empty `.nojekyll` file. This file ensures that the
+documentation renders properly online. Now, render new copies of the
+documentation like so:
 
 ```bash
 $ cd /path/to/synthgauge/docs_src
@@ -140,7 +141,7 @@ When reporting a bug, please provide as much detail as you can about the issue,
 including a minimal working example, where appropriate. Like other
 contributions, the development team review bug reports regularly and will aim
 to patch them as soon as possible. However, we cannot guarantee these changes
-will be prompt. If you comfortable doing so, consider making a code
+will be prompt. If you feel comfortable doing so, consider making a code
 contribution addressing the issue.
 
 If you find a security vulnerability, **do not open an issue**. Email

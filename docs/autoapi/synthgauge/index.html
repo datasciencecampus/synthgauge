@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge &mdash; SynthGauge 1.0.0 documentation</title>
+  <title>synthgauge &mdash; SynthGauge 2.0.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
@@ -16,7 +16,6 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -121,10 +120,10 @@
 }
 </style>
 <section id="module-synthgauge">
-<span id="synthgauge"></span><h1><a class="reference internal" href="#module-synthgauge" title="synthgauge"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a><a class="headerlink" href="#module-synthgauge" title="Permalink to this heading"></a></h1>
+<span id="synthgauge"></span><h1><a class="reference internal" href="#module-synthgauge" title="synthgauge"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge</span></code></a><a class="headerlink" href="#module-synthgauge" title="Permalink to this headline"></a></h1>
 <p>A library for evaluating synthetic data.</p>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="metrics/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics</span></code></a><ul>
@@ -132,6 +131,7 @@
 <li class="toctree-l2"><a class="reference internal" href="metrics/cluster/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.cluster</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrics/correlation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrics/density/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.density</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics/nist/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.nist</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrics/privacy/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.privacy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrics/propensity/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="metrics/univariate/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.univariate</span></code></a></li>
@@ -141,7 +141,7 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="datasets/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.datasets</span></code></a></li>
@@ -152,10 +152,10 @@
 </div>
 </section>
 <section id="package-contents">
-<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading"></a></h2>
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this headline"></a></h2>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
-<table class="autosummary longtable docutils align-default">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline"></a></h3>
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -168,14 +168,14 @@
 </table>
 </section>
 <section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
-<table class="autosummary longtable docutils align-default">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h3>
+<table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.__version__" title="synthgauge.__version__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></a></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -335,12 +335,6 @@ current metric dictionary with the loaded metrics.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="synthgauge.Evaluator.combined_data">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">combined_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#synthgauge.Evaluator.combined_data" title="Permalink to this definition"></a></dt>
-<dd><p>Return combined real and synthetic data.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.Evaluator.drop_metric">
 <span class="sig-name descname"><span class="pre">drop_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/synthgauge/evaluator.html#Evaluator.drop_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.Evaluator.drop_metric" title="Permalink to this definition"></a></dt>
 <dd><p>Drops the named metric from the metrics dictionary.</p>
@@ -440,11 +434,6 @@ corresponding data in <cite>self</cite>.</p>
 </dd></dl>
 
 </dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="synthgauge.__version__">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">1.0.0</span></em><a class="headerlink" href="#synthgauge.__version__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
 
 </section>
 </section>
