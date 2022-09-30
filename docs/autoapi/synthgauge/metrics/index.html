@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.metrics &mdash; SynthGauge 2.0.0 documentation</title>
+  <title>synthgauge.metrics &mdash; SynthGauge 2.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -154,6 +154,12 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.feature_density_mad" title="synthgauge.metrics.feature_density_mad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feature_density_mad</span></code></a>(real, synth, feats=None, bins=10)</p></td>
 <td><p>Mean absolute difference of feature densities.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.hoc" title="synthgauge.metrics.hoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hoc</span></code></a>(real, synth, trials=300, prob=0.1, seed=None)</p></td>
+<td><p>A measure based on Higher Order Conjunctions (HOC).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.kway_marginals" title="synthgauge.metrics.kway_marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kway_marginals</span></code></a>(real, synth, k=3, trials=100, bins=100, seed=None)</p></td>
+<td><p>A measure based on the similarity of a set of k-way marginals.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.min_nearest_neighbour" title="synthgauge.metrics.min_nearest_neighbour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_nearest_neighbour</span></code></a>(real, synth, feats=None, outliers_only=True, threshold=2, n_neighbours=5)</p></td>
 <td><p>Minimum nearest-neighbour distance.</p></td>
@@ -386,6 +392,105 @@ accepted by <cite>numpy.histogram_bin_edges</cite>. Default uses 10 bins.</p></l
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Mean absolute error of feature densities.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.hoc">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.</span></span><span class="sig-name descname"><span class="pre">hoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/metrics/nist.html#hoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.hoc" title="Permalink to this definition"></a></dt>
+<dd><p>A measure based on Higher Order Conjunctions (HOC).</p>
+<p>This measure compares the relative sizes of randomly selected pools
+of “similar” rows in the real and synthetic data. This measure of
+similarity is defined across a set of randomly genereated test
+cases applied to each dataset. Each test case consists of a set of
+rules.</p>
+<p>The <span class="math notranslate nohighlight">\(i\)</span>-th test calculates the fraction of records satisfying
+its rules in the real data, <span class="math notranslate nohighlight">\(f_{ri}\)</span>, and the synthetic,
+denoted <span class="math notranslate nohighlight">\(f_{si}\)</span>. Their dissimilarity in test <span class="math notranslate nohighlight">\(i\)</span> is
+quantified as:</p>
+<div class="math notranslate nohighlight">
+\[d_i = \ln\left(\max(f_{si}, 10^{-6})\right) - \ln(f_{ri})\]</div>
+<p>These dissimilarities are summarised as:</p>
+<div class="math notranslate nohighlight">
+\[\Delta = \sqrt{\frac{1}{N} \sum_{i=1}^{N} d_i^2}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span> is the number of test cases. Finally, this is
+transformed to a HOC score:</p>
+<div class="math notranslate nohighlight">
+\[HOC = \max \left(0, 1 + \frac{\Delta}{\ln(10^{-3})}\right)\]</div>
+<p>This measure is bounded between 0 and 1, indicating whether the
+datasets are nothing alike or identical based on the test cases,
+respectively. In the original text this score is multiplied by 1000
+to make it human-readable. Full details are available in
+<a class="reference external" href="https://doi.org/10.6028/NIST.TN.2151">https://doi.org/10.6028/NIST.TN.2151</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>trials</strong> (<em>int</em><em>, </em><em>default 300</em>) – Number of test cases to create. Default of 300 as in the
+competition.</p></li>
+<li><p><strong>prob</strong> (<em>float</em><em>, </em><em>default 0.1</em>) – Probability of any column being included in a test case. Default
+of 0.1 as in the competition.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Random number seed. If <cite>None</cite>, results will not be reproducible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>score</strong> – The overall HOC score.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is possible that some test cases will be “empty”, i.e. when no
+columns are selected. In this scenario, the score for that case will
+be <cite>np.nan</cite> rather than it being resampled.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.kway_marginals">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.</span></span><span class="sig-name descname"><span class="pre">kway_marginals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/metrics/nist.html#kway_marginals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.kway_marginals" title="Permalink to this definition"></a></dt>
+<dd><p>A measure based on the similarity of a set of k-way marginals.</p>
+<p>This measure works as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Discretise all numeric features (based on the orignal data).</p></li>
+<li><p>Randomly select <cite>trials</cite> sets of <cite>k</cite> features and calculate
+the corresponding marginal counts for each dataset.</p></li>
+<li><p>Calculate summed absolute deviation in the counts across all
+bins and marginal sets.</p></li>
+<li><p>Transform the summed absolute deviations, <span class="math notranslate nohighlight">\(s\)</span>, to form
+a set of scores <span class="math notranslate nohighlight">\(S = \left[1-s/2 | for each s\right]\)</span>.
+This transformation ensures the scores are in <span class="math notranslate nohighlight">\([0, 1]\)</span>.
+These extremes represent the worst- and best-case scenarios,
+respectively.</p></li>
+<li><p>Return the mean score.</p></li>
+</ol>
+</div></blockquote>
+<p>The NIST competition utilised a set of 100 three-way marginals.
+Details can be found at <a class="reference external" href="https://doi.org/10.6028/NIST.TN.2151">https://doi.org/10.6028/NIST.TN.2151</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>k</strong> (<em>int</em><em>, </em><em>default 3</em>) – Number of features to include in each k-way marginal. Default
+uses 3 (as done in the NIST competition).</p></li>
+<li><p><strong>trials</strong> (<em>int</em><em>, </em><em>default 100</em>) – Maximum number of marginals to consider to estimate the overall
+score. If there are fewer <cite>k</cite>-way combinations than <cite>trials</cite>,
+tries all. Default uses 100 (as done in the NIST competition).</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>default 100</em>) – Binning method for sampled numeric features. Can be anything
+accepted by <cite>numpy.histogram</cite>. Default uses 100 bins (as done in
+the NIST competition).</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Random number seed. If <cite>None</cite>, results will not be reproducible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>score</strong> – The mean transformed sum absolute deviation in k-way densities.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
