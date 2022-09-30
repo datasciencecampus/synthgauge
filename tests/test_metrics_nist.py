@@ -90,7 +90,6 @@ def test_kway_marginal_score(datasets, features):
     ),
     st.integers(1, 100),
 )
-@settings(deadline=800)
 def test_kway_marginals(datasets, seed):
     """Test that the k-way marginal score can be calculated."""
 
