@@ -1,3 +1,30 @@
+# v2.1.0 - 2022-09-30
+
+In this minor release, we add a new set of utility metrics from the 2018 NNIST
+competition. We also fix a couple of small bugs and make some minor improvements
+to the documentation.
+
+## Features
+
+- Add generic utility metrics used in the 2018 NIST competition - *k*-way
+  marginal comparison and higher-order conjunctions. These are stored in the
+  `synthgauge.metrics.nist` module.
+- Implement doctesting across README and docstrings.
+- Use `pytest-randomly` to make test suite more robust.
+
+## Documentation
+
+- Rewrite the package README and the univariate metric docstrings to be clearer
+  and more readily tested. Also, the README is now version-invariant and
+  reflects the fact `synthgauge` is on PyPI.
+- Update the contribution documentation, including fixing a couple of typos.
+- Hide "hidden" functions from the API reference.
+
+## Bug fixes
+
+- Workaround for a strange seaborn@0.11.2 bug
+- Streamline dependencies (everything is now inside `setup.cfg`)
+
 # v2.0.0 - 2022-07-19
 
 This release hopes to improve the reproducibility of `synthgauge` by adding
