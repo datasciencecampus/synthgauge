@@ -116,16 +116,24 @@
 
 
 <div class="viewcode-block" id="kway_marginals"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/nist/index.html#synthgauge.metrics.nist.kway_marginals">[docs]</a><span class="k">def</span> <span class="nf">kway_marginals</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">trials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;The first generic measure based on similarity of k-way marginals.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A measure based on the similarity of a set of k-way marginals.</span>
 
-<span class="sd">    In essence, calculate the summed absolute difference in density</span>
-<span class="sd">    across an array of randomly sampled k-way marginals. Transform and</span>
-<span class="sd">    summarise these deviations to give a single score between 0 and 1.</span>
-<span class="sd">    These extremes represent the worst and best case scenarios,</span>
-<span class="sd">    respectively.</span>
+<span class="sd">    This measure works as follows:</span>
 
-<span class="sd">    The NIST competition utilised 3-way marginals only. Details can be</span>
-<span class="sd">    found at https://doi.org/10.6028/NIST.TN.2151.</span>
+<span class="sd">        1. Discretise all numeric features (based on the orignal data).</span>
+<span class="sd">        2. Randomly select `trials` sets of `k` features and calculate</span>
+<span class="sd">           the corresponding marginal counts for each dataset.</span>
+<span class="sd">        3. Calculate summed absolute deviation in the counts across all</span>
+<span class="sd">           bins and marginal sets.</span>
+<span class="sd">        4. Transform the summed absolute deviations, :math:`s`, to form</span>
+<span class="sd">           a set of scores :math:`S = \left[1-s/2 | for each s\right]`.</span>
+<span class="sd">           This transformation ensures the scores are in :math:`[0, 1]`.</span>
+<span class="sd">           These extremes represent the worst- and best-case scenarios,</span>
+<span class="sd">           respectively.</span>
+<span class="sd">        5. Return the mean score.</span>
+
+<span class="sd">    The NIST competition utilised a set of 100 three-way marginals.</span>
+<span class="sd">    Details can be found at https://doi.org/10.6028/NIST.TN.2151.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
