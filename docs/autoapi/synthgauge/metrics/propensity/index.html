@@ -16,10 +16,12 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -114,13 +116,13 @@
 }
 </style>
 <section id="module-synthgauge.metrics.propensity">
-<span id="synthgauge-metrics-propensity"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.propensity" title="synthgauge.metrics.propensity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.propensity" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-metrics-propensity"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.propensity" title="synthgauge.metrics.propensity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.propensity</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.propensity" title="Permalink to this heading"></a></h1>
 <p>Propensity-based utility metrics.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -129,13 +131,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse" title="synthgauge.metrics.propensity.pmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse</span></code></a>(combined, indicator, method, **kwargs)</p></td>
 <td><p>Calculate the propensity score mean-squared error (pMSE).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_ratio" title="synthgauge.metrics.propensity.pmse_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_ratio</span></code></a>(combined, indicator, method, num_perms=None, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_ratio" title="synthgauge.metrics.propensity.pmse_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_ratio</span></code></a>(combined, indicator, method[, num_perms])</p></td>
 <td><p>The propensity score mean-squared error ratio.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_standardised" title="synthgauge.metrics.propensity.pmse_standardised"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_standardised</span></code></a>(combined, indicator, method, num_perms=None, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_standardised" title="synthgauge.metrics.propensity.pmse_standardised"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_standardised</span></code></a>(combined, indicator, method[, num_perms])</p></td>
 <td><p>The standardised propensity score mean-squared error.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_metrics" title="synthgauge.metrics.propensity.propensity_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_metrics</span></code></a>(real, synth, method='cart', feats=None, num_perms=20, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_metrics" title="synthgauge.metrics.propensity.propensity_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_metrics</span></code></a>(real, synth[, method, feats, num_perms])</p></td>
 <td><p>Propensity score-based metrics.</p></td>
 </tr>
 </tbody>
@@ -297,7 +299,7 @@ identical processes.</p>
 <li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
 <li><p><strong>method</strong> (<em>{&quot;cart&quot;</em><em>, </em><em>&quot;logr&quot;}</em><em>, </em><em>default &quot;cart&quot;</em>) – Which propensity model to use. Must be either CART (<cite>“cart”</cite>) or
 logistic regression with first-order interactions (<cite>“logr”</cite>).</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – List of features in the dataset to be used in the propensity
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – List of features in the dataset to be used in the propensity
 model. If <cite>None</cite> (default), all common features are used.</p></li>
 <li><p><strong>num_perms</strong> (<em>int</em><em>, </em><em>default 20</em>) – Number of permutations to consider when estimating the null case
 statistics with a CART model.</p></li>

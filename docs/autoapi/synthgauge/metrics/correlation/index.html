@@ -16,7 +16,9 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -112,22 +114,22 @@
 }
 </style>
 <section id="module-synthgauge.metrics.correlation">
-<span id="synthgauge-metrics-correlation"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.correlation" title="synthgauge.metrics.correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.correlation" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-metrics-correlation"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.correlation" title="synthgauge.metrics.correlation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.correlation</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.correlation" title="Permalink to this heading"></a></h1>
 <p>Correlation-based utility metrics.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_msd" title="synthgauge.metrics.correlation.correlation_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_msd</span></code></a>(real, synth, method='pearson', feats=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_msd" title="synthgauge.metrics.correlation.correlation_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_msd</span></code></a>(real, synth[, method, feats])</p></td>
 <td><p>Mean-squared difference in correlation coefficients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_ratio_msd" title="synthgauge.metrics.correlation.correlation_ratio_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_ratio_msd</span></code></a>(real, synth, categorical=None, numeric=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.correlation.correlation_ratio_msd" title="synthgauge.metrics.correlation.correlation_ratio_msd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correlation_ratio_msd</span></code></a>(real, synth[, categorical, numeric])</p></td>
 <td><p>Correlation ratio mean-squared difference.</p></td>
 </tr>
 </tbody>
@@ -146,7 +148,7 @@ relationships.</p>
 <li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
 <li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
 <li><p><strong>method</strong> (<em>{&quot;pearson&quot;</em><em>, </em><em>&quot;spearman&quot;</em><em>, </em><em>&quot;cramers_v&quot;}</em><em>, </em><em>default &quot;pearson&quot;</em>) – </p></li>
-<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to measure correlation across. If <cite>method=”cramers_v”</cite>,
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to measure correlation across. If <cite>method=”cramers_v”</cite>,
 all numeric columns will be filtered out. Likewise, for the
 other correlation methods, all non-numeric columns are removed.
 If <cite>None</cite> (default), all common features that satisfy the needs
@@ -189,10 +191,10 @@ synthetic datasets.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
 <li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>categorical</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Categorical features in <cite>real</cite> and <cite>synth</cite> to include in
+<li><p><strong>categorical</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Categorical features in <cite>real</cite> and <cite>synth</cite> to include in
 comparison. If <cite>None</cite> (default), uses all common object-type
 columns.</p></li>
-<li><p><strong>numeric</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Numerical features in <cite>real</cite> and <cite>synth</cite> to include in
+<li><p><strong>numeric</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Numerical features in <cite>real</cite> and <cite>synth</cite> to include in
 comparison. If <cite>None</cite> (default), uses all common columns not
 selected by <cite>categorical</cite>.</p></li>
 </ul>

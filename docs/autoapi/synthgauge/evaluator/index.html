@@ -16,7 +16,9 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -114,13 +116,13 @@
 }
 </style>
 <section id="module-synthgauge.evaluator">
-<span id="synthgauge-evaluator"></span><h1><a class="reference internal" href="#module-synthgauge.evaluator" title="synthgauge.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluator</span></code></a><a class="headerlink" href="#module-synthgauge.evaluator" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-evaluator"></span><h1><a class="reference internal" href="#module-synthgauge.evaluator" title="synthgauge.evaluator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.evaluator</span></code></a><a class="headerlink" href="#module-synthgauge.evaluator" title="Permalink to this heading"></a></h1>
 <p>The core class for evaluating datasets.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -151,9 +153,15 @@ via metrics and visualisation.</p>
 <dd class="field-odd"><p><a class="reference internal" href="../index.html#synthgauge.Evaluator" title="synthgauge.Evaluator">synthgauge.Evaluator</a></p>
 </dd>
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.metrics">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metrics</span></span><a class="headerlink" href="#synthgauge.evaluator.Evaluator.metrics" title="Permalink to this definition"></a></dt>
+<dd><p>Return __metrics.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.describe_numeric">
-<span class="sig-name descname"><span class="pre">describe_numeric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.describe_numeric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.describe_numeric" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">describe_numeric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.describe_numeric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.describe_numeric" title="Permalink to this definition"></a></dt>
 <dd><p>Summarise numeric features.</p>
 <p>This function uses <cite>pandas.DataFrame.describe</cite> to calculate
 summary statistics for each numeric feature in <cite>self.real_data</cite>
@@ -170,7 +178,7 @@ and <cite>self.synth_data</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.describe_categorical">
-<span class="sig-name descname"><span class="pre">describe_categorical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.describe_categorical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.describe_categorical" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">describe_categorical</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.describe_categorical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.describe_categorical" title="Permalink to this definition"></a></dt>
 <dd><p>Summarise categorical features.</p>
 <p>This function uses <cite>pandas.DataFrame.describe</cite> to calculate
 summary statistics for each object-type feature in
@@ -187,7 +195,7 @@ summary statistics for each object-type feature in
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.add_metric">
-<span class="sig-name descname"><span class="pre">add_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.add_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.add_metric" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.add_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.add_metric" title="Permalink to this definition"></a></dt>
 <dd><p>Add a metric to the evaluator.</p>
 <p>Metrics and their arguments are recorded to be run at a later
 time. This allows metric customisation but ensures that the same
@@ -215,7 +223,7 @@ metric documentation for details.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.add_custom_metric">
-<span class="sig-name descname"><span class="pre">add_custom_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.add_custom_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.add_custom_metric" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_custom_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.add_custom_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.add_custom_metric" title="Permalink to this definition"></a></dt>
 <dd><p>Add a custom metric to the evaluator.</p>
 <p>A custom metric uses any user-defined function that accepts the
 real and synthetic dataframes as the first and second positional
@@ -238,7 +246,7 @@ and <cite>self.synth</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.copy_metrics">
-<span class="sig-name descname"><span class="pre">copy_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.copy_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.copy_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">copy_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.copy_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.copy_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Copy metrics from another evaluator.</p>
 <p>To facilitate consistent comparisons of different synthetic
 datasets, this function copies the metrics dictionary from
@@ -253,7 +261,7 @@ be copied.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.save_metrics">
-<span class="sig-name descname"><span class="pre">save_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.save_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.save_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">save_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.save_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.save_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Save the current metrics dictionary to disk via <cite>pickle</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -264,7 +272,7 @@ be copied.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.load_metrics">
-<span class="sig-name descname"><span class="pre">load_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.load_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.load_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.load_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.load_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Load metrics from disk.</p>
 <p>Update or overwrite the current metric dictionary from a pickle.</p>
 <dl class="field-list simple">
@@ -280,14 +288,8 @@ current metric dictionary with the loaded metrics.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.metrics">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#synthgauge.evaluator.Evaluator.metrics" title="Permalink to this definition"></a></dt>
-<dd><p>Return __metrics.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.drop_metric">
-<span class="sig-name descname"><span class="pre">drop_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.drop_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.drop_metric" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">drop_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metric</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.drop_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.drop_metric" title="Permalink to this definition"></a></dt>
 <dd><p>Drops the named metric from the metrics dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -298,7 +300,7 @@ current metric dictionary with the loaded metrics.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.evaluate" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">as_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.evaluate" title="Permalink to this definition"></a></dt>
 <dd><p>Compute metrics for real and synth data.</p>
 <p>Run through the metrics dictionary and execute each with its
 corresponding arguments. The results are returned as either a
@@ -326,7 +328,7 @@ multiple values are assigned to a single key.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.plot_histograms">
-<span class="sig-name descname"><span class="pre">plot_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_histograms" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_histograms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_histograms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_histograms" title="Permalink to this definition"></a></dt>
 <dd><p>Plot grid of feature distributions.</p>
 <p>Convenience wrapper for <cite>synthgauge.plot.plot_histograms</cite>. This
 function uses the combined real and synthetic data sets and
@@ -335,7 +337,7 @@ groups by <cite>‘source’</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.plot_histogram3d">
-<span class="sig-name descname"><span class="pre">plot_histogram3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_histogram3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_histogram3d" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_histogram3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_histogram3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_histogram3d" title="Permalink to this definition"></a></dt>
 <dd><p>Plot 3D histogram.</p>
 <p>Convenience wrapper for <cite>synthgauge.plot.plot_histogram3d</cite>.</p>
 <dl class="field-list simple">
@@ -353,7 +355,7 @@ or <cite>“combined”</cite> to pass <cite>self.combined_data</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.plot_correlation">
-<span class="sig-name descname"><span class="pre">plot_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_correlation" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pearson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_correlation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_correlation" title="Permalink to this definition"></a></dt>
 <dd><p>Plot a grid of correlation heatmaps.</p>
 <p>Convenience wrapper for <cite>synthgauge.plot.plot_correlation</cite>. Each
 dataset (real and synthetic) has a plot, as well as one for the
@@ -362,7 +364,7 @@ differences in their correlations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.plot_crosstab">
-<span class="sig-name descname"><span class="pre">plot_crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_crosstab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_crosstab" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_crosstab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_crosstab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_crosstab" title="Permalink to this definition"></a></dt>
 <dd><p>Plot pairwise cross-tabulation.</p>
 <p>Convenience wrapper for <cite>synthgauge.plot.plot_crosstab</cite>.
 Automatically sets <cite>real</cite> and <cite>synth</cite> parameters to the
@@ -371,7 +373,7 @@ corresponding data in <cite>self</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="synthgauge.evaluator.Evaluator.plot_qq">
-<span class="sig-name descname"><span class="pre">plot_qq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_quantiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_qq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_qq" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_qq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_quantiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/synthgauge/evaluator.html#Evaluator.plot_qq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.evaluator.Evaluator.plot_qq" title="Permalink to this definition"></a></dt>
 <dd><p>Plot quantile-quantile plot.</p>
 <p>Convenience wrapper for <cite>synthgauge.plot.plot_qq</cite>.</p>
 <dl class="field-list simple">

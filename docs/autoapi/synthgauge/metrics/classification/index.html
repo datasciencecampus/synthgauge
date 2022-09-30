@@ -16,7 +16,9 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -112,19 +114,19 @@
 }
 </style>
 <section id="module-synthgauge.metrics.classification">
-<span id="synthgauge-metrics-classification"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.classification" title="synthgauge.metrics.classification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.classification</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.classification" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-metrics-classification"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.classification" title="synthgauge.metrics.classification"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.classification</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.classification" title="Permalink to this heading"></a></h1>
 <p>Utility metrics using <cite>scikit-learn</cite>-style classifiers.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, feats, target, classifier, test_prop=0.2, random_state=None, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.classification.classification_comparison" title="synthgauge.metrics.classification.classification_comparison"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classification_comparison</span></code></a>(real, synth, feats, target, ...)</p></td>
 <td><p>Classification utility metric.</p></td>
 </tr>
 </tbody>
@@ -142,7 +144,7 @@ scores of the “synthetic” model predictions from the “real” model’s.</
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
 <li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em>) – List of column names to use as the input in the classification.</p></li>
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em>) – List of column names to use as the input in the classification.</p></li>
 <li><p><strong>target</strong> (<em>str</em>) – Column to use as target in the classification.</p></li>
 <li><p><strong>classifier</strong> (<em>scikit-learn estimator</em>) – Classifier class with <cite>fit</cite> and <cite>predict</cite> methods.</p></li>
 <li><p><strong>test_prop</strong> (<em>float</em><em> or </em><em>int</em><em>, </em><em>default 0.2</em>) – If <cite>float</cite>, should be between 0.0 and 1.0 and represent the
