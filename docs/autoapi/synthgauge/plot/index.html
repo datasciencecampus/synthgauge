@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.plot &mdash; SynthGauge 2.0.0 documentation</title>
+  <title>synthgauge.plot &mdash; SynthGauge 2.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
@@ -16,7 +16,9 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -114,37 +116,37 @@
 }
 </style>
 <section id="module-synthgauge.plot">
-<span id="synthgauge-plot"></span><h1><a class="reference internal" href="#module-synthgauge.plot" title="synthgauge.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a><a class="headerlink" href="#module-synthgauge.plot" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-plot"></span><h1><a class="reference internal" href="#module-synthgauge.plot" title="synthgauge.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.plot</span></code></a><a class="headerlink" href="#module-synthgauge.plot" title="Permalink to this heading"></a></h1>
 <p>Functions for visually evaluating synthetic data.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histograms" title="synthgauge.plot.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histograms</span></code></a>(df, feats=None, groupby=None, figcols=2, figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histograms" title="synthgauge.plot.plot_histograms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histograms</span></code></a>(df[, feats, groupby, figcols, figsize])</p></td>
 <td><p>Plot feature distributions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y, groupby=None, x_bins='auto', y_bins='auto', figsize=6)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_joint" title="synthgauge.plot.plot_joint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_joint</span></code></a>(df, x, y[, groupby, x_bins, y_bins, figsize])</p></td>
 <td><p>Plot bivariate and univariate graphs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histogram3d" title="synthgauge.plot.plot_histogram3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram3d</span></code></a>(df, x, y, x_bins='auto', y_bins='auto', figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_histogram3d" title="synthgauge.plot.plot_histogram3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_histogram3d</span></code></a>(df, x, y[, x_bins, y_bins, figsize])</p></td>
 <td><p>Plot 3D histogram of two features.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*dfs, feats=None, method='pearson', plot_diff=False, figcols=2, figsize=None, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_correlation" title="synthgauge.plot.plot_correlation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_correlation</span></code></a>(*dfs[, feats, method, plot_diff, ...])</p></td>
 <td><p>Plot correlation between features in a dataframe.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y, x_bins='auto', y_bins='auto', figsize=None, cmap='rocket', **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_crosstab" title="synthgauge.plot.plot_crosstab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_crosstab</span></code></a>(real, synth, x, y[, x_bins, y_bins, ...])</p></td>
 <td><p>Plot cross-tabulation heatmap for two features.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_qq" title="synthgauge.plot.plot_qq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_qq</span></code></a>(real, synth, feature, n_quantiles=None, figsize=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.plot.plot_qq" title="synthgauge.plot.plot_qq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_qq</span></code></a>(real, synth, feature[, n_quantiles, figsize])</p></td>
 <td><p>Generate a Q-Q plot for a feature of real and synthetic data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_feat_density_diff" title="synthgauge.plot.plot_feat_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feat_density_diff</span></code></a>(real, synth, feats=None, feat_bins=10, diff_bins=10, figsize=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.plot.plot_feat_density_diff" title="synthgauge.plot.plot_feat_density_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feat_density_diff</span></code></a>(real, synth[, feats, ...])</p></td>
 <td><p>Plot real and synth feature density differences.</p></td>
 </tr>
 </tbody>
@@ -162,18 +164,15 @@ prior to calculating the distribution.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the feature(s) to be plotted.</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features in to plot. If <cite>None</cite> (default), all features are used.</p></li>
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features in to plot. If <cite>None</cite> (default), all features are used.</p></li>
 <li><p><strong>groupby</strong> (<em>str</em><em>, </em><em>optional</em>) – Feature on which to group data.</p></li>
 <li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default 2</em>) – Number of columns to use in the figure.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<li><p><strong>figsize</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
 <cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -203,11 +202,8 @@ Defaults to <cite>“auto”</cite>.</p></li>
 Defaults to six inches.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>seaborn.axisgrid.JointGrid</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>seaborn.axisgrid.JointGrid</p>
 </dd>
 </dl>
 </dd></dl>
@@ -236,15 +232,12 @@ feature. If <cite>array_like</cite>, must be sequence of bin edges. If
 <cite>int</cite>, specifies the number of bins to use. If <cite>str</cite>, can be
 anything accepted by <cite>numpy.histogram_bin_edges</cite>. Defaults to
 <cite>“auto”</cite>.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<li><p><strong>figsize</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
 <cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -265,7 +258,7 @@ when two dataframes are provided.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>*dfs</strong> (<em>pandas.DataFrame</em>) – Any number of dataframes to plot.</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to plot. Must be present in all elements of <cite>dfs</cite>.
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features to plot. Must be present in all elements of <cite>dfs</cite>.
 If <cite>None</cite> (default), uses features common to all dataframes.</p></li>
 <li><p><strong>method</strong> (<em>{&quot;pearson&quot;</em><em>, </em><em>&quot;spearman&quot;</em><em>, </em><em>&quot;cramers_v&quot;}</em><em>, </em><em>default &quot;pearson&quot;</em>) – Correlation method. See <cite>pandas.DataFrame.corr</cite> for more details
 on <cite>“pearson”</cite> and <cite>“spearman”</cite>. When <cite>“cramers_v”</cite> is
@@ -276,7 +269,7 @@ plot a heatmap of the absolute differences between the
 respective datasets’ correlations.</p></li>
 <li><p><strong>figcols</strong> (<em>int</em><em>, </em><em>default 2</em>) – Number of columns to use in the figure. Only used when <cite>feats</cite>
 contains more than one feature.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<li><p><strong>figsize</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
 <cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any other keyword arguments to be passed to <cite>seaborn.heatmap</cite>.
 For example <cite>annot=True</cite> will turn on cell annotations. See
@@ -286,11 +279,8 @@ documentation for more examples.</p></li>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If <cite>method</cite> does not match the data type(s) of <cite>feats</cite>.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>matplotlib.figure.Figure</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -318,7 +308,7 @@ Defaults to <cite>“auto”</cite>. Only used for numeric features.</p></li>
 bin edges. If <cite>int</cite>, specifies the number of bins to use. If
 <cite>str</cite>, can be anything accepted by <cite>numpy.histogram_bin_edges</cite>.
 Defaults to <cite>“auto”</cite>. Only used for numeric features.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<li><p><strong>figsize</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
 <cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 <li><p><strong>cmap</strong> (<em>str</em><em>, </em><em>default &quot;rocket&quot;</em>) – Palette name for heatmap and colour bar. See the documentation
 for <cite>seaborn.color_palette</cite> on available palette formats.
@@ -328,11 +318,8 @@ For example, <cite>annot=True</cite> will turn on cell annotations. See
 documentation for more examples.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -359,18 +346,15 @@ information.</p>
 <li><p><strong>feature</strong> (<em>str</em>) – Feature to plot. Must be in <cite>real</cite> and <cite>synth</cite>.</p></li>
 <li><p><strong>n_quantiles</strong> (<em>int</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Number of quantiles to calculate. If <cite>None</cite> (default), uses the
 length of <cite>real</cite>.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple of float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
+<li><p><strong>figsize</strong> (<em>tuple</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Size of figure in inches <cite>(width, height)</cite>. Defaults to
 <cite>matplotlib.pyplot.rcParams[“figure.figsize”]</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><strong>TypeError</strong> – If <cite>feature</cite> is not a numeric data type feature.</p>
 </dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>matplotlib.figure.Figure</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>
@@ -392,7 +376,7 @@ across all features and bins.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
 <li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
-<li><p><strong>feats</strong> (<em>list of str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features used to compute the densities. If <cite>None</cite> (default), all
+<li><p><strong>feats</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – Features used to compute the densities. If <cite>None</cite> (default), all
 common features are used.</p></li>
 <li><p><strong>feat_bins</strong> (<em>str</em><em> or </em><em>int</em><em>, </em><em>default 10</em>) – Bins to use for computing the feature densities. This value is
 passed to <cite>numpy.histogram_bin_edges</cite> so can be any value
@@ -403,11 +387,8 @@ so can be any value accepted by that function. By default, uses
 10 bins.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.figure.Figure</p>
 </dd>
 </dl>
 </dd></dl>

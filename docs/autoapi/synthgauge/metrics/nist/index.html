@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>synthgauge.metrics.nist &mdash; SynthGauge 2.0.0 documentation</title>
+  <title>synthgauge.metrics.nist &mdash; SynthGauge 2.1.0 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
@@ -16,10 +16,12 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -114,22 +116,22 @@
 }
 </style>
 <section id="module-synthgauge.metrics.nist">
-<span id="synthgauge-metrics-nist"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.nist" title="synthgauge.metrics.nist"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.nist</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.nist" title="Permalink to this headline"></a></h1>
+<span id="synthgauge-metrics-nist"></span><h1><a class="reference internal" href="#module-synthgauge.metrics.nist" title="synthgauge.metrics.nist"><code class="xref py py-mod docutils literal notranslate"><span class="pre">synthgauge.metrics.nist</span></code></a><a class="headerlink" href="#module-synthgauge.metrics.nist" title="Permalink to this heading"></a></h1>
 <p>Functions for the generic measures from the 2018 NIST competition.</p>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline"></a></h3>
-<table class="longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.kway_marginals" title="synthgauge.metrics.nist.kway_marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kway_marginals</span></code></a>(real, synth, k=3, trials=100, bins=100, seed=None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.kway_marginals" title="synthgauge.metrics.nist.kway_marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kway_marginals</span></code></a>(real, synth[, k, trials, bins, seed])</p></td>
 <td><p>A measure based on the similarity of a set of k-way marginals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.hoc" title="synthgauge.metrics.nist.hoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hoc</span></code></a>(real, synth, trials=300, prob=0.1, seed=None)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.nist.hoc" title="synthgauge.metrics.nist.hoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hoc</span></code></a>(real, synth[, trials, prob, seed])</p></td>
 <td><p>A measure based on Higher Order Conjunctions (HOC).</p></td>
 </tr>
 </tbody>

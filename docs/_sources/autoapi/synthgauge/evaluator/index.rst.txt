@@ -37,7 +37,11 @@ Classes
    :returns: An `Evaluator` object ready for metric and visual evaluation.
    :rtype: synthgauge.Evaluator
 
-   .. py:method:: describe_numeric(self)
+   .. py:property:: metrics
+
+      Return __metrics.
+
+   .. py:method:: describe_numeric()
 
       Summarise numeric features.
 
@@ -49,7 +53,7 @@ Classes
       :rtype: pandas.DataFrame
 
 
-   .. py:method:: describe_categorical(self)
+   .. py:method:: describe_categorical()
 
       Summarise categorical features.
 
@@ -61,7 +65,7 @@ Classes
       :rtype: pandas.DataFrame
 
 
-   .. py:method:: add_metric(self, name, alias=None, **kwargs)
+   .. py:method:: add_metric(name, alias=None, **kwargs)
 
       Add a metric to the evaluator.
 
@@ -88,7 +92,7 @@ Classes
       :type \*\*kwargs: dict, optional
 
 
-   .. py:method:: add_custom_metric(self, alias, func, **kwargs)
+   .. py:method:: add_custom_metric(alias, func, **kwargs)
 
       Add a custom metric to the evaluator.
 
@@ -109,7 +113,7 @@ Classes
       :type \*\*kwargs: dict, optional
 
 
-   .. py:method:: copy_metrics(self, other)
+   .. py:method:: copy_metrics(other)
 
       Copy metrics from another evaluator.
 
@@ -122,7 +126,7 @@ Classes
       :type other: Evaluator
 
 
-   .. py:method:: save_metrics(self, filename)
+   .. py:method:: save_metrics(filename)
 
       Save the current metrics dictionary to disk via `pickle`.
 
@@ -130,7 +134,7 @@ Classes
       :type filename: str
 
 
-   .. py:method:: load_metrics(self, filename, overwrite=False)
+   .. py:method:: load_metrics(filename, overwrite=False)
 
       Load metrics from disk.
 
@@ -144,13 +148,7 @@ Classes
       :type overwrite: bool, default False
 
 
-   .. py:method:: metrics(self)
-      :property:
-
-      Return __metrics.
-
-
-   .. py:method:: drop_metric(self, metric)
+   .. py:method:: drop_metric(metric)
 
       Drops the named metric from the metrics dictionary.
 
@@ -158,7 +156,7 @@ Classes
       :type metric: str
 
 
-   .. py:method:: evaluate(self, as_df=False)
+   .. py:method:: evaluate(as_df=False)
 
       Compute metrics for real and synth data.
 
@@ -181,7 +179,7 @@ Classes
                   multiple values are assigned to a single key.
 
 
-   .. py:method:: plot_histograms(self, figcols=2, figsize=None)
+   .. py:method:: plot_histograms(figcols=2, figsize=None)
 
       Plot grid of feature distributions.
 
@@ -190,7 +188,7 @@ Classes
       groups by `'source'`.
 
 
-   .. py:method:: plot_histogram3d(self, data, x, y, x_bins='auto', y_bins='auto', figsize=None)
+   .. py:method:: plot_histogram3d(data, x, y, x_bins='auto', y_bins='auto', figsize=None)
 
       Plot 3D histogram.
 
@@ -206,7 +204,7 @@ Classes
       :type y: str
 
 
-   .. py:method:: plot_correlation(self, feats=None, method='pearson', figcols=2, figsize=None, **kwargs)
+   .. py:method:: plot_correlation(feats=None, method='pearson', figcols=2, figsize=None, **kwargs)
 
       Plot a grid of correlation heatmaps.
 
@@ -215,7 +213,7 @@ Classes
       differences in their correlations.
 
 
-   .. py:method:: plot_crosstab(self, x, y, figsize=None, **kwargs)
+   .. py:method:: plot_crosstab(x, y, figsize=None, **kwargs)
 
       Plot pairwise cross-tabulation.
 
@@ -224,7 +222,7 @@ Classes
       corresponding data in `self`.
 
 
-   .. py:method:: plot_qq(self, feature, n_quantiles=None, figsize=None)
+   .. py:method:: plot_qq(feature, n_quantiles=None, figsize=None)
 
       Plot quantile-quantile plot.
 
