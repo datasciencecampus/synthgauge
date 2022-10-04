@@ -196,6 +196,26 @@ def _pmse_logr_statistics(combined, indicator):
     return loc, scale
 
 
+def _pmse_cart_stats_boot(real, num_perms, **kwargs):
+    """Null statistic estimation for CART propensity via bootstrapping.
+
+    Estimate the location and scale of pMSE in the null case by repeated
+    bootstraps of the real data.
+    """
+
+    rng = np.random.default_rng(kwargs.get("random_state", None))
+    real = pd.get_dummies(real, drop_first=True)
+    rows = len(real)
+
+    pmses = []
+    for perm in range(num_perms):
+        sampled = real.iloc[rng.integers(rows, size=2 * rows), :]
+        indicator = np.repeat([0, 1], rows)
+        pmses.append(pmse(sampled, indicator, method="cart", **kwargs))
+
+    return np.mean(pmses), np.std(pmses)
+
+
 def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
     """Estimate the location and scale of pMSE in the null case by
     repeating pMSE calculations on permuations of the indicator column
@@ -246,7 +266,6 @@ def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
 
     pmses = []
     for _ in range(num_perms):
-
         rng.shuffle(indicator)
         pmses.append(pmse(combined, indicator, method="cart", **kwargs))
 

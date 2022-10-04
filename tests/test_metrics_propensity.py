@@ -119,6 +119,21 @@ def test_pmse_logr_statistics(real, synth, seed):
 
 
 @given(st.integers(0, 100))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pmse_cart_stats_boot(real, seed):
+    """Check that the bootstrap-based null statistics can be estimated
+    correctly."""
+
+    loc, scale = propensity._pmse_cart_stats_boot(real, num_perms=10, random_state=seed)
+
+    assert isinstance(loc, float)
+    assert isinstance(scale, float)
+
+    assert scale > 0
+    assert loc <= 0.25
+
+
+@given(st.integers(0, 100))
 @settings(
     deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
 )
