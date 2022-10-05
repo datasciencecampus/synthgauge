@@ -199,8 +199,43 @@ def _pmse_logr_statistics(combined, indicator):
 def _pmse_cart_stats_boot(real, num_perms, **kwargs):
     """Null statistic estimation for CART propensity via bootstrapping.
 
-    Estimate the location and scale of pMSE in the null case by repeated
-    bootstraps of the real data.
+    Estimate the location and scale of pMSE in the null case by taking
+    several bootstrapped samples of the real data, each being twice the
+    length of the original data. Half of the data are listed as real
+    while the other half are synthetic. These labelled data are then run
+    through the usual pMSE calculation procedure to produce a set.
+
+    The set of pMSE values are then summarised to give the estimated
+    mean and standard deviation.
+
+    Parameters
+    ----------
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    num_perms : int
+        Number of bootstraps to take. Named to be consistent with the
+        permutation-based method.
+    **kwargs : dict, optional
+        Keyword arguments passed to
+        `sklearn.tree.DecisionTreeClassifier`.
+
+    Returns
+    -------
+    loc : float
+        Estimated expectation of pMSE in the null case.
+    scale : float
+        Estimated standard deviation of pMSE in the null case.
+
+    Notes
+    -----
+    This estimation method removes any dependency on the synthetic data
+    being assessed, improving on the permutation-based method set out in
+    https://doi.org/10.1111/rssa.12358.
+
+    The details and justification for this method are present in
+    https://doi.org/10.29012/jpc.748. This implementation is adapted
+    from the source code submitted with the aforementioned paper:
+    https://github.com/ClaireMcKayBowen/Code-for-NIST-PSCR-Differential-Privacy-Synthetic-Data-Challenge
     """
 
     rng = np.random.default_rng(kwargs.get("random_state", None))
