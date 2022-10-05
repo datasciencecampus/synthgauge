@@ -372,7 +372,9 @@ def _pmse_cart_statistics(combined, indicator, num_perms, estimator, **kwargs):
     return loc, scale
 
 
-def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
+def pmse_ratio(
+    combined, indicator, method, num_perms=None, estimator="perm", **kwargs
+):
     """The propensity score mean-squared error ratio.
 
     This is the ratio of observed pMSE to that expected under the null
@@ -394,6 +396,9 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model classifier.
 
@@ -426,13 +431,15 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
         loc, _ = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, _ = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     return observed / loc
 
 
-def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
+def pmse_standardised(
+    combined, indicator, method, num_perms=None, estimator="perm", **kwargs
+):
     """The standardised propensity score mean-squared error.
 
     This takes the observed pMSE and standardises it against the null
@@ -454,6 +461,9 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
@@ -486,14 +496,20 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
         loc, scale = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, scale = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     return (observed - loc) / scale
 
 
 def propensity_metrics(
-    real, synth, method="cart", feats=None, num_perms=20, **kwargs
+    real,
+    synth,
+    method="cart",
+    feats=None,
+    num_perms=20,
+    estimator="perm",
+    **kwargs,
 ):
     """Propensity score-based metrics.
 
@@ -529,6 +545,9 @@ def propensity_metrics(
     num_perms : int, default 20
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
@@ -581,7 +600,7 @@ def propensity_metrics(
         loc, scale = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, scale = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     observed = pmse(combined, indicator, method, **kwargs)

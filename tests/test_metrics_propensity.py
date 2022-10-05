@@ -124,7 +124,7 @@ def test_pmse_cart_stats_boot(real, synth, seed):
     """Check that the bootstrap-based null statistics can be estimated
     correctly."""
 
-    synth = _reduce_synthetic(synth)
+    synth = _reduce_synthetic(synth, seed)
     combined, indicator = propensity._combine_encode_and_pop(real, synth)
 
     loc, scale = propensity._pmse_cart_stats_boot(
