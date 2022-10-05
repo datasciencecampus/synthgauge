@@ -120,12 +120,15 @@ def test_pmse_logr_statistics(real, synth, seed):
 
 @given(st.integers(0, 100))
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-def test_pmse_cart_stats_boot(real, seed):
+def test_pmse_cart_stats_boot(real, synth, seed):
     """Check that the bootstrap-based null statistics can be estimated
     correctly."""
 
+    synth = _reduce_synthetic(synth)
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
+
     loc, scale = propensity._pmse_cart_stats_boot(
-        real, num_perms=10, random_state=seed
+        combined, indicator, trials=10, random_state=seed
     )
 
     assert isinstance(loc, float)
@@ -139,7 +142,7 @@ def test_pmse_cart_stats_boot(real, seed):
 @settings(
     deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
 )
-def test_pmse_cart_statistics(real, synth, seed):
+def test_pmse_cart_stats_perm(real, synth, seed):
     """Check that the permutation-based null statistics can be estimated
     correctly."""
 
@@ -147,7 +150,7 @@ def test_pmse_cart_statistics(real, synth, seed):
     combined, indicator = propensity._combine_encode_and_pop(real, synth)
     synth_prop = indicator.mean()
 
-    loc, scale = propensity._pmse_cart_statistics(
+    loc, scale = propensity._pmse_cart_stats_perm(
         combined, indicator, num_perms=10, random_state=seed
     )
 
@@ -160,6 +163,56 @@ def test_pmse_cart_statistics(real, synth, seed):
         assert loc <= synth_prop**2
     else:
         assert loc <= synth_prop**2 - 2 * synth_prop + 1
+
+
+@given(st.integers(0, 100), st.sampled_from(("perm", "boot")))
+@settings(
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+def test_pmse_cart_statistics(real, synth, seed, estimator):
+    """Check that either null statistic estimation works."""
+
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
+
+    if estimator == "perm":
+        with pytest.warns(FutureWarning, match="permutation method is flawed"):
+            loc, scale = propensity._pmse_cart_statistics(
+                combined,
+                indicator,
+                num_perms=10,
+                estimator=estimator,
+                random_state=seed,
+            )
+
+    else:
+        loc, scale = propensity._pmse_cart_statistics(
+            combined,
+            indicator,
+            num_perms=10,
+            estimator=estimator,
+            random_state=seed,
+        )
+
+    assert isinstance(loc, float)
+    assert isinstance(scale, float)
+
+    assert scale > 0
+    assert loc <= 0.25
+
+
+@given(st.text(string.ascii_lowercase))
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_pmse_cart_statistics_error(real, synth, estimator):
+    """Check that an error gets raised for an invalid estimator name."""
+
+    combined, indicator = propensity._combine_encode_and_pop(real, synth)
+
+    with pytest.raises(
+        ValueError, match="^Estimation method must be `perm` or `boot`.$"
+    ):
+        _ = propensity._pmse_cart_statistics(
+            combined, indicator, num_perms=None, estimator=estimator
+        )
 
 
 @given(st.sampled_from(("logr", "cart")), st.integers(0, 100))
