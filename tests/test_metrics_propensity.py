@@ -124,7 +124,9 @@ def test_pmse_cart_stats_boot(real, seed):
     """Check that the bootstrap-based null statistics can be estimated
     correctly."""
 
-    loc, scale = propensity._pmse_cart_stats_boot(real, num_perms=10, random_state=seed)
+    loc, scale = propensity._pmse_cart_stats_boot(
+        real, num_perms=10, random_state=seed
+    )
 
     assert isinstance(loc, float)
     assert isinstance(scale, float)
