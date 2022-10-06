@@ -7,6 +7,9 @@ import pandas as pd
 import pytest
 from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 from synthgauge.metrics import propensity
 
@@ -212,3 +215,20 @@ def test_propensity_metrics_error(real, synth, method):
     match = f"Propensity method must be 'cart' or 'logr' not {method}."
     with pytest.raises(ValueError, match=match):
         _ = propensity.propensity_metrics(real, synth, method)
+
+
+@given(
+    st.sampled_from(
+        (LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier)
+    )
+)
+@settings(
+    deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture]
+)
+def test_specks(real, synth, classifier):
+    """Check that the SPECKS method works with different classifiers."""
+
+    score = propensity.specks(real, synth, classifier)
+
+    assert isinstance(score, float)
+    assert score >= 0 and score <= 1

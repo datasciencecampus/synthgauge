@@ -5,6 +5,7 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 import scipy.special
+from scipy.stats import ks_2samp
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeClassifier
@@ -475,3 +476,58 @@ def propensity_metrics(
     )
 
     return PropensityResult(observed, standard, ratio)
+
+
+def specks(real, synth, classifier, **kwargs):
+    """Propensity score comparison via the Kolmogorov-Smirnov distance.
+
+    The SPECKS metric was originally presented in
+    https://arxiv.org/pdf/1803.06763.pdf and works as follows:
+
+        1. Combine the real and synthetic data, labelling them as such.
+        2. Calculate the propensity score for each record using a binary
+           classifier.
+        3. Compute the Kolmogorov-Smirnov distance between the empirical
+           CDFs for the real and synthetic propensity scores.
+
+    The Kolmogorov-Smirnov distance is defined as the maximum difference
+    between two empirical distributions. Therefore, it is bounded
+    between zero and one. If the synthetic data properly resembles the
+    original data then they will be indistinguishable, leading to close
+    empirical CDFs.
+
+    Parameters
+    ----------
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    classifier : scikit-learn estimator
+        Any `scikit-learn`-style classifier class with a `predict_proba`
+        method.
+    **kwargs : dict, optional
+        Keyword arguments to be passed to `classifer`.
+
+    Returns
+    -------
+    float
+        The Kolmogorov-Smirnov distance between the real and synthetic
+        propensity score CDFs.
+
+    Notes
+    -----
+    The combined dataset is one-hot-encoded before being passed to the
+    classifier so categorical features can be handled.
+
+    The paper introducing SPECKS has also been published in METRON:
+    https://doi.org/10.1007/s40300-021-00201-0.
+    """
+
+    combined, indicator = _combine_encode_and_pop(real, synth)
+    scores = (
+        classifier(**kwargs)
+        .fit(combined, indicator)
+        .predict_proba(combined)[:, 1]
+    )
+
+    return ks_2samp(scores[indicator == 0], scores[indicator == 1]).statistic
