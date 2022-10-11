@@ -211,8 +211,8 @@ def _pmse_cart_stats_boot(combined, indicator, trials, **kwargs):
 
     Parameters
     ----------
-    real : pandas.DataFrame
-        Dataframe containing the real data.
+    combined : pandas.DataFrame
+        Dataframe containing the stacked real and synthetic data.
     trials : int
         Number of samples to take in the estimate.
     **kwargs : dict, optional
