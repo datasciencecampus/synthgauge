@@ -484,7 +484,7 @@ def specks(real, synth, classifier, **kwargs):
     The SPECKS metric was originally presented in
     https://arxiv.org/pdf/1803.06763.pdf and works as follows:
 
-        1. Combine the real and synthetic data, labelling them as such.
+        1. Stack the real and synthetic data, labelling them as such.
         2. Calculate the propensity score for each record using a binary
            classifier.
         3. Compute the Kolmogorov-Smirnov distance between the empirical
