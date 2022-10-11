@@ -353,7 +353,7 @@ def _pmse_cart_statistics(combined, indicator, num_perms, estimator, **kwargs):
     if estimator == "perm":
         message = (
             "The permutation method is flawed and will be removed in a future "
-            "release. See https://doi.org/10.29012/jpc.748 for details."
+            "release. Consider using `estimator='boot'` instead."
         )
         warnings.warn(message, FutureWarning)
 
