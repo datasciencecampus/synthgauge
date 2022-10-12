@@ -1,3 +1,14 @@
+# v2.2.0 - 2022-10-12
+
+This release adds two new features to the `metrics.propensity` module:
+
+- An additional method for estimating pMSE null statistics that only uses the
+  real data. Eventually, this will become the default behaviour and a warning
+  is issued if the old permutation-based method is used. Details of the method
+  can be found in [Bowen and Snoke (2021)](https://doi.org/10.29012/jpc.748).
+- The SPECKS metric: a propensity-score-based metric that uses the KS distance.
+  Details in [Bowen et al. (2021)](https://doi.org/10.1007/s40300-021-00201-0).
+
 # v2.1.0 - 2022-09-30
 
 In this minor release, we add a new set of utility metrics from the 2018 NNIST
