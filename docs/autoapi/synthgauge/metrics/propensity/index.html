@@ -131,14 +131,17 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse" title="synthgauge.metrics.propensity.pmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse</span></code></a>(combined, indicator, method, **kwargs)</p></td>
 <td><p>Calculate the propensity score mean-squared error (pMSE).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_ratio" title="synthgauge.metrics.propensity.pmse_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_ratio</span></code></a>(combined, indicator, method[, num_perms])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_ratio" title="synthgauge.metrics.propensity.pmse_ratio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_ratio</span></code></a>(combined, indicator, method[, num_perms, ...])</p></td>
 <td><p>The propensity score mean-squared error ratio.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_standardised" title="synthgauge.metrics.propensity.pmse_standardised"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_standardised</span></code></a>(combined, indicator, method[, num_perms])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.pmse_standardised" title="synthgauge.metrics.propensity.pmse_standardised"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pmse_standardised</span></code></a>(combined, indicator, method[, ...])</p></td>
 <td><p>The standardised propensity score mean-squared error.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_metrics" title="synthgauge.metrics.propensity.propensity_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_metrics</span></code></a>(real, synth[, method, feats, num_perms])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.propensity_metrics" title="synthgauge.metrics.propensity.propensity_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">propensity_metrics</span></code></a>(real, synth[, method, feats, ...])</p></td>
 <td><p>Propensity score-based metrics.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#synthgauge.metrics.propensity.specks" title="synthgauge.metrics.propensity.specks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">specks</span></code></a>(real, synth, classifier, **kwargs)</p></td>
+<td><p>Propensity score comparison via the Kolmogorov-Smirnov distance.</p></td>
 </tr>
 </tbody>
 </table>
@@ -192,7 +195,7 @@ details, see: <a class="reference external" href="https://doi.org/10.1111/rssa.1
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.propensity.pmse_ratio">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">pmse_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#pmse_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.pmse_ratio" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">pmse_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'perm'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#pmse_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.pmse_ratio" title="Permalink to this definition"></a></dt>
 <dd><p>The propensity score mean-squared error ratio.</p>
 <p>This is the ratio of observed pMSE to that expected under the null
 case, i.e.</p>
@@ -207,6 +210,8 @@ case, i.e.</p>
 logistic regression with first-order interactions (<cite>“logr”</cite>).</p></li>
 <li><p><strong>num_perms</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of permutations to consider when estimating the null case
 statistics with a CART model.</p></li>
+<li><p><strong>estimator</strong> (<em>{&quot;perm&quot;</em><em>, </em><em>&quot;boot&quot;}</em>) – Which estimation process to use with a CART model. By default,
+permutations are used to ensure back-compatibility.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments passed to the propensity model classifier.</p></li>
 </ul>
 </dd>
@@ -234,7 +239,7 @@ reproducible.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.propensity.pmse_standardised">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">pmse_standardised</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#pmse_standardised"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.pmse_standardised" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">pmse_standardised</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">combined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indicator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'perm'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#pmse_standardised"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.pmse_standardised" title="Permalink to this definition"></a></dt>
 <dd><p>The standardised propensity score mean-squared error.</p>
 <p>This takes the observed pMSE and standardises it against the null
 case, i.e.</p>
@@ -249,6 +254,8 @@ case, i.e.</p>
 logistic regression with first-order interactions (<cite>“logr”</cite>).</p></li>
 <li><p><strong>num_perms</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of permutations to consider when estimating the null case
 statistics with a CART model.</p></li>
+<li><p><strong>estimator</strong> (<em>{&quot;perm&quot;</em><em>, </em><em>&quot;boot&quot;}</em>) – Which estimation process to use with a CART model. By default,
+permutations are used to ensure back-compatibility.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments passed to the propensity model.</p></li>
 </ul>
 </dd>
@@ -276,7 +283,7 @@ reproducible.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="synthgauge.metrics.propensity.propensity_metrics">
-<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">propensity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#propensity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.propensity_metrics" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">propensity_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cart'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'perm'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#propensity_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.propensity_metrics" title="Permalink to this definition"></a></dt>
 <dd><p>Propensity score-based metrics.</p>
 <p>This function calculates three metrics based on the propensity score
 mean-squared error (pMSE), all of which quantify utility by
@@ -303,6 +310,8 @@ logistic regression with first-order interactions (<cite>“logr”</cite>).</p>
 model. If <cite>None</cite> (default), all common features are used.</p></li>
 <li><p><strong>num_perms</strong> (<em>int</em><em>, </em><em>default 20</em>) – Number of permutations to consider when estimating the null case
 statistics with a CART model.</p></li>
+<li><p><strong>estimator</strong> (<em>{&quot;perm&quot;</em><em>, </em><em>&quot;boot&quot;}</em>) – Which estimation process to use with a CART model. By default,
+permutations are used to ensure back-compatibility.</p></li>
 <li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments passed to the propensity model.</p></li>
 </ul>
 </dd>
@@ -332,6 +341,52 @@ using a CART model. Without specifying this, the results will not be
 reproducible.</p>
 <p>Details on these metrics can be found at:
 <a class="reference external" href="https://doi.org/10.1111/rssa.12358">https://doi.org/10.1111/rssa.12358</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="synthgauge.metrics.propensity.specks">
+<span class="sig-prename descclassname"><span class="pre">synthgauge.metrics.propensity.</span></span><span class="sig-name descname"><span class="pre">specks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">real</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/synthgauge/metrics/propensity.html#specks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#synthgauge.metrics.propensity.specks" title="Permalink to this definition"></a></dt>
+<dd><p>Propensity score comparison via the Kolmogorov-Smirnov distance.</p>
+<p>The SPECKS metric was originally presented in
+<a class="reference external" href="https://arxiv.org/pdf/1803.06763.pdf">https://arxiv.org/pdf/1803.06763.pdf</a> and works as follows:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Stack the real and synthetic data, and create a variable
+indicating whether each record is real (0) or synthetic (1).</p></li>
+<li><p>Calculate the propensity score for each record using a binary
+classifier on the indicator variable.</p></li>
+<li><p>Compute the Kolmogorov-Smirnov distance between the empirical
+CDFs for the real and synthetic propensity scores.</p></li>
+</ol>
+</div></blockquote>
+<p>The Kolmogorov-Smirnov distance is defined as the maximum difference
+between two empirical distributions. Therefore, it is bounded
+between zero and one. If the synthetic data properly resembles the
+original data then they will be indistinguishable, leading to close
+empirical CDFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>real</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the real data.</p></li>
+<li><p><strong>synth</strong> (<em>pandas.DataFrame</em>) – Dataframe containing the synthetic data.</p></li>
+<li><p><strong>classifier</strong> (<em>scikit-learn estimator</em>) – Any <cite>scikit-learn</cite>-style classifier class with a <cite>predict_proba</cite>
+method.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Keyword arguments to be passed to <cite>classifer</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The Kolmogorov-Smirnov distance between the real and synthetic
+propensity score CDFs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The combined dataset is one-hot-encoded before being passed to the
+classifier so categorical features can be handled.</p>
+<p>The paper introducing SPECKS has also been published in METRON:
+<a class="reference external" href="https://doi.org/10.1007/s40300-021-00201-0">https://doi.org/10.1007/s40300-021-00201-0</a>.</p>
 </dd></dl>
 
 </section>

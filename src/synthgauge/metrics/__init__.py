@@ -6,7 +6,9 @@ from .correlation import correlation_msd, correlation_ratio_msd
 from .density import feature_density_mad
 from .nist import hoc, kway_marginals
 from .privacy import min_nearest_neighbour, sample_overlap_score, tcap_score
-from .propensity import propensity_metrics
+from .propensity import (
+    pmse, pmse_ratio, pmse_standardised, propensity_metrics, specks
+)
 from .univariate import (
     jensen_shannon_distance,
     jensen_shannon_divergence,
@@ -33,8 +35,12 @@ __all__ = [
     "kway_marginals",
     "mann_whitney",
     "min_nearest_neighbour",
+    "pmse",
+    "pmse_ratio",
+    "pmse_standardised",
     "propensity_metrics",
     "sample_overlap_score",
+    "specks",
     "tcap_score",
     "wasserstein",
     "wilcoxon",
