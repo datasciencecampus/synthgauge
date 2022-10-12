@@ -22,6 +22,7 @@ Functions
    synthgauge.metrics.propensity.pmse_ratio
    synthgauge.metrics.propensity.pmse_standardised
    synthgauge.metrics.propensity.propensity_metrics
+   synthgauge.metrics.propensity.specks
 
 
 
@@ -71,7 +72,7 @@ Functions
    details, see: https://doi.org/10.1111/rssa.12358
 
 
-.. py:function:: pmse_ratio(combined, indicator, method, num_perms=None, **kwargs)
+.. py:function:: pmse_ratio(combined, indicator, method, num_perms=None, estimator='perm', **kwargs)
 
    The propensity score mean-squared error ratio.
 
@@ -92,6 +93,9 @@ Functions
    :param num_perms: Number of permutations to consider when estimating the null case
                      statistics with a CART model.
    :type num_perms: int, optional
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
    :param \*\*kwargs: Keyword arguments passed to the propensity model classifier.
    :type \*\*kwargs: dict, optional
 
@@ -116,7 +120,7 @@ Functions
    reproducible.
 
 
-.. py:function:: pmse_standardised(combined, indicator, method, num_perms=None, **kwargs)
+.. py:function:: pmse_standardised(combined, indicator, method, num_perms=None, estimator='perm', **kwargs)
 
    The standardised propensity score mean-squared error.
 
@@ -137,6 +141,9 @@ Functions
    :param num_perms: Number of permutations to consider when estimating the null case
                      statistics with a CART model.
    :type num_perms: int, optional
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
    :param \*\*kwargs: Keyword arguments passed to the propensity model.
    :type \*\*kwargs: dict, optional
 
@@ -161,7 +168,7 @@ Functions
    reproducible.
 
 
-.. py:function:: propensity_metrics(real, synth, method='cart', feats=None, num_perms=20, **kwargs)
+.. py:function:: propensity_metrics(real, synth, method='cart', feats=None, num_perms=20, estimator='perm', **kwargs)
 
    Propensity score-based metrics.
 
@@ -195,6 +202,9 @@ Functions
    :param num_perms: Number of permutations to consider when estimating the null case
                      statistics with a CART model.
    :type num_perms: int, default 20
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
    :param \*\*kwargs: Keyword arguments passed to the propensity model.
    :type \*\*kwargs: dict, optional
 
@@ -219,5 +229,48 @@ Functions
 
    Details on these metrics can be found at:
    https://doi.org/10.1111/rssa.12358
+
+
+.. py:function:: specks(real, synth, classifier, **kwargs)
+
+   Propensity score comparison via the Kolmogorov-Smirnov distance.
+
+   The SPECKS metric was originally presented in
+   https://arxiv.org/pdf/1803.06763.pdf and works as follows:
+
+       1. Stack the real and synthetic data, and create a variable
+          indicating whether each record is real (0) or synthetic (1).
+       2. Calculate the propensity score for each record using a binary
+          classifier on the indicator variable.
+       3. Compute the Kolmogorov-Smirnov distance between the empirical
+          CDFs for the real and synthetic propensity scores.
+
+   The Kolmogorov-Smirnov distance is defined as the maximum difference
+   between two empirical distributions. Therefore, it is bounded
+   between zero and one. If the synthetic data properly resembles the
+   original data then they will be indistinguishable, leading to close
+   empirical CDFs.
+
+   :param real: Dataframe containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: Dataframe containing the synthetic data.
+   :type synth: pandas.DataFrame
+   :param classifier: Any `scikit-learn`-style classifier class with a `predict_proba`
+                      method.
+   :type classifier: scikit-learn estimator
+   :param \*\*kwargs: Keyword arguments to be passed to `classifer`.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The Kolmogorov-Smirnov distance between the real and synthetic
+             propensity score CDFs.
+   :rtype: float
+
+   .. rubric:: Notes
+
+   The combined dataset is one-hot-encoded before being passed to the
+   classifier so categorical features can be handled.
+
+   The paper introducing SPECKS has also been published in METRON:
+   https://doi.org/10.1007/s40300-021-00201-0.
 
 

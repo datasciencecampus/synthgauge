@@ -44,7 +44,11 @@ Functions
    synthgauge.metrics.min_nearest_neighbour
    synthgauge.metrics.sample_overlap_score
    synthgauge.metrics.tcap_score
+   synthgauge.metrics.pmse
+   synthgauge.metrics.pmse_ratio
+   synthgauge.metrics.pmse_standardised
    synthgauge.metrics.propensity_metrics
+   synthgauge.metrics.specks
    synthgauge.metrics.jensen_shannon_distance
    synthgauge.metrics.jensen_shannon_divergence
    synthgauge.metrics.kolmogorov_smirnov
@@ -469,7 +473,149 @@ Functions
    Data Confidentiality, Session 3.
 
 
-.. py:function:: propensity_metrics(real, synth, method='cart', feats=None, num_perms=20, **kwargs)
+.. py:function:: pmse(combined, indicator, method, **kwargs)
+
+   Calculate the propensity score mean-squared error (pMSE).
+
+   :param combined: The combined set of real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: An indicator for which data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param \*\*kwargs: Keyword arguments passed to propensity model.
+   :type \*\*kwargs: dict, optional
+
+   :returns: Propensity score mean-squared error.
+   :rtype: float
+
+   .. seealso:: :obj:`sklearn.linear_model.LogisticRegression`, :obj:`sklearn.tree.DecisionTreeClassifier`
+
+   .. rubric:: Notes
+
+   Propensity scores represent probabilities of group membership. By
+   modelling whether an example is synthetic or not, we can use
+   propensity scores as a measure of utility.
+
+   This returns zero if the distributions are identical, and is bounded
+   above by :math:`1 - c` if they are nothing alike, where :math:`c` is
+   the proportion of the data that is synthetic. This method is
+   therefore good for comparing multiple synthetic datasets. However,
+   as this is not a test, there is no threshold distance below which we
+   can claim the distributions are statistically the same.
+
+   This function assumes that some preprocessing has been carried out
+   so that the data is ready to be passed to the classification
+   function. Encoding of categorical data is performed, but, for
+   example, scaling is not. Without this, erroneous results may be
+   returned. The logistic regression can fail to converge if many
+   variables are considered. Anecdotally, this doesn't seem to
+   drastically impact the propensity scores, although this should be
+   investigated formally.
+
+   Using a CART model as a classifier is recommended in the literature
+   however we also support the use of logistic regression. For further
+   details, see: https://doi.org/10.1111/rssa.12358
+
+
+.. py:function:: pmse_ratio(combined, indicator, method, num_perms=None, estimator='perm', **kwargs)
+
+   The propensity score mean-squared error ratio.
+
+   This is the ratio of observed pMSE to that expected under the null
+   case, i.e.
+
+   .. math::
+
+       ratio(pMSE) = \frac{pMSE}{E(pMSE)}
+
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param num_perms: Number of permutations to consider when estimating the null case
+                     statistics with a CART model.
+   :type num_perms: int, optional
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
+   :param \*\*kwargs: Keyword arguments passed to the propensity model classifier.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The observed-to-null pMSE ratio.
+   :rtype: float
+
+   .. rubric:: Notes
+
+   The interpretation of this metric makes more sense for synthetic
+   data. The pMSE alone gives better utility as the value gets closer
+   to zero, which is only attainable when the datasets are identical.
+   However, when generating synthetic data, we do not want to produce
+   identical entries. Rather, we want to achieve similarity between the
+   distributions of the real and synthetic datasets.
+
+   This ratio tends towards one when this is achieved, and increases
+   otherwise.
+
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the model when
+   using a CART model. Without specifying this, the results will not be
+   reproducible.
+
+
+.. py:function:: pmse_standardised(combined, indicator, method, num_perms=None, estimator='perm', **kwargs)
+
+   The standardised propensity score mean-squared error.
+
+   This takes the observed pMSE and standardises it against the null
+   case, i.e.
+
+   .. math::
+
+       stand(pMSE) = (pMSE - E(pMSE)) / sd(pMSE)
+
+   :param combined: Dataframe containing the combined real and synthetic data.
+   :type combined: pandas.DataFrame
+   :param indicator: Indicator for whether data are real (0) or synthetic (1).
+   :type indicator: numpy.ndarray
+   :param method: Which propensity model to use. Must be either CART (`"cart"`) or
+                  logistic regression with first-order interactions (`"logr"`).
+   :type method: {"cart", "logr"}
+   :param num_perms: Number of permutations to consider when estimating the null case
+                     statistics with a CART model.
+   :type num_perms: int, optional
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
+   :param \*\*kwargs: Keyword arguments passed to the propensity model.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The null-standardised pMSE.
+   :rtype: float
+
+   .. rubric:: Notes
+
+   The interpretation of this metric makes more sense for synthetic
+   data. The pMSE alone indicates better utility as it gets closer to
+   zero, which is only attainable when the datasets are identical.
+   However, when generating synthetic data, we do not want to produce
+   identical entries. Rather, we want to achieve similarity between the
+   distributions of the real and synthetic datasets.
+
+   This standardised value tends towards zero when this is achieved,
+   and increases in magnitude otherwise.
+
+   Note that the `random_state` keyword argument is used to
+   (independently) create the permutations and to fit the model when
+   using a CART model. Without specifying this, the results will not be
+   reproducible.
+
+
+.. py:function:: propensity_metrics(real, synth, method='cart', feats=None, num_perms=20, estimator='perm', **kwargs)
 
    Propensity score-based metrics.
 
@@ -503,6 +649,9 @@ Functions
    :param num_perms: Number of permutations to consider when estimating the null case
                      statistics with a CART model.
    :type num_perms: int, default 20
+   :param estimator: Which estimation process to use with a CART model. By default,
+                     permutations are used to ensure back-compatibility.
+   :type estimator: {"perm", "boot"}
    :param \*\*kwargs: Keyword arguments passed to the propensity model.
    :type \*\*kwargs: dict, optional
 
@@ -527,6 +676,49 @@ Functions
 
    Details on these metrics can be found at:
    https://doi.org/10.1111/rssa.12358
+
+
+.. py:function:: specks(real, synth, classifier, **kwargs)
+
+   Propensity score comparison via the Kolmogorov-Smirnov distance.
+
+   The SPECKS metric was originally presented in
+   https://arxiv.org/pdf/1803.06763.pdf and works as follows:
+
+       1. Stack the real and synthetic data, and create a variable
+          indicating whether each record is real (0) or synthetic (1).
+       2. Calculate the propensity score for each record using a binary
+          classifier on the indicator variable.
+       3. Compute the Kolmogorov-Smirnov distance between the empirical
+          CDFs for the real and synthetic propensity scores.
+
+   The Kolmogorov-Smirnov distance is defined as the maximum difference
+   between two empirical distributions. Therefore, it is bounded
+   between zero and one. If the synthetic data properly resembles the
+   original data then they will be indistinguishable, leading to close
+   empirical CDFs.
+
+   :param real: Dataframe containing the real data.
+   :type real: pandas.DataFrame
+   :param synth: Dataframe containing the synthetic data.
+   :type synth: pandas.DataFrame
+   :param classifier: Any `scikit-learn`-style classifier class with a `predict_proba`
+                      method.
+   :type classifier: scikit-learn estimator
+   :param \*\*kwargs: Keyword arguments to be passed to `classifer`.
+   :type \*\*kwargs: dict, optional
+
+   :returns: The Kolmogorov-Smirnov distance between the real and synthetic
+             propensity score CDFs.
+   :rtype: float
+
+   .. rubric:: Notes
+
+   The combined dataset is one-hot-encoded before being passed to the
+   classifier so categorical features can be handled.
+
+   The paper introducing SPECKS has also been published in METRON:
+   https://doi.org/10.1007/s40300-021-00201-0.
 
 
 .. py:function:: jensen_shannon_distance(real, synth, feature, bins='auto', **kwargs)

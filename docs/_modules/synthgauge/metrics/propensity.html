@@ -75,11 +75,13 @@
   <h1>Source code for synthgauge.metrics.propensity</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Propensity-based utility metrics.&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">scipy.special</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">ks_2samp</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
 <span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
@@ -271,13 +273,71 @@
     <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span>
 
 
-<span class="k">def</span> <span class="nf">_pmse_cart_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Estimate the location and scale of pMSE in the null case by</span>
-<span class="sd">    repeating pMSE calculations on permuations of the indicator column</span>
-<span class="sd">    using a CART model.</span>
+<span class="k">def</span> <span class="nf">_pmse_cart_stats_boot</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">trials</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Null statistic estimation for CART propensity via bootstrapping.</span>
 
-<span class="sd">    The set of calculations are then summarised using the mean or</span>
-<span class="sd">    standard deviation, respectively.</span>
+<span class="sd">    Estimate the location and scale of pMSE in the null case by taking</span>
+<span class="sd">    several bootstrapped samples of the real data, each being twice the</span>
+<span class="sd">    length of the original data. Half of the data are listed as real</span>
+<span class="sd">    while the other half are synthetic. These labelled data are then run</span>
+<span class="sd">    through the usual CART pMSE calculation procedure to produce a set.</span>
+
+<span class="sd">    The set of pMSE values are then summarised to give the estimated</span>
+<span class="sd">    mean and standard deviation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the stacked real and synthetic data.</span>
+<span class="sd">    trials : int</span>
+<span class="sd">        Number of samples to take in the estimate.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments passed to</span>
+<span class="sd">        `sklearn.tree.DecisionTreeClassifier`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    loc : float</span>
+<span class="sd">        Estimated expectation of pMSE in the null case.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Estimated standard deviation of pMSE in the null case.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This estimation method removes any dependency on the synthetic data</span>
+<span class="sd">    being assessed, improving on the permutation-based method set out in</span>
+<span class="sd">    https://doi.org/10.1111/rssa.12358.</span>
+
+<span class="sd">    A description of this method and its justification are presented in</span>
+<span class="sd">    https://doi.org/10.29012/jpc.748. This implementation is adapted</span>
+<span class="sd">    from the source code submitted with the aforementioned paper:</span>
+<span class="sd">    https://github.com/ClaireMcKayBowen/Code-for-NIST-PSCR-Differential-Privacy-Synthetic-Data-Challenge</span>
+
+<span class="sd">    Note that the `random_state` keyword argument is used to</span>
+<span class="sd">    (independently) bootstrap samples and to fit the CART model. Without</span>
+<span class="sd">    specifying this, the results will not be reproducible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;random_state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="n">original</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">indicator</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">original</span><span class="p">)</span>
+
+    <span class="n">pmses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">perm</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">trials</span><span class="p">):</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">rows</span><span class="p">),</span> <span class="p">:]</span>
+        <span class="n">indicator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">rows</span><span class="p">)</span>
+        <span class="n">pmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pmse</span><span class="p">(</span><span class="n">sampled</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pmses</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pmses</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_pmse_cart_stats_perm</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Null statistic estimation for CART propensity via permutations.</span>
+
+<span class="sd">    Estimate the location and scale of pMSE in the null case by</span>
+<span class="sd">    repeating pMSE calculations on permuations of the indicator column</span>
+<span class="sd">    using a CART model. The set of calculations are then summarised</span>
+<span class="sd">    using the mean or standard deviation, respectively.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -302,15 +362,10 @@
 <span class="sd">    -----</span>
 <span class="sd">    When using a CART propensity model, the number of predictors is</span>
 <span class="sd">    unknown and the results used in `_pmse_logr_statistics` do not</span>
-<span class="sd">    apply.</span>
-
-<span class="sd">    To circumvent this, we repeatedly calculate pMSE using permutations</span>
-<span class="sd">    of the synthetic indicator column. This should approximate the</span>
-<span class="sd">    results for &quot;properly&quot; synthesised data without knowing :math:`k` a</span>
-<span class="sd">    priori.</span>
-
-<span class="sd">    Further details of this approach are available at:</span>
-<span class="sd">    https://doi.org/10.1111/rssa.12358</span>
+<span class="sd">    apply. To circumvent this, taking several permutations should</span>
+<span class="sd">    approximate the results for &quot;properly&quot; synthesised data without</span>
+<span class="sd">    knowing :math:`k` a priori. Further details of this approach are</span>
+<span class="sd">    available in https://doi.org/10.1111/rssa.12358.</span>
 
 <span class="sd">    Note that the `random_state` keyword argument is used to</span>
 <span class="sd">    (independently) create the permutations and to fit the CART model.</span>
@@ -321,14 +376,81 @@
 
     <span class="n">pmses</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_perms</span><span class="p">):</span>
-
         <span class="n">rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indicator</span><span class="p">)</span>
         <span class="n">pmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pmses</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">pmses</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="pmse_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_ratio">[docs]</a><span class="k">def</span> <span class="nf">pmse_ratio</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_pmse_cart_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Null statistic estimation for CART-based propensity scores.</span>
+
+<span class="sd">    Estimation can either be carried out using permutations of the</span>
+<span class="sd">    combined indicator or via bootstrapping. The former is the original</span>
+<span class="sd">    method presented in https://doi.org/10.1111/rssa.12358, while the</span>
+<span class="sd">    latter (from https://doi.org/10.29012/jpc.748) improves on this by</span>
+<span class="sd">    removing dependence on the synthetic data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    combined : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real and synthetic data.</span>
+<span class="sd">    indicator : numpy.ndarray</span>
+<span class="sd">        Indicator for whether data are real (0) or synthetic (1).</span>
+<span class="sd">    num_perms : int</span>
+<span class="sd">        Number of trials to consider in the estimate.</span>
+<span class="sd">    estimator : {&quot;perm&quot;, &quot;boot&quot;}</span>
+<span class="sd">        Which estimation process to use. By default, permutations are</span>
+<span class="sd">        used to ensure back-compatibility.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments to be passed to</span>
+<span class="sd">        `sklearn.tree.DecisionTreeClassifier`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    loc : float</span>
+<span class="sd">        Estimated expectation of pMSE in the null case.</span>
+<span class="sd">    scale : float</span>
+<span class="sd">        Estimated standard deviation of pMSE in the null case.</span>
+
+<span class="sd">    Warns</span>
+<span class="sd">    -----</span>
+<span class="sd">    FutureWarning</span>
+<span class="sd">        The permutation method is flawed and will be removed in a</span>
+<span class="sd">        future minor version. See https://doi.org/10.29012/jpc.748 for</span>
+<span class="sd">        details.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the estimation method, `estimator`, is not valid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">estimator</span> <span class="o">==</span> <span class="s2">&quot;perm&quot;</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;The permutation method is flawed and will be removed in a future &quot;</span>
+            <span class="s2">&quot;release. Consider using `estimator=&#39;boot&#39;` instead.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_stats_perm</span><span class="p">(</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">estimator</span> <span class="o">==</span> <span class="s2">&quot;boot&quot;</span><span class="p">:</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_stats_boot</span><span class="p">(</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Estimation method must be `perm` or `boot`.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span>
+
+
+<div class="viewcode-block" id="pmse_ratio"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_ratio">[docs]</a><span class="k">def</span> <span class="nf">pmse_ratio</span><span class="p">(</span>
+    <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="s2">&quot;perm&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The propensity score mean-squared error ratio.</span>
 
 <span class="sd">    This is the ratio of observed pMSE to that expected under the null</span>
@@ -350,6 +472,9 @@
 <span class="sd">    num_perms : int, optional</span>
 <span class="sd">        Number of permutations to consider when estimating the null case</span>
 <span class="sd">        statistics with a CART model.</span>
+<span class="sd">    estimator : {&quot;perm&quot;, &quot;boot&quot;}</span>
+<span class="sd">        Which estimation process to use with a CART model. By default,</span>
+<span class="sd">        permutations are used to ensure back-compatibility.</span>
 <span class="sd">    **kwargs : dict, optional</span>
 <span class="sd">        Keyword arguments passed to the propensity model classifier.</span>
 
@@ -382,13 +507,15 @@
         <span class="n">loc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
         <span class="n">loc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
-            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">observed</span> <span class="o">/</span> <span class="n">loc</span></div>
 
 
-<div class="viewcode-block" id="pmse_standardised"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_standardised">[docs]</a><span class="k">def</span> <span class="nf">pmse_standardised</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="pmse_standardised"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.pmse_standardised">[docs]</a><span class="k">def</span> <span class="nf">pmse_standardised</span><span class="p">(</span>
+    <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="s2">&quot;perm&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;The standardised propensity score mean-squared error.</span>
 
 <span class="sd">    This takes the observed pMSE and standardises it against the null</span>
@@ -410,6 +537,9 @@
 <span class="sd">    num_perms : int, optional</span>
 <span class="sd">        Number of permutations to consider when estimating the null case</span>
 <span class="sd">        statistics with a CART model.</span>
+<span class="sd">    estimator : {&quot;perm&quot;, &quot;boot&quot;}</span>
+<span class="sd">        Which estimation process to use with a CART model. By default,</span>
+<span class="sd">        permutations are used to ensure back-compatibility.</span>
 <span class="sd">    **kwargs : dict, optional</span>
 <span class="sd">        Keyword arguments passed to the propensity model.</span>
 
@@ -442,14 +572,20 @@
         <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
         <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
-            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">observed</span> <span class="o">-</span> <span class="n">loc</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span></div>
 
 
 <div class="viewcode-block" id="propensity_metrics"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.propensity_metrics">[docs]</a><span class="k">def</span> <span class="nf">propensity_metrics</span><span class="p">(</span>
-    <span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span> <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_perms</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="n">real</span><span class="p">,</span>
+    <span class="n">synth</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cart&quot;</span><span class="p">,</span>
+    <span class="n">feats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">num_perms</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="s2">&quot;perm&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Propensity score-based metrics.</span>
 
@@ -485,6 +621,9 @@
 <span class="sd">    num_perms : int, default 20</span>
 <span class="sd">        Number of permutations to consider when estimating the null case</span>
 <span class="sd">        statistics with a CART model.</span>
+<span class="sd">    estimator : {&quot;perm&quot;, &quot;boot&quot;}</span>
+<span class="sd">        Which estimation process to use with a CART model. By default,</span>
+<span class="sd">        permutations are used to ensure back-compatibility.</span>
 <span class="sd">    **kwargs : dict, optional</span>
 <span class="sd">        Keyword arguments passed to the propensity model.</span>
 
@@ -537,7 +676,7 @@
         <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_logr_statistics</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;cart&quot;</span><span class="p">:</span>
         <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">_pmse_cart_statistics</span><span class="p">(</span>
-            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">num_perms</span><span class="p">,</span> <span class="n">estimator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
 
     <span class="n">observed</span> <span class="o">=</span> <span class="n">pmse</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -550,6 +689,62 @@
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PropensityResult</span><span class="p">(</span><span class="n">observed</span><span class="p">,</span> <span class="n">standard</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="specks"><a class="viewcode-back" href="../../../autoapi/synthgauge/metrics/propensity/index.html#synthgauge.metrics.specks">[docs]</a><span class="k">def</span> <span class="nf">specks</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Propensity score comparison via the Kolmogorov-Smirnov distance.</span>
+
+<span class="sd">    The SPECKS metric was originally presented in</span>
+<span class="sd">    https://arxiv.org/pdf/1803.06763.pdf and works as follows:</span>
+
+<span class="sd">        1. Stack the real and synthetic data, and create a variable</span>
+<span class="sd">           indicating whether each record is real (0) or synthetic (1).</span>
+<span class="sd">        2. Calculate the propensity score for each record using a binary</span>
+<span class="sd">           classifier on the indicator variable.</span>
+<span class="sd">        3. Compute the Kolmogorov-Smirnov distance between the empirical</span>
+<span class="sd">           CDFs for the real and synthetic propensity scores.</span>
+
+<span class="sd">    The Kolmogorov-Smirnov distance is defined as the maximum difference</span>
+<span class="sd">    between two empirical distributions. Therefore, it is bounded</span>
+<span class="sd">    between zero and one. If the synthetic data properly resembles the</span>
+<span class="sd">    original data then they will be indistinguishable, leading to close</span>
+<span class="sd">    empirical CDFs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the real data.</span>
+<span class="sd">    synth : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing the synthetic data.</span>
+<span class="sd">    classifier : scikit-learn estimator</span>
+<span class="sd">        Any `scikit-learn`-style classifier class with a `predict_proba`</span>
+<span class="sd">        method.</span>
+<span class="sd">    **kwargs : dict, optional</span>
+<span class="sd">        Keyword arguments to be passed to `classifer`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The Kolmogorov-Smirnov distance between the real and synthetic</span>
+<span class="sd">        propensity score CDFs.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The combined dataset is one-hot-encoded before being passed to the</span>
+<span class="sd">    classifier so categorical features can be handled.</span>
+
+<span class="sd">    The paper introducing SPECKS has also been published in METRON:</span>
+<span class="sd">    https://doi.org/10.1007/s40300-021-00201-0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span> <span class="o">=</span> <span class="n">_combine_encode_and_pop</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">synth</span><span class="p">)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">classifier</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">combined</span><span class="p">,</span> <span class="n">indicator</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">combined</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ks_2samp</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">indicator</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">indicator</span> <span class="o">==</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">statistic</span></div>
 </pre></div>
 
            </div>

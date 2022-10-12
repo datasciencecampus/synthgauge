@@ -1,10 +1,12 @@
 """Propensity-based utility metrics."""
 
+import warnings
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 import scipy.special
+from scipy.stats import ks_2samp
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeClassifier
@@ -196,13 +198,71 @@ def _pmse_logr_statistics(combined, indicator):
     return loc, scale
 
 
-def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
-    """Estimate the location and scale of pMSE in the null case by
-    repeating pMSE calculations on permuations of the indicator column
-    using a CART model.
+def _pmse_cart_stats_boot(combined, indicator, trials, **kwargs):
+    """Null statistic estimation for CART propensity via bootstrapping.
 
-    The set of calculations are then summarised using the mean or
-    standard deviation, respectively.
+    Estimate the location and scale of pMSE in the null case by taking
+    several bootstrapped samples of the real data, each being twice the
+    length of the original data. Half of the data are listed as real
+    while the other half are synthetic. These labelled data are then run
+    through the usual CART pMSE calculation procedure to produce a set.
+
+    The set of pMSE values are then summarised to give the estimated
+    mean and standard deviation.
+
+    Parameters
+    ----------
+    combined : pandas.DataFrame
+        Dataframe containing the stacked real and synthetic data.
+    trials : int
+        Number of samples to take in the estimate.
+    **kwargs : dict, optional
+        Keyword arguments passed to
+        `sklearn.tree.DecisionTreeClassifier`.
+
+    Returns
+    -------
+    loc : float
+        Estimated expectation of pMSE in the null case.
+    scale : float
+        Estimated standard deviation of pMSE in the null case.
+
+    Notes
+    -----
+    This estimation method removes any dependency on the synthetic data
+    being assessed, improving on the permutation-based method set out in
+    https://doi.org/10.1111/rssa.12358.
+
+    A description of this method and its justification are presented in
+    https://doi.org/10.29012/jpc.748. This implementation is adapted
+    from the source code submitted with the aforementioned paper:
+    https://github.com/ClaireMcKayBowen/Code-for-NIST-PSCR-Differential-Privacy-Synthetic-Data-Challenge
+
+    Note that the `random_state` keyword argument is used to
+    (independently) bootstrap samples and to fit the CART model. Without
+    specifying this, the results will not be reproducible.
+    """
+
+    rng = np.random.default_rng(kwargs.get("random_state", None))
+    original = combined[indicator == 0]
+    rows = len(original)
+
+    pmses = []
+    for perm in range(trials):
+        sampled = original.iloc[rng.integers(rows, size=2 * rows), :]
+        indicator = np.repeat([0, 1], rows)
+        pmses.append(pmse(sampled, indicator, method="cart", **kwargs))
+
+    return np.mean(pmses), np.std(pmses)
+
+
+def _pmse_cart_stats_perm(combined, indicator, num_perms, **kwargs):
+    """Null statistic estimation for CART propensity via permutations.
+
+    Estimate the location and scale of pMSE in the null case by
+    repeating pMSE calculations on permuations of the indicator column
+    using a CART model. The set of calculations are then summarised
+    using the mean or standard deviation, respectively.
 
     Parameters
     ----------
@@ -227,15 +287,10 @@ def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
     -----
     When using a CART propensity model, the number of predictors is
     unknown and the results used in `_pmse_logr_statistics` do not
-    apply.
-
-    To circumvent this, we repeatedly calculate pMSE using permutations
-    of the synthetic indicator column. This should approximate the
-    results for "properly" synthesised data without knowing :math:`k` a
-    priori.
-
-    Further details of this approach are available at:
-    https://doi.org/10.1111/rssa.12358
+    apply. To circumvent this, taking several permutations should
+    approximate the results for "properly" synthesised data without
+    knowing :math:`k` a priori. Further details of this approach are
+    available in https://doi.org/10.1111/rssa.12358.
 
     Note that the `random_state` keyword argument is used to
     (independently) create the permutations and to fit the CART model.
@@ -246,14 +301,81 @@ def _pmse_cart_statistics(combined, indicator, num_perms, **kwargs):
 
     pmses = []
     for _ in range(num_perms):
-
         rng.shuffle(indicator)
         pmses.append(pmse(combined, indicator, method="cart", **kwargs))
 
     return np.mean(pmses), np.std(pmses)
 
 
-def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
+def _pmse_cart_statistics(combined, indicator, num_perms, estimator, **kwargs):
+    """Null statistic estimation for CART-based propensity scores.
+
+    Estimation can either be carried out using permutations of the
+    combined indicator or via bootstrapping. The former is the original
+    method presented in https://doi.org/10.1111/rssa.12358, while the
+    latter (from https://doi.org/10.29012/jpc.748) improves on this by
+    removing dependence on the synthetic data.
+
+    Parameters
+    ----------
+    combined : pandas.DataFrame
+        Dataframe containing the real and synthetic data.
+    indicator : numpy.ndarray
+        Indicator for whether data are real (0) or synthetic (1).
+    num_perms : int
+        Number of trials to consider in the estimate.
+    estimator : {"perm", "boot"}
+        Which estimation process to use. By default, permutations are
+        used to ensure back-compatibility.
+    **kwargs : dict, optional
+        Keyword arguments to be passed to
+        `sklearn.tree.DecisionTreeClassifier`.
+
+    Returns
+    -------
+    loc : float
+        Estimated expectation of pMSE in the null case.
+    scale : float
+        Estimated standard deviation of pMSE in the null case.
+
+    Warns
+    -----
+    FutureWarning
+        The permutation method is flawed and will be removed in a
+        future minor version. See https://doi.org/10.29012/jpc.748 for
+        details.
+
+    Raises
+    ------
+    ValueError
+        If the estimation method, `estimator`, is not valid.
+    """
+
+    if estimator == "perm":
+        message = (
+            "The permutation method is flawed and will be removed in a future "
+            "release. Consider using `estimator='boot'` instead."
+        )
+        warnings.warn(message, FutureWarning)
+
+        loc, scale = _pmse_cart_stats_perm(
+            combined, indicator, num_perms, **kwargs
+        )
+
+    elif estimator == "boot":
+        loc, scale = _pmse_cart_stats_boot(
+            combined, indicator, num_perms, **kwargs
+        )
+
+    else:
+        raise ValueError("Estimation method must be `perm` or `boot`.")
+
+    return loc, scale
+
+
+def pmse_ratio(
+    combined, indicator, method, num_perms=None, estimator="perm", **kwargs
+):
     """The propensity score mean-squared error ratio.
 
     This is the ratio of observed pMSE to that expected under the null
@@ -275,6 +397,9 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model classifier.
 
@@ -307,13 +432,15 @@ def pmse_ratio(combined, indicator, method, num_perms=None, **kwargs):
         loc, _ = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, _ = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     return observed / loc
 
 
-def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
+def pmse_standardised(
+    combined, indicator, method, num_perms=None, estimator="perm", **kwargs
+):
     """The standardised propensity score mean-squared error.
 
     This takes the observed pMSE and standardises it against the null
@@ -335,6 +462,9 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
     num_perms : int, optional
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
@@ -367,14 +497,20 @@ def pmse_standardised(combined, indicator, method, num_perms=None, **kwargs):
         loc, scale = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, scale = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     return (observed - loc) / scale
 
 
 def propensity_metrics(
-    real, synth, method="cart", feats=None, num_perms=20, **kwargs
+    real,
+    synth,
+    method="cart",
+    feats=None,
+    num_perms=20,
+    estimator="perm",
+    **kwargs,
 ):
     """Propensity score-based metrics.
 
@@ -410,6 +546,9 @@ def propensity_metrics(
     num_perms : int, default 20
         Number of permutations to consider when estimating the null case
         statistics with a CART model.
+    estimator : {"perm", "boot"}
+        Which estimation process to use with a CART model. By default,
+        permutations are used to ensure back-compatibility.
     **kwargs : dict, optional
         Keyword arguments passed to the propensity model.
 
@@ -462,7 +601,7 @@ def propensity_metrics(
         loc, scale = _pmse_logr_statistics(combined, indicator)
     if method == "cart":
         loc, scale = _pmse_cart_statistics(
-            combined, indicator, num_perms, **kwargs
+            combined, indicator, num_perms, estimator, **kwargs
         )
 
     observed = pmse(combined, indicator, method, **kwargs)
@@ -475,3 +614,59 @@ def propensity_metrics(
     )
 
     return PropensityResult(observed, standard, ratio)
+
+
+def specks(real, synth, classifier, **kwargs):
+    """Propensity score comparison via the Kolmogorov-Smirnov distance.
+
+    The SPECKS metric was originally presented in
+    https://arxiv.org/pdf/1803.06763.pdf and works as follows:
+
+        1. Stack the real and synthetic data, and create a variable
+           indicating whether each record is real (0) or synthetic (1).
+        2. Calculate the propensity score for each record using a binary
+           classifier on the indicator variable.
+        3. Compute the Kolmogorov-Smirnov distance between the empirical
+           CDFs for the real and synthetic propensity scores.
+
+    The Kolmogorov-Smirnov distance is defined as the maximum difference
+    between two empirical distributions. Therefore, it is bounded
+    between zero and one. If the synthetic data properly resembles the
+    original data then they will be indistinguishable, leading to close
+    empirical CDFs.
+
+    Parameters
+    ----------
+    real : pandas.DataFrame
+        Dataframe containing the real data.
+    synth : pandas.DataFrame
+        Dataframe containing the synthetic data.
+    classifier : scikit-learn estimator
+        Any `scikit-learn`-style classifier class with a `predict_proba`
+        method.
+    **kwargs : dict, optional
+        Keyword arguments to be passed to `classifer`.
+
+    Returns
+    -------
+    float
+        The Kolmogorov-Smirnov distance between the real and synthetic
+        propensity score CDFs.
+
+    Notes
+    -----
+    The combined dataset is one-hot-encoded before being passed to the
+    classifier so categorical features can be handled.
+
+    The paper introducing SPECKS has also been published in METRON:
+    https://doi.org/10.1007/s40300-021-00201-0.
+    """
+
+    combined, indicator = _combine_encode_and_pop(real, synth)
+    scores = (
+        classifier(**kwargs)
+        .fit(combined, indicator)
+        .predict_proba(combined)[:, 1]
+    )
+
+    return ks_2samp(scores[indicator == 0], scores[indicator == 1]).statistic
