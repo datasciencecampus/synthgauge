@@ -7,7 +7,11 @@ from .density import feature_density_mad
 from .nist import hoc, kway_marginals
 from .privacy import min_nearest_neighbour, sample_overlap_score, tcap_score
 from .propensity import (
-    pmse, pmse_ratio, pmse_standardised, propensity_metrics, specks
+    pmse,
+    pmse_ratio,
+    pmse_standardised,
+    propensity_metrics,
+    specks,
 )
 from .univariate import (
     jensen_shannon_distance,
