@@ -7,6 +7,15 @@
 SynthGauge is a Python library providing a framework in which to evaluate
 synthetically generated data.
 
+> [!WARNING]
+> The `synthgauge` package is no longer actively developed by the Data Science
+> Campus, and its GitHub repository has been archived. You can still install
+> `synthgauge` from GitHub and PyPI.
+> 
+> We also recommend the package [`sdmetrics`](https://docs.sdv.dev/sdmetrics/)
+> from the [Synthetic Data Vault](https://sdv.dev/) for all of your synthetic
+> data evaluation needs.
+
 The library provides a range of metrics and visualisations for assessing and
 comparing distributions of features between real and synthetic data. At its
 core is the `Evaluator` class, which provides a consistent interface for
